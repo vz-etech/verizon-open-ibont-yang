@@ -1,0 +1,45 @@
+module verizon-oam-ethernet-cfm-fm {
+
+  namespace 
+    "http://www.verizon.com/ns/bbf-oam-ethernet-cfm-fm";
+  prefix vz-oam-ecfm-fm;
+  
+  /* Common additions */
+  include verizon-oam-ethernet-cfm-fm-ma;
+  
+  /* ETH-CC additions */
+  include verizon-oam-ethernet-cfm-fm-cc-body;
+  include verizon-oam-ethernet-cfm-fm-cc; 
+
+  /* ETH-LB additions */
+  include verizon-oam-ethernet-cfm-fm-lb-body;
+  include verizon-oam-ethernet-cfm-fm-lb; 
+  
+  /* ETH-LT additions */
+  include verizon-oam-ethernet-cfm-fm-lt-body;
+  include verizon-oam-ethernet-cfm-fm-lt;
+  
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for
+     the management of Ethernet Service Layer OAM Fault Management 
+     as specified by ITU-T Y.1731 and augments those specified 
+     in bbf-oam-ethernet-cfm.yang, which provides support for 
+     IEEE 802.1ag Connectivity Fault Management (CFM).
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference
+      "ITU-T Y.1731-2015 clause 7; MEF 7.2 clause 7.5.";
+  }
+
+}

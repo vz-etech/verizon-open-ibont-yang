@@ -1,0 +1,698 @@
+submodule verizon-oam-ethernet-cfm-types {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of common YANG type 
+     definitions for Connectivity Fault Management (CFM) as 
+     specified in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  feature ecfm-oam {
+    description
+      "Indicates support for IEEE 802.1ag CFM.";
+  }
+
+  identity name-format {
+    description
+      "This defines a name format. IEEE 802.1ag CFM defines varying
+       styles of names.";
+  }
+
+  identity name-format-char-string {
+    base name-format;
+    description
+      "The name is given as a character string.";
+  }
+
+  identity rpc-error-tag {
+    description
+      "Base identity for defining error tags for Ethernet OAM PM
+       RPCs.";
+  }
+
+  identity rpc-no-error {
+    base rpc-error-tag;
+    description
+      "The RPC executed without error.";
+  }
+
+  identity rpc-failed-mep-not-found {
+    base rpc-error-tag;
+    description
+      "The RPC failed because the MEP on which the RPC is to apply 
+       was not found.";
+  }
+
+  identity rpc-failed-remote-mep-not-found {
+    base rpc-error-tag;
+    description
+      "The RPC failed because the remote MEP given in the RPC was not 
+       found.";
+  }
+
+  identity rpc-failed-invalid-destination-mac-address {
+    base rpc-error-tag;
+    description
+      "The RPC failed because a specified destination MAC address 
+       was invalid.";
+  }
+
+  identity rpc-failed-session-not-found {
+    base rpc-error-tag;
+    description
+      "The RPC failed because a specified session was not found.";
+  }
+
+  identity rpc-failed-session-already-exists {
+    base rpc-error-tag;
+    description
+      "The RPC failed because a specified session already exists and 
+       cannot thus be created.";
+  }
+
+  identity rpc-failed-invalid-pdu-version {
+    base rpc-error-tag;
+    description
+      "The RPC failed because a specified value for the PDU version 
+       is invalid.";
+  }
+
+  identity rpc-failed-pdu-version-not-supported {
+    base rpc-error-tag;
+    description
+      "The RPC failed because a specified PDU version is not supported
+       on the device.";
+  }
+
+  identity rpc-failed-session-type-not-supported {
+    base rpc-error-tag;
+    description
+      "The RPC failed because a specified session type is not 
+       supported on the device.";
+  }
+
+  identity rpc-failed-measurement-type-not-supported {
+    base rpc-error-tag;
+    description
+      "The RPC failed because a specified measurement type is not 
+       supported on the device.";
+  }
+
+
+
+  typedef admin-name {
+    type string;
+    description
+      "Used to define a name that can used to uniquely identify
+       an object.  Historically, this an arbitrary integer index
+       would have been used for this purpose. A string provides
+       greater flexibility and allows some amount of context to
+       be included.";
+  }
+
+  typedef mep-id {
+    type uint16 {
+      range "1..8191";
+    }
+    description
+      "The MEP Identifier which is an integer that uniquely 
+       identifies the MEP over a given Maintenance Association.";
+    reference
+      "IEEE 802.1ag clauses 3.19, 12.14.7 and 19.2";
+  }
+
+  typedef frame-priority {
+    type uint8 {
+      range "0..7";
+    }
+    description
+      "Used to define the priority of OAM frames.";
+  }
+
+  typedef centiseconds {
+    type uint32;
+    units "0.01 seconds";
+    description
+      "Used to define values in centiseconds (0.01 seconds).";
+  }
+
+  typedef port-status {
+    type enumeration {
+      enum "blocked" {
+        description
+          "Ordinary data cannot pass freely through the port on
+           which the remote MEP resides. ";
+      }
+      enum "up" {
+        description
+          "Ordinary data can pass freely through the port on which
+           the remote MEP resides.";
+      }
+    }
+    description
+      "Defines the set of values for Port Status that indicates the 
+       ability of the Bridge Port on which the transmitting MEP 
+       resides to pass ordinary data, regardless of the status of 
+       the MAC";
+    reference
+      "IEEE 802.1ag clause 21.5.4.";
+  }
+
+  typedef interface-status {
+    type enumeration {
+      enum "up" {
+        description
+          "The interface is ready to pass packets.";
+      }
+      enum "down" {
+        description
+          "The interface cannot pass packets.";
+      }
+      enum "testing" {
+        description
+          "The interface is in some test mode.";
+      }
+      enum "unknown" {
+        description
+          "The interface status cannot be determined for some 
+           reason.";
+      }
+      enum "dormant" {
+        description
+          "The interface is not in a state to pass packets but is in
+           a pending state, waiting for some external event.";
+      }
+      enum "not-present" {
+        description
+          "Some component of the interface is missing.";
+      }
+      enum "lower-layer-down" {
+        description
+          "The interface is down due to state of the lower layer
+           interfaces.";
+      }
+    }
+    description
+      "Defines the set of values to indicate the status of the 
+       interface on which the MEP transmitting is configured.";
+    reference
+      "IEEE 802.1ag clause 21.5.5.";
+  }
+
+  grouping chassis-id {
+    description
+      "Defines the Chassis ID.";
+    reference
+      "IEEE 802.1ag clause 21.5.3.";
+
+    choice chassis-id-subtype {
+      description
+        "Selects the format of the Chassis ID.";
+      reference
+        "IEEE 802.1AB-2005 clause 9.5.2.2";
+
+      leaf chassis-component {
+        type string {
+          length "0..32";
+        }
+        description
+          "This leaf contains the content of EntPhysicalAlias when 
+           entPhysClass has a value of chassis(3).";
+        reference
+          "RFC2737.";
+      }
+
+      leaf interface-alias {
+        type string {
+          length "0..64";
+        }
+        description
+          "The IfAlias field from the Interfaces Group MIB";
+        reference
+          "RFC2863.";
+      }
+
+      leaf port-component {
+        type string {
+          length "0..32";
+        }
+        description
+          "The EntPhysicalAlias from the Interfaces Group MIB when 
+           entPhysClass has a value of port(10) or backplane(4)";
+        reference
+          "RFC2737.";
+      }
+
+      leaf mac-address-type {
+        type yang:mac-address;
+        description
+          "An IEEE 802-2001 Ethernet MAC Address";
+        reference
+          "802-2001.";
+      }
+
+      leaf network-address {
+        type string;
+        description
+          "network-address is an octet string that identifies a 
+           particular network address family and an associated 
+           network address that are encoded in network octet order. 
+           An IP address, for example, would be encoded with the 
+           first octet containing the IANA Address Family Numbers 
+           enumeration value for the specific address type and 
+           octets 2 through n containing the address value";
+        reference
+          "IEEE 802.1AB-2005 clause Table 9.2";
+      }
+
+      leaf interface-name {
+        type string {
+          length "0..64";
+        }
+        description
+          "IfName";
+        reference
+          "RFC2863.";
+      }
+
+      leaf local {
+        type string;
+        description
+          "A locally assigned alpha-numeric string.";
+        reference
+          "IEEE 802.1AB-2005 clause Table 9.2";
+      }
+    }
+  }
+
+  grouping management-address {
+    description
+      "Defines the Management Address.";
+    reference
+      "IEEE 802.1ag clause 21.5.3.";
+
+    choice management-address-domain {
+      description
+        "Selects the domain of the management address";
+
+      case udp-ipv4 {
+        description
+          "Represents an IPv4 UDP transport address consisting of an 
+           IPv4 address, and a port number.";
+        reference
+          "RFC3419 TRANSPORT-ADDRESS-MIB.transportDomainUdpIpv4";
+
+        leaf udp-ipv4-address {
+          type inet:ipv4-address;
+          description
+            "UDP IPv4 address.";
+        }
+        leaf udp-ipv4-port {
+          type inet:port-number;
+          description
+            "UDP IPv4 port.";
+        }
+      }
+
+      case udp-ipv6 {
+        description
+          "Represents an IPv6 UDP transport address consisting of an 
+           IPv6 address and a port number.";
+        reference
+          "RFC3419 TRANSPORT-ADDRESS-MIB.transportDomainUdpIpv6";
+
+        leaf udp-ipv6-address {
+          type inet:ipv6-address;
+          description
+            "UDP IPv6 address.";
+        }
+
+        leaf udp-ipv6-port {
+          type inet:port-number;
+          description
+            "UDP IPv6 port.";
+        }
+      }
+
+      case udp-ipv4z {
+        description
+          "Represents a UDP transport address consisting of an IPv4 
+           address, a zone index and a port number.";
+        reference
+          "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainUdpIpv4z";
+
+        leaf udp-ipv4z-address {
+          type inet:ipv4-address;
+          description
+            "UDP IPv4 address.";
+        }
+
+        leaf udp-ipv4z-index {
+          type uint32;
+          description
+            "UDP IPv4 zone index.";
+        }
+        leaf udp-ipv4z-port {
+          type inet:port-number;
+          description
+            "UDP IPv4 port.";
+        }
+      }
+
+      case udp-ipv6z {
+        description
+          "Represents a UDP transport address consisting of an IPv6 
+           address, a zone index and a port number.";
+        reference
+          "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainUdpIpv6z";
+
+        leaf udp-ipv6z-address {
+          type inet:ipv6-address;
+          description
+            "UDP IPv6 zone index.";
+        }
+
+        leaf udp-ipv6z-index {
+          type uint32;
+          description
+            "UDP IPv6 zone index.";
+        }
+        leaf udp-ipv6z-port {
+          type inet:port-number;
+          description
+            "UDP IPv6 port.";
+        }
+      }
+
+      case tcp-ipv4 {
+        description
+          "Represents an IPv4 TCP transport address consisting of an 
+           IPv4 address and a port number.";
+        reference
+          "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainTcpIpv4";
+
+        leaf tcp-ipv4-address {
+          type inet:ipv4-address;
+          description
+            "TCP IPv4 address.";
+        }
+
+        leaf tcp-ipv4-port {
+          type inet:port-number;
+          description
+            "TCP IPv4 port.";
+        }
+      }
+
+      case tcp-ipv6 {
+        description
+          "Represents an IPv6 TCP transport address consisting of an 
+           IPv6 address and a port number.";
+        reference
+          "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainTcpIpv6";
+
+        leaf tcp-ipv6-address {
+          type inet:ipv6-address;
+          description
+            "TCP IPv6 address.";
+        }
+
+        leaf tcp-ipv6-port {
+          type inet:port-number;
+          description
+            "TCP IPv6 port.";
+        }
+      }
+
+      case tcp-ipv4z {
+        description
+          "Represents a TCP IPv4 transport address consisting of an 
+           IPv4 address, a zone index and a port number.";
+        reference
+          "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainTcpIpv4z";
+
+        leaf tcp-ipv4z-address {
+          type inet:ipv4-address;
+          description
+            "TCP IPv4 address.";
+        }
+
+        leaf tcp-ipv4z-index {
+          type uint32;
+          description
+            "TCP IPv4 zone index.";
+        }
+        leaf tcp-ipv4z-port {
+          type inet:port-number;
+          description
+            "TCP IPv4 port.";
+        }
+      }
+
+      case tcp-ipv6z {
+        description
+          "Represents a TCP IPv6 transport address consisting of an 
+           IPv6 address, a zone index and a port number.";
+        reference
+          "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainTcpIpv6z";
+
+        leaf tcp-ipv6z-address {
+          type inet:ipv6-address;
+          description
+            "TCP IPv6 address.";
+        }
+
+        leaf tcp-ipv6z-index {
+          type uint32;
+          description
+            "TCP IPv6 zone index.";
+        }
+
+        leaf tcp-ipv6z-port {
+          type inet:port-number;
+          description
+            "TCP IPv6 port.";
+        }
+      }
+
+      case sctp-ipv4 {
+        description
+          "Represents an IPv4 SCTP transport address consisting of 
+           an IPv4 address and a port number.";
+        reference
+          "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainSctpIpv4";
+
+        leaf sctp-ipv4-address {
+          type inet:ipv4-address;
+          description
+            "SCTP IPv4 address.";
+        }
+
+        leaf sctp-ipv4-port {
+          type inet:port-number;
+          description
+            "SCTP IPv4 port.";
+        }
+      }
+
+      case sctp-ipv6 {
+        description
+          "Represents an IPv6 SCTP transport address consisting of 
+           an IPv6 address and a port number.";
+        reference
+          "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainSctpIpv6";
+
+        leaf sctp-ipv6-address {
+          type inet:ipv6-address;
+          description
+            "SCTP IPv6 address.";
+        }
+
+        leaf sctp-ipv6-port {
+          type inet:port-number;
+          description
+            "SCTP IPv6 port.";
+        }
+      }
+
+      case sctp-ipv4z {
+        description
+          "Represents an SCTP IPv4 transport address consisting of 
+           an IPv4 address, a zone index and a port number.";
+        reference
+          "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainSctpIpv4z";
+
+        leaf sctp-iv4z-address {
+          type inet:ipv4-address;
+          description
+            "SCTP IPv4 address.";
+        }
+
+        leaf sctp-ipv4z-index {
+          type uint32;
+          description
+            "SCTP IPv4 zone index.";
+        }
+
+        leaf sctp-ipv4z-port {
+          type inet:port-number;
+          description
+            "SCTP IPv4 port.";
+        }
+      }
+
+      case sctp-ipv6z {
+        description
+          "Represents an SCTP IPv6 transport address consisting of 
+           an IPv6 address, a zone index and a port number.";
+        reference
+          "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainSctpIpv6z";
+
+        leaf sctp-ipv6z-address {
+          type inet:ipv6-address;
+          description
+            "SCTP IPv6 address.";
+        }
+
+        leaf sctp-ipv6z-index {
+          type uint32;
+          description
+            "SCTP IPv6 zone index.";
+        }
+
+        leaf sctp-ipv6z-port {
+          type inet:port-number;
+          description
+            "SCTP IPv6 port.";
+        }
+      }
+
+      case local {
+        leaf local-address {
+          type string {
+            length "1..255";
+          }
+          description
+            "Represents a POSIX Local IPC transport address.";
+        }
+      }
+
+      case udp-dns {
+        leaf udp-dns-address {
+          type string {
+            length "1..255";
+          }
+          description
+            "The UDP transport domain using fully qualified domain 
+             names. Represents a DNS domain name followed by a colon 
+             ':' (ASCII character 0x3A) and a port number in ASCII. 
+             The name SHOULD be fully qualified whenever possible.";
+          reference
+            "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainUdpDns";
+        }
+      }
+
+      case tcp-dns {
+        leaf tcp-dns-address {
+          type string {
+            length "1..255";
+          }
+          description
+            "The TCP transport domain using fully qualified domain 
+             names. Represents a DNS domain name followed by a colon 
+             ':' (ASCII character 0x3A) and a port number in ASCII. 
+             The name SHOULD be fully qualified whenever possible.";
+          reference
+            "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainTcpDns";
+        }
+      }
+
+      case sctp-dns {
+        leaf sctp-dns-address {
+          type string {
+            length "1..255";
+          }
+          description
+            "The SCTP transport domain using fully qualified domain 
+             names. Represents a DNS domain name followed by a colon 
+             ':' (ASCII character 0x3A) and a port number in ASCII. 
+             The name SHOULD be fully qualified whenever possible.";
+          reference
+            "RFC3419] TRANSPORT-ADDRESS-MIB.transportDomainSctpDns";
+        }
+      }
+    }
+  }
+
+  grouping sender-id-tlv {
+    description
+      "Defines the Sender ID TLV fields.";
+    reference
+      "IEEE 802.1ag clause 21.5.3.";
+
+    container chassis-id {
+      description
+        "Data definitions related to the Chassis ID fields 
+         within in a Sender ID TLV";
+      reference
+        "IEEE 802.1ag clause 21.5.3.";
+
+      uses chassis-id;
+    }
+
+    container management-address {
+      description
+        "Data definitions related to the Management Address fields 
+         within in a Sender ID TLV";
+      reference
+        "IEEE 802.1ag clause 21.5.3.";
+
+      uses management-address;
+    }
+  }
+  
+  grouping rpc-common-output-parameters {
+    description
+      "Defines the common output parameters of PM RPCs.";
+    leaf error-tag {
+      type identityref {
+        base vz-oam-ecfm:rpc-error-tag;
+      }
+      mandatory true;
+      description
+        "The error tag indicates the type of error that has occurred,
+         if any.";
+    }
+    leaf error-message {
+      type string;
+      description
+        "Contains a string suitable for human display that describes
+         the reason for the error.";
+    }
+  }
+
+
+}

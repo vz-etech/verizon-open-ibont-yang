@@ -1,0 +1,3 @@
+submodule: verizon-oam-ethernet-cfm-base (belongs-to verizon-oam-ethernet-cfm)
+  +--rw cfm
+  +--ro cfm-state

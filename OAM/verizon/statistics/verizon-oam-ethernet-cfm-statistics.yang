@@ -1,0 +1,47 @@
+module verizon-oam-ethernet-cfm-statistics {
+
+  namespace 
+    "http://verizon.com/ns/verizon-oam-ethernet-cfm-statistics";
+  prefix vz-oam-ecfm-stats;
+  
+  /* Continuity check */
+  include verizon-oam-ethernet-cfm-statistics-cc;
+  include verizon-oam-ethernet-cfm-statistics-cc-body;
+  
+  /* Loopback */
+  include verizon-oam-ethernet-cfm-statistics-lb;
+  include verizon-oam-ethernet-cfm-statistics-lb-body;
+  
+  /* Loss measurements */
+  include verizon-oam-ethernet-cfm-statistics-lm;
+  include verizon-oam-ethernet-cfm-statistics-lm-body;
+
+  /* Delay measurements */
+  include verizon-oam-ethernet-cfm-statistics-dm;
+  include verizon-oam-ethernet-cfm-statistics-dm-body;
+
+  /* MIPs */
+  include verizon-oam-ethernet-cfm-statistics-mip;
+  include verizon-oam-ethernet-cfm-statistics-mip-body;
+  
+  organization 
+    "Verizon";
+
+  contact
+     "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+ 
+  description
+    "This module contains a collection of YANG definitions to 
+     support statistics for Ethernet Service Layer OAM that are 
+     not defined as part of the standards IEEE 802.1ag, ITU-T Y.1731 
+     or MEF 7.2.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+}

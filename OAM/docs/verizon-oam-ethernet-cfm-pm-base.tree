@@ -1,0 +1,4 @@
+
+submodule: verizon-oam-ethernet-cfm-pm-base (belongs-to verizon-oam-ethernet-cfm-pm)
+  augment /vz-oam-ecfm:cfm:
+    +--rw profiles

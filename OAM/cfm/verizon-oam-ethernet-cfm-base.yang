@@ -1,0 +1,35 @@
+submodule verizon-oam-ethernet-cfm-base {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions that 
+     define the top level configuration for Connectivity Fault 
+     Management as specified in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  container cfm {
+    description
+      "Management objects used in the configuration of CFM.";
+  }
+
+  container cfm-state {
+    config false;
+    description
+      "Management objects used to report CFM state data.";
+  }
+}

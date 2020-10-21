@@ -1,0 +1,73 @@
+submodule verizon-oam-ethernet-cfm-statistics-mip-body {
+  belongs-to verizon-oam-ethernet-cfm-statistics {
+    prefix vz-oam-ecfm-stats;
+  }
+  
+  import ietf-yang-types {
+    prefix yang;
+  }
+  
+  organization 
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>"; 
+ 
+  description 
+    "This module contains a collection YANG data types and grouping 
+     definitions to support Maintenance Domain Intermediate Points 
+     (MIP) statistics that are not defined as part of the standards 
+     IEEE 802.1ag, ITU-T Y.1731 or MEF 7.2.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  grouping mhf-statistics-parameters {
+    description
+      "Defines statistics parameters for MIPs.";
+
+    leaf in-lbm {
+      type yang:counter64;
+      description
+        "The total number of LBMs received by the MHF.";
+    }
+    leaf out-lbr {
+      type yang:counter64;
+      description
+        "The total number of LBRs transmitted by the MHF.";
+    }
+    leaf in-ltm {
+      type yang:counter64;
+      description
+        "The total number of LTMs received by the MHF.";
+    }
+    leaf forwarded-ltm {
+      type yang:counter64;
+      description
+        "The total number of LTMs forwarded by the MHF.";
+    }
+    leaf out-ltm {
+      type yang:counter64;
+      description
+        "The total number of LTMs transmitted by the MHF.";
+    }
+    leaf out-ltr {
+      type yang:counter64;
+      description
+        "The total number of LTRs transmitted by the MHF.";
+    }
+    leaf in-ltm-discarded {
+      type yang:counter64;
+      description
+        "The total number of LTMs received by the MHF which 
+         were discarded by the MHF.";
+    }
+  }
+  
+}

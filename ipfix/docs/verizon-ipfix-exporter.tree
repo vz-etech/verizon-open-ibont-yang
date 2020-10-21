@@ -1,0 +1,201 @@
+submodule: verizon-ipfix-exporter (belongs-to verizon-ipfix)
+  +--rw ipfix
+  |  +--rw exporting-process* [name] {exporter}?
+  |     +--rw name           name-type
+  |     +--rw export-mode?   identityref
+  |     +--rw destination* [name]
+  |     |  +--rw name                   name-type
+  |     |  +--rw (destination-parameters)
+  |     |     +--:(sctp-exporter)
+  |     |     |  +--rw sctp-exporter {sctp-transport}?
+  |     |     |     +--rw ipfix-version?                  uint16
+  |     |     |     +--rw destination-port?               inet:port-number
+  |     |     |     +--rw send-buffer-size?               uint32
+  |     |     |     +--rw rate-limit?                     uint32
+  |     |     |     +--rw transport-layer-security!
+  |     |     |     |  +--rw local-certification-authority-dn*    string
+  |     |     |     |  +--rw local-subject-dn*                    string
+  |     |     |     |  +--rw local-subject-fqdn*                  inet:domain-name
+  |     |     |     |  +--rw remote-certification-authority-dn*   string
+  |     |     |     |  +--rw remote-subject-dn*                   string
+  |     |     |     |  +--rw remote-subject-fqdn*                 inet:domain-name
+  |     |     |     +--rw (source-method)?
+  |     |     |     |  +--:(source-address)
+  |     |     |     |     +--rw source-address*           inet:ip-address
+  |     |     |     +--rw (destination-method)?
+  |     |     |     |  +--:(destination-address)
+  |     |     |     |     +--rw destination-ip-address*   inet:ip-address
+  |     |     |     +--rw timed-reliability?              uint32
+  |     |     +--:(udp-exporter)
+  |     |     |  +--rw udp-exporter {udp-transport}?
+  |     |     |     +--rw ipfix-version?                      uint16
+  |     |     |     +--rw destination-port?                   inet:port-number
+  |     |     |     +--rw send-buffer-size?                   uint32
+  |     |     |     +--rw rate-limit?                         uint32
+  |     |     |     +--rw transport-layer-security!
+  |     |     |     |  +--rw local-certification-authority-dn*    string
+  |     |     |     |  +--rw local-subject-dn*                    string
+  |     |     |     |  +--rw local-subject-fqdn*                  inet:domain-name
+  |     |     |     |  +--rw remote-certification-authority-dn*   string
+  |     |     |     |  +--rw remote-subject-dn*                   string
+  |     |     |     |  +--rw remote-subject-fqdn*                 inet:domain-name
+  |     |     |     +--rw (source-method)?
+  |     |     |     |  +--:(source-address)
+  |     |     |     |     +--rw source-address?               inet:ip-address
+  |     |     |     +--rw (destination-method)
+  |     |     |     |  +--:(destination-address)
+  |     |     |     |     +--rw destination-address?          inet:host
+  |     |     |     +--rw max-packet-size?                    uint16
+  |     |     |     +--rw template-refresh-timeout?           uint32
+  |     |     |     +--rw options-template-refresh-timeout?   uint32
+  |     |     |     +--rw template-refresh-packet?            uint32
+  |     |     |     +--rw options-template-refresh-packet?    uint32
+  |     |     +--:(tcp-exporter)
+  |     |     |  +--rw tcp-exporter {tcp-transport}?
+  |     |     |     +--rw ipfix-version?               uint16
+  |     |     |     +--rw destination-port?            inet:port-number
+  |     |     |     +--rw send-buffer-size?            uint32
+  |     |     |     +--rw rate-limit?                  uint32
+  |     |     |     +--rw transport-layer-security!
+  |     |     |     |  +--rw local-certification-authority-dn*    string
+  |     |     |     |  +--rw local-subject-dn*                    string
+  |     |     |     |  +--rw local-subject-fqdn*                  inet:domain-name
+  |     |     |     |  +--rw remote-certification-authority-dn*   string
+  |     |     |     |  +--rw remote-subject-dn*                   string
+  |     |     |     |  +--rw remote-subject-fqdn*                 inet:domain-name
+  |     |     |     +--rw (source-method)?
+  |     |     |     |  +--:(source-address)
+  |     |     |     |     +--rw source-address?        inet:ip-address
+  |     |     |     +--rw (destination-method)
+  |     |     |        +--:(destination-address)
+  |     |     |           +--rw destination-address?   inet:host
+  |     |     +--:(file-writer)
+  |     |        +--rw file-writer {file-writer}?
+  |     |           +--rw ipfix-version?   uint16
+  |     |           +--rw file             inet:uri
+  |     +--rw options* [name]
+  |        +--rw name               name-type
+  |        +--rw options-type       identityref
+  |        +--rw options-timeout?   uint32
+  +--ro ipfix-state
+     +--ro exporting-process* [name] {exporter}?
+        +--ro name                    -> /ipfix/exporting-process/name
+        +--ro exporting-process-id?   uint32
+        +--ro destination* [name]
+           +--ro name                                       name-type
+           +--ro (destination-parameters)?
+              +--:(sctp-exporter-transporter-session)
+              |  +--ro sctp-exporter-transporter-session {sctp-transport}?
+              |     +--ro ipfix-version?                          uint16
+              |     +--ro source-ip-address?                      inet:ip-address
+              |     +--ro destination-ip-address?                 inet:ip-address
+              |     +--ro source-port?                            inet:port-number
+              |     +--ro destination-port?                       inet:port-number
+              |     +--ro sctp-assoc-id?                          uint32
+              |     +--ro status?                                 transport-session-status
+              |     +--ro rate?                                   yang:gauge32
+              |     +--ro bytes?                                  yang:counter64
+              |     +--ro messages?                               yang:counter64
+              |     +--ro discarded-messages?                     yang:counter64
+              |     +--ro records?                                yang:counter64
+              |     +--ro templates?                              yang:counter32
+              |     +--ro options-templates?                      yang:counter32
+              |     +--ro transport-session-start-time?           yang:date-and-time
+              |     +--ro transport-session-discontinuity-time?   yang:date-and-time
+              |     +--ro template* []
+              |        +--ro observation-domain-id?         uint32
+              |        +--ro template-id?                   uint16
+              |        +--ro set-id?                        uint16
+              |        +--ro access-time?                   yang:date-and-time
+              |        +--ro template-data-records?         yang:counter64
+              |        +--ro template-discontinuity-time?   yang:date-and-time
+              |        +--ro field* []
+              |           +--ro ie-id?                  ie-id-type
+              |           +--ro ie-length?              uint16
+              |           +--ro ie-enterprise-number?   uint32
+              |           +--ro is-flow-key?            empty
+              |           +--ro is-scope?               empty
+              +--:(udp-exporter-transporter-session)
+              |  +--ro udp-exporter-transporter-session {udp-transport}?
+              |     +--ro ipfix-version?                          uint16
+              |     +--ro source-ip-address?                      inet:ip-address
+              |     +--ro destination-ip-address?                 inet:ip-address
+              |     +--ro source-port?                            inet:port-number
+              |     +--ro destination-port?                       inet:port-number
+              |     +--ro sctp-assoc-id?                          uint32
+              |     +--ro status?                                 transport-session-status
+              |     +--ro rate?                                   yang:gauge32
+              |     +--ro bytes?                                  yang:counter64
+              |     +--ro messages?                               yang:counter64
+              |     +--ro discarded-messages?                     yang:counter64
+              |     +--ro records?                                yang:counter64
+              |     +--ro templates?                              yang:counter32
+              |     +--ro options-templates?                      yang:counter32
+              |     +--ro transport-session-start-time?           yang:date-and-time
+              |     +--ro transport-session-discontinuity-time?   yang:date-and-time
+              |     +--ro template* []
+              |        +--ro observation-domain-id?         uint32
+              |        +--ro template-id?                   uint16
+              |        +--ro set-id?                        uint16
+              |        +--ro access-time?                   yang:date-and-time
+              |        +--ro template-data-records?         yang:counter64
+              |        +--ro template-discontinuity-time?   yang:date-and-time
+              |        +--ro field* []
+              |           +--ro ie-id?                  ie-id-type
+              |           +--ro ie-length?              uint16
+              |           +--ro ie-enterprise-number?   uint32
+              |           +--ro is-flow-key?            empty
+              |           +--ro is-scope?               empty
+              +--:(tcp-exporter-transporter-session)
+              |  +--ro tcp-exporter-transporter-session {tcp-transport}?
+              |     +--ro ipfix-version?                          uint16
+              |     +--ro source-ip-address?                      inet:ip-address
+              |     +--ro destination-ip-address?                 inet:ip-address
+              |     +--ro source-port?                            inet:port-number
+              |     +--ro destination-port?                       inet:port-number
+              |     +--ro sctp-assoc-id?                          uint32
+              |     +--ro status?                                 transport-session-status
+              |     +--ro rate?                                   yang:gauge32
+              |     +--ro bytes?                                  yang:counter64
+              |     +--ro messages?                               yang:counter64
+              |     +--ro discarded-messages?                     yang:counter64
+              |     +--ro records?                                yang:counter64
+              |     +--ro templates?                              yang:counter32
+              |     +--ro options-templates?                      yang:counter32
+              |     +--ro transport-session-start-time?           yang:date-and-time
+              |     +--ro transport-session-discontinuity-time?   yang:date-and-time
+              |     +--ro template* []
+              |        +--ro observation-domain-id?         uint32
+              |        +--ro template-id?                   uint16
+              |        +--ro set-id?                        uint16
+              |        +--ro access-time?                   yang:date-and-time
+              |        +--ro template-data-records?         yang:counter64
+              |        +--ro template-discontinuity-time?   yang:date-and-time
+              |        +--ro field* []
+              |           +--ro ie-id?                  ie-id-type
+              |           +--ro ie-length?              uint16
+              |           +--ro ie-enterprise-number?   uint32
+              |           +--ro is-flow-key?            empty
+              |           +--ro is-scope?               empty
+              +--:(file-writer-transporter-session)
+                 +--ro file-writer-transporter-session {file-writer}?
+                    +--ro bytes?                            yang:counter64
+                    +--ro messages?                         yang:counter64
+                    +--ro discarded-messages?               yang:counter64
+                    +--ro records?                          yang:counter64
+                    +--ro templates?                        yang:counter32
+                    +--ro options-templates?                yang:counter32
+                    +--ro file-writer-discontinuity-time?   yang:date-and-time
+                    +--ro template* []
+                       +--ro observation-domain-id?         uint32
+                       +--ro template-id?                   uint16
+                       +--ro set-id?                        uint16
+                       +--ro access-time?                   yang:date-and-time
+                       +--ro template-data-records?         yang:counter64
+                       +--ro template-discontinuity-time?   yang:date-and-time
+                       +--ro field* []
+                          +--ro ie-id?                  ie-id-type
+                          +--ro ie-length?              uint16
+                          +--ro ie-enterprise-number?   uint32
+                          +--ro is-flow-key?            empty
+                          +--ro is-scope?               empty

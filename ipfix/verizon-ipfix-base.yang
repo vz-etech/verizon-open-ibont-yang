@@ -1,0 +1,655 @@
+submodule verizon-ipfix-base {
+  belongs-to verizon-ipfix {
+    prefix vz-ipfix;
+  }
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  organization
+    "Verizon";
+    
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+    
+  description
+    "Verizon/Calix/Adtran's modeling of IPFIX.
+
+      Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  /*
+   * Features
+   */
+
+  feature exporter {
+    description
+      "If supported, the Monitoring Device can be used as
+       an Exporter.  Exporting Processes can be configured.";
+  }
+
+  feature sctp-transport {
+    description
+      "If supported, the Monitoring Device supports SCTP
+       as the transport protocol.";
+  }
+  feature udp-transport {
+    description
+      "If supported, the Monitoring Device supports UDP
+       as the transport protocol.";
+  }
+
+  feature tcp-transport {
+    description
+      "If supported, the Monitoring Device supports TCP
+       as the transport protocol.";
+  }
+
+  feature file-writer {
+    description
+      "If supported, the Monitoring Device supports the
+       configuration of Exporting Processes as File Writers.";
+  }
+
+  feature collector {
+    description
+      "If supported, the Monitoring Device can be used as
+      a Collector.  Collecting Processes can be configured.";
+  }
+
+  feature file-reader {
+      description
+        "If supported, the Monitoring Device supports the
+         configuration of Collecting Processes as File Readers.";
+  }
+
+  /*
+   * Types 
+   */
+
+  typedef ie-name-type {
+    type string {
+      length "1..max";
+      pattern '\S+';
+    }
+    description
+      "Type for Information Element names.  Whitespaces
+       are not allowed.";
+  }
+
+  typedef name-type {
+    type string {
+      length "1..max";
+      pattern '\S(.*\S)?';
+    }
+    description
+      "Type for 'name' leafs, which are used to identify
+       specific instances within lists, etc.
+       Leading and trailing whitespaces are not allowed.";
+  }
+
+  typedef ie-id-type {
+    type uint16 {
+      range "1..32767";
+    }
+    description
+      "Type for Information Element identifiers.";
+  }
+
+  typedef transport-session-status {
+    type enumeration {
+      enum "inactive" {
+        value 0;
+        description
+          "This value MUST be used for Transport Sessions
+           that are specified in the system but currently not active.
+           The value can be used for Transport Sessions that are
+           backup (secondary) sessions.";
+      }
+      enum "active" {
+        value 1;
+        description
+          "This value MUST be used for Transport Sessions
+           that are currently active and transmitting or receiving
+           data.";
+      }
+      enum "unknown" {
+        value 2;
+          description
+            "This value MUST be used if the status of the
+             Transport Sessions cannot be detected by the device.
+             This value should be avoided as far as possible.";
+      }
+    }
+    description
+      "Status of a Transport Session.";
+    reference
+      "RFC 6615, Section 8 (ipfixTransportSessionStatus).";
+  }
+
+  /*
+   * Groupings
+   */
+
+  grouping transport-layer-security-parameters {
+    description "TLS or DTLS parameters.";
+    leaf-list local-certification-authority-dn {
+      type string;
+      description
+        "Distinguished names of certification authorities
+         whose certificates may be used to identify the local
+         endpoint.";
+      reference
+        "RFC 5280.";
+    }
+    leaf-list local-subject-dn {
+      type string;
+      description
+        "Distinguished names that may be used in the
+         certificates to identify the local endpoint.";
+      reference
+        "RFC 5280.";
+    }
+    leaf-list local-subject-fqdn {
+      type inet:domain-name;
+      description
+        "Fully qualified domain names that may be used to
+         in the certificates to identify the local endpoint.";
+      reference
+        "RFC 5280.";
+    }
+    leaf-list remote-certification-authority-dn {
+      type string;
+      description
+        "Distinguished names of certification authorities
+         whose certificates are accepted to authorize remote
+         endpoints.";
+      reference
+        "RFC 5280.";
+    }
+    leaf-list remote-subject-dn {
+      type string;
+      description
+        "Distinguished names which are accepted in
+         certificates to authorize remote endpoints.";
+      reference
+        "RFC 5280.";
+    }
+    leaf-list remote-subject-fqdn {
+      type inet:domain-name;
+      description
+        "Fully qualified domain names that are accepted in
+         certificates to authorize remote endpoints.";
+      reference
+        "RFC 5280.";
+    }
+  }
+
+  grouping transport-session-state-parameters {
+    description
+      "State parameters of a Transport Session originating
+       from an Exporting Process or terminating at a Collecting
+       Process.  Parameter names and semantics correspond to the
+       managed objects in IPFIX-MIB.";
+    reference
+      "RFC 5101; RFC 6615, Section 8
+       (ipfixTransportSessionEntry,
+        ipfixTransportSessionStatsEntry).";
+
+    leaf ipfix-version {
+      type uint16;
+      description
+        "Used for Exporting Processes, this parameter
+         contains the version number of the IPFIX protocol that the
+         Exporter uses to export its data in this Transport Session.
+         Hence, it is identical to the value of the configuration
+         parameter ipfix-version of the outer SctpExporter,
+         UdpExporter, or TcpExporter node.
+         Used for Collecting Processes, this parameter contains the
+         version number of the IPFIX protocol it receives for
+         this Transport Session.  If IPFIX Messages of different
+         IPFIX protocol versions are received, this parameter
+         contains the maximum version number.
+         Note that this parameter corresponds to
+         ipfixTransportSessionIpfixVersion in the IPFIX MIB
+         module.";
+      reference
+        "RFC 6615, Section 8
+        (ipfixTransportSessionIpfixVersion).";
+    }
+    leaf source-ip-address {
+      type inet:ip-address;
+      description
+        "The source address of the Exporter of the
+         IPFIX Transport Session.  ";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTransportSessionSourceAddressType,
+         ipfixTransportSessionSourceAddress);
+         RFC 4960, Section 6.4.";
+    }
+    leaf destination-ip-address {
+      type inet:ip-address;
+      description
+        "The destination IP address of the
+         path that is selected by the Exporter to
+         send IPFIX messages to the Collector.
+
+         In the case of UDP or TCP, it is possible
+         that if an FQDN address is configured it
+         resolves into many IP addresses.
+         If the transport protocol is SCTP, this is one of the
+         potentially many IP addresses of the Collector.
+         The collector address may also be learnt via
+         DHCP.
+         Note that this parameter functionally corresponds to
+         ipfixTransportSessionDestinationAddressType and
+         ipfixTransportSessionDestinationAddress in the IPFIX MIB
+         module.";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTransportSessionDestinationAddressType,
+         ipfixTransportSessionDestinationAddress);
+         RFC 4960, Section 6.4.";
+    }
+    leaf source-port {
+      type inet:port-number;
+      description
+        "The transport-protocol port number of the
+         Exporter of the IPFIX Transport Session.
+         Note that this parameter corresponds to
+         ipfixTransportSessionSourcePort in the IPFIX MIB module.";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTransportSessionSourcePort).";
+    }
+    leaf destination-port {
+      type inet:port-number;
+      description
+        "The transport-protocol port number of the
+         Collector of the IPFIX Transport Session.
+         Note that this parameter corresponds to
+         ipfixTransportSessionDestinationPort in the IPFIX MIB
+         module.";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTransportSessionDestinationPort).";
+    }
+    leaf sctp-assoc-id {
+      type uint32;
+      description
+        "The association ID used for the SCTP session
+         between the Exporter and the Collector of the IPFIX
+         Transport Session.  It is equal to the sctpAssocId entry
+         in the sctpAssocTable defined in the SCTP-MIB.
+         This parameter is only available if the transport protocol
+         is SCTP and if an SNMP agent on the same Monitoring Device
+         enables access to the corresponding MIB objects in the
+         sctpAssocTable.
+         Note that this parameter corresponds to
+         ipfixTransportSessionSctpAssocId in the IPFIX MIB
+         module.";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTransportSessionSctpAssocId);
+          RFC 3871";
+    }
+    leaf status {
+      type transport-session-status;
+      description
+        "Status of the Transport Session.
+         Note that this parameter corresponds to
+         ipfixTransportSessionStatus in the IPFIX MIB module.";
+        reference
+         "RFC 6615, Section 8 (ipfixTransportSessionStatus).";
+    }
+    leaf rate {
+      type yang:gauge32;
+      units "bytes per second";
+      description
+        "The number of bytes per second transmitted by the
+         Exporting Process or received by the Collecting Process.
+         This parameter is updated every second.
+         Note that this parameter corresponds to
+         ipfixTransportSessionRate in the IPFIX MIB module.";
+      reference
+        "RFC 6615, Section 8 (ipfixTransportSessionRate).";
+    }
+    leaf bytes {
+      type yang:counter64;
+      units "bytes";
+      description
+        "The number of bytes transmitted by the
+         Exporting Process or received by the Collecting Process.
+         Discontinuities in the value of this counter can occur at
+         re-initialization of the management system, and at other
+         times as indicated by the value of
+         transportSessionDiscontinuityTime.
+         Note that this parameter corresponds to
+         ipfixTransportSessionBytes in the IPFIX MIB module.";
+      reference
+        "RFC 6615, Section 8 (ipfixTransportSessionBytes).";
+    }
+    leaf messages {
+       type yang:counter64;
+       units "IPFIX Messages";
+       description
+         "The number of messages transmitted by the
+          Exporting Process or received by the Collecting Process.
+          Discontinuities in the value of this counter can occur at
+          re-initialization of the management system, and at other
+          times as indicated by the value of
+          transportSessionDiscontinuityTime.
+          Note that this parameter corresponds to
+          ipfixTransportSessionMessages in the IPFIX MIB module.";
+       reference
+         "RFC 6615, Section 8
+          (ipfixTransportSessionMessages).";
+    }
+    leaf discarded-messages {
+      type yang:counter64;
+      units "IPFIX Messages";
+      description
+        "Used for Exporting Processes, this parameter
+         indicates the number of messages that could not be sent due
+         to internal buffer overflows, network congestion, routing
+         issues, etc.  Used for Collecting Process, this parameter
+         indicates the number of received IPFIX Message that are
+         malformed, cannot be decoded, are received in the wrong
+         order or are missing according to the sequence number.
+         Discontinuities in the value of this counter can occur at
+         re-initialization of the management system, and at other
+         times as indicated by the value of
+         transport-session-discontinuity-time.
+         Note that this parameter corresponds to
+         ipfixTransportSessionDiscardedMessages in the IPFIX MIB
+         module.";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTransportSessionDiscardedMessages).";
+    }
+    leaf records {
+      type yang:counter64;
+      units "Data Records";
+      description
+        "The number of Data Records transmitted by the
+         Exporting Process or received by the Collecting Process.
+         Discontinuities in the value of this counter can occur at
+         re-initialization of the management system, and at other
+         times as indicated by the value of
+         transportSessionDiscontinuityTime.
+         Note that this parameter corresponds to
+         ipfixTransportSessionRecords in the IPFIX MIB module.";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTransportSessionRecords).";
+      }
+    leaf templates {
+      type yang:counter32;
+      units "Templates";
+      description
+        "The number of Templates transmitted by the
+         Exporting Process or received by the Collecting Process.
+         Discontinuities in the value of this counter can occur at
+         re-initialization of the management system, and at other
+         times as indicated by the value of
+         transportSessionDiscontinuityTime.
+         Note that this parameter corresponds to
+         ipfixTransportSessionTemplates in the IPFIX MIB module.";
+      reference
+        "RFC 6615, Section 8
+        (ipfixTransportSessionTemplates).";
+    }
+    leaf options-templates {
+      type yang:counter32;
+      units "Options Templates";
+      description
+        "The number of Option Templates transmitted by the
+         Exporting Process or received by the Collecting Process.
+         Discontinuities in the value of this counter can occur at
+         re-initialization of the management system, and at other
+         times as indicated by the value of
+         transportSessionDiscontinuityTime.
+         Note that this parameter corresponds to
+         ipfixTransportSessionOptionsTemplates in the IPFIX MIB
+         module.";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTransportSessionOptionsTemplates).";
+    }
+    leaf transport-session-start-time {
+      type yang:date-and-time;
+      description
+        "Timestamp of the start of the given Transport
+         Session.
+         This state parameter does not correspond to any object in
+         the IPFIX MIB module.";
+    }
+    leaf transport-session-discontinuity-time {
+      type yang:date-and-time;
+      description
+        "Timestamp of the most recent occasion at which
+         one or more of the Transport Session counters suffered a
+         discontinuity.
+         Note that this parameter functionally corresponds to
+         ipfixTransportSessionDiscontinuityTime in the IPFIX MIB
+         module.  In contrast to
+         ipfixTransportSessionDiscontinuityTime, the time is
+         absolute and not relative to sysUpTime.";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTransportSessionDiscontinuityTime).";
+    }
+    list template {
+      description
+        "This list contains the Templates and Options
+         Templates that are transmitted by the Exporting Process
+        or received by the Collecting Process.
+         Withdrawn or invalidated (Options) Templates MUST be removed
+         from this list.";
+      uses template-parameters-state;
+    }
+  }
+
+  grouping template-parameters-state {
+    description
+      "State parameters of a Template used by an Exporting
+       Process or received by a Collecting Process in a specific
+       Transport Session.  Parameter names and semantics
+       correspond to the managed objects in IPFIX-MIB";
+    reference
+      "RFC 5101; RFC 6615, Section 8 (ipfixTemplateEntry,
+       ipfixTemplateDefinitionEntry, ipfixTemplateStatsEntry)";
+
+    leaf observation-domain-id {
+      type uint32;
+      description
+        "The ID of the Observation Domain for which this
+         Template is defined.
+         Note that this parameter corresponds to
+         ipfixTemplateObservationDomainId in the IPFIX MIB module.";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTemplateObservationDomainId).";
+    }
+
+    leaf template-id {
+      type uint16 {
+        range "256..65535";
+      }
+      description
+        "This number indicates the Template ID in the IPFIX
+         message.
+         Note that this parameter corresponds to ipfixTemplateId in
+         the IPFIX MIB module.";
+      reference
+        "RFC 6615, Section 8 (ipfixTemplateId).";
+    }
+
+    leaf set-id {
+      type uint16;
+      description
+        "This number indicates the Set ID of the Template.
+         Currently, there are two values defined.  The value 2
+         is used for Sets containing Template definitions.
+         The value 3 is used for Sets containing Options
+         Template definitions.  Note that this parameter
+         corresponds to ipfixTemplateSetId
+         in the IPFIX MIB module.";
+      reference
+        "RFC 6615, Section 8 (ipfixTemplateSetId).";
+    }
+
+    leaf access-time {
+      type yang:date-and-time;
+      description
+        "Used for Exporting Processes, this parameter
+         contains the time when this (Options) Template was last
+         sent to the Collector(s) or written to the file.
+         Used for Collecting Processes, this parameter contains the
+         time when this (Options) Template was last received from the
+         Exporter or read from the file.
+         Note that this parameter corresponds to
+         ipfixTemplateAccessTime in the IPFIX MIB module.";
+      reference
+        "RFC 6615, Section 8 (
+         ipfixTemplateAccessTime).";
+    }
+
+    leaf template-data-records {
+      type yang:counter64;
+      description
+        "The number of transmitted or received Data
+         Records defined by this (Options) Template.
+         Discontinuities in the value of this counter can occur at
+         re-initialization of the management system, and at other
+         times as indicated by the value of
+         templateDiscontinuityTime.
+         Note that this parameter corresponds to
+         ipfixTemplateDataRecords in the IPFIX MIB module.";
+      reference
+        "RFC 6615, Section 8 (ipfixTemplateDataRecords).";
+    }
+
+    leaf template-discontinuity-time {
+      type yang:date-and-time;
+      description
+        "Timestamp of the most recent occasion at which
+         the counter templateDataRecords suffered a discontinuity.
+         Note that this parameter functionally corresponds to
+         ipfixTemplateDiscontinuityTime in the IPFIX MIB module.
+         In contrast to ipfixTemplateDiscontinuityTime, the time
+         is absolute and not relative to sysUpTime.";
+      reference
+        "RFC 6615, Section 8
+         (ipfixTemplateDiscontinuityTime).";
+    }
+
+    list field {
+      description
+        "This list contains the (Options) Template
+         fields of which the (Options) Template is defined.
+         The order of the list corresponds to the order of the fields
+         in the (Option) Template Record.";
+      leaf ie-id {
+        type ie-id-type;
+        description
+          "This parameter indicates the Information
+           Element identifier of the field.
+           Note that this parameter corresponds to
+           ipfixTemplateDefinitionIeId in the IPFIX MIB module.";
+        reference
+          "RFC 5101; RFC 6615, Section 8
+           (ipfixTemplateDefinitionIeId).";
+      }
+      leaf ie-length {
+        type uint16;
+        units "octets";
+        description
+          "This parameter indicates the length of the
+           Information Element of the field.
+           Note that this parameter corresponds to
+           ipfixTemplateDefinitionIeLength in the IPFIX MIB
+           module.";
+        reference
+          "RFC 5101; RFC 6615, Section 8
+           (ipfixTemplateDefinitionIeLength).";
+      }
+      leaf ie-enterprise-number {
+        type uint32;
+        description
+          "This parameter indicates the IANA enterprise
+           number of the authority defining the Information Element
+           identifier.
+           If the Information Element is not enterprise-specific,
+           this state parameter is zero.
+           Note that this parameter corresponds to
+           ipfixTemplateDefinitionIeEnterpriseNumber in the IPFIX
+           MIB module.";
+        reference
+          "RFC 6615, Section 8
+           (ipfixTemplateDefinitionIeEnterpriseNumber);
+           IANA registry for Private Enterprise Numbers,
+           http://www.iana.org/assignments/enterprise-numbers.";
+      }
+      leaf is-flow-key {
+        when "../../set-id = 2" {
+        description
+          "This parameter is available for non-Options
+           Templates (Set ID is 2).";
+        }
+        type empty;
+        description
+          "If present, this is a Flow Key field.
+           Note that this corresponds to flowKey(1) being set in
+           ipfixTemplateDefinitionFlags.";
+        reference
+          "RFC 6615, Section 8
+           (ipfixTemplateDefinitionFlags).";
+      }
+      leaf is-scope {
+        when "../../set-id = 3" {
+        description
+          "This parameter is available for Options
+           Templates (Set ID is 3).";
+        }
+        type empty;
+        description
+          "If present, this is a scope field.
+           Note that this corresponds to scope(0) being set in
+           ipfixTemplateDefinitionFlags.";
+        reference
+          "RFC 6615, Section 8
+           (ipfixTemplateDefinitionFlags).";
+      }
+    }
+  }
+
+  /*
+   * Data Definitions
+   */
+
+  // Config
+  container ipfix {
+   description
+     "IPFIX Exporter and/or Collector Configuration data model.";
+  }
+
+  // State
+  container ipfix-state {
+    config false;
+    description
+      "IPFIX Exporter and/or Collector State data model.";
+  }
+}

@@ -1,0 +1,309 @@
+module: verizon-sat
+  +--rw profile
+  |  +--rw test-profile* [sat-profile-name]
+  |  |  +--rw sat-profile-name                        string
+  |  |  +--rw frame-delivery-test?                    sat-frame-type
+  |  |  +--rw (frame-delivery-test-completion-method)?
+  |  |  |  +--:(frame-delivery-test-num-frames)
+  |  |  |  |  +--rw frame-delivery-test-num-frames?   uint16
+  |  |  |  +--:(frame-delivery-test-duration)
+  |  |  |     +--rw frame-delivery-test-duration?     sat-config-test-duration
+  |  |  +--rw simple-cir?                             enabled-disabled
+  |  |  +--rw simple-cir-test-duration?               sat-config-test-duration
+  |  |  +--rw step-load-cir?                          enabled-disabled
+  |  |  +--rw step-load-cir-test-duration?            sat-config-test-duration
+  |  |  +--rw step-load-cir-initial-bandwidth?        sat-test-step
+  |  |  +--rw step-load-cir-bandwidth-count?          uint8
+  |  |  +--rw eir-test?                               enabled-disabled
+  |  |  +--rw eir-test-duration?                      sat-config-test-duration
+  |  |  +--rw traffic-policing-test?                  enabled-disabled
+  |  |  +--rw traffic-policing-test-duration?         sat-config-test-duration
+  |  |  +--rw test-direction?                         sat-direction-enum
+  |  |  +--rw payload-pattern?                        payload-pattern-enum
+  |  |  +--rw frame-size-pattern?                     frame-size-pattern-enum
+  |  |  +--rw emix-profile?                           -> /profile/emix/emix-profile-name
+  |  +--rw emix* [emix-profile-name]
+  |  |  +--rw emix-profile-name    string
+  |  |  +--rw emix-frame-size
+  |  |     +--rw a?   uint16
+  |  |     +--rw b?   uint16
+  |  |     +--rw c?   uint16
+  |  |     +--rw d?   uint16
+  |  |     +--rw e?   uint16
+  |  |     +--rw f?   uint16
+  |  |     +--rw g?   uint16
+  |  |     +--rw h?   uint16
+  |  +--rw service-acceptance-criteria-profile* [name]
+  |     +--rw name                     string
+  |     +--rw information-rate-mean
+  |     |  +--rw low?    decimal64
+  |     |  +--rw high?   decimal64
+  |     +--rw frame-transfer-delay
+  |     |  +--rw max?    uint32
+  |     |  +--rw mean?   uint32
+  |     +--rw frame-delay-variation
+  |     |  +--rw max?    uint32
+  |     |  +--rw mean?   uint32
+  |     +--rw frame-loss-ratio?        decimal64
+  +--rw system
+  |  +--rw sat-configuration* [sat-configuration-name]
+  |     +--rw sat-configuration-name       string
+  |     +--rw uni                          if:interface-ref
+  |     +--rw test-profile-name?           -> /profile/test-profile/sat-profile-name
+  |     +--rw evc* [service-tag]
+  |     |  +--rw service-tag             -> /evc:evcs/evc/etag
+  |     |  +--rw test-flow-attributes
+  |     |  |  +--rw delay-test-pdu-format?                       delay-test-pdu-format-type
+  |     |  |  +--rw frame-loss-test-pdu-source-mac-addr?         yang:mac-address
+  |     |  |  +--rw frame-loss-test-pdu-unicast-dest-mac-addr?   yang:mac-address
+  |     |  |  +--rw frame-loss-test-pdu-mcast-dest-mac-addr?     yang:mac-address
+  |     |  |  +--rw meg?                                         meg-name
+  |     |  |  +--rw level?                                       meg-level
+  |     |  |  +--rw local-mep-id?                                mep-id
+  |     |  |  +--rw remote-peer?                                 remote-type
+  |     |  +--rw cos* [cos-type]
+  |     |     +--rw cos-type                               int8
+  |     |     +--rw frame-loss-test-pdu-size?              frame-size-value
+  |     |     +--rw frame-loss-test-pdu-emix-pattern?      emix-pattern-value
+  |     |     +--rw frame-loss-test-pdu-cvlan?             vlan-id
+  |     |     +--rw frame-loss-test-pdu-ptag-pcp?          pcp
+  |     |     +--rw frame-loss-test-pdu-cvlan-pcp?         pcp
+  |     |     +--rw frame-loss-test-pdu-dscp?              dscp
+  |     |     +--rw service-acceptance-criteria-profile?   -> /profile/service-acceptance-criteria-profile/name
+  |     +--rw performance-test?            enabled-disabled
+  |     +--rw performance-test-duration?   sat-performance-test-duration
+  +--ro test-interface-status
+     +--ro mac-address
+        +--ro mac-address?   yang:mac-address
+
+  rpcs:
+    +---x get-sat-results
+    |  +---w input
+    |  |  +---w uni               if:interface-ref
+    |  |  +---w transaction-id    uint32
+    |  +--ro output
+    |     +--ro error-tag               sat-rpc-error-tag
+    |     +--ro error-message?          string
+    |     +--ro system
+    |     |  +--ro host-name?        ietf:domain-name
+    |     |  +--ro system-version?   string
+    |     +--ro overall-sat-results
+    |     |  +--ro normative-status?     sat-test-normative-status
+    |     |  +--ro informative-status?   string
+    |     +--ro interface-attributes
+    |     |  +--ro interface-name?    if:interface-ref
+    |     |  +--ro oper-speed?        enumeration
+    |     |  +--ro hardware-type?     string
+    |     |  +--ro port-duplexmode?   enumeration
+    |     |  +--ro mtu?               uint32
+    |     |  +--ro interface-mac?     yang:mac-address
+    |     +--ro test-profile
+    |        +--ro test-profile-name?                      -> /profile/test-profile/sat-profile-name
+    |        +--ro frame-delivery-test?                    sat-frame-type
+    |        +--ro (frame-delivery-test-completion-method)?
+    |        |  +--:(frame-delivery-test-num-frames)
+    |        |  |  +--ro frame-delivery-test-num-frames?   uint16
+    |        |  +--:(frame-delivery-test-duration)
+    |        |     +--ro frame-delivery-test-duration?     sat-config-test-duration
+    |        +--ro simple-cir?                             enabled-disabled
+    |        +--ro simple-cir-test-duration?               sat-config-test-duration
+    |        +--ro step-load-cir?                          enabled-disabled
+    |        +--ro step-load-cir-test-duration?            sat-config-test-duration
+    |        +--ro step-load-cir-initial-bandwidth?        sat-test-step
+    |        +--ro step-load-cir-bandwidth-count?          uint8
+    |        +--ro eir-test?                               enabled-disabled
+    |        +--ro eir-test-duration?                      sat-config-test-duration
+    |        +--ro traffic-policing-test?                  enabled-disabled
+    |        +--ro traffic-policing-test-duration?         sat-config-test-duration
+    |        +--ro test-direction?                         sat-direction-enum
+    |        +--ro payload-pattern?                        payload-pattern-enum
+    |        +--ro frame-size-pattern?                     frame-size-pattern-enum
+    |        +--ro emix-profile?                           -> /profile/emix/emix-profile-name
+    |        +--ro evc* [etag]
+    |           +--ro etag                    vlan-id
+    |           +--ro test-flow-attributes
+    |           |  +--ro delay-test-pdu-format?                       delay-test-pdu-format-type
+    |           |  +--ro frame-loss-test-pdu-source-ip-addr?          ietf:ipv4-address
+    |           |  +--ro frame-loss-test-pdu-dest-ip-addr?            ietf:ipv4-address
+    |           |  +--ro frame-loss-test-pdu-source-mac-addr?         yang:mac-address
+    |           |  +--ro frame-loss-test-pdu-unicast-dest-mac-addr?   yang:mac-address
+    |           |  +--ro frame-loss-test-pdu-mcast-dest-mac-addr?     yang:mac-address
+    |           +--ro service-oam
+    |           |  +--ro meg?            meg-name
+    |           |  +--ro level?          meg-level
+    |           |  +--ro local-mep-id?   mep-id
+    |           |  +--ro remote-peer?    remote-type
+    |           +--ro cos* [cos-type]
+    |              +--ro cos-type                               uint8
+    |              +--ro frame-loss-test-pdu-size?              frame-size-value
+    |              +--ro frame-loss-test-pdu-emix-pattern?      emix-pattern-value
+    |              +--ro frame-loss-test-pdu-format?            test-flow-type
+    |              +--ro frame-loss-test-pdu-cvlan?             vlan-id
+    |              +--ro frame-loss-test-pdu-ptag-pcp?          pcp
+    |              +--ro frame-loss-test-pdu-cvlan-pcp?         pcp
+    |              +--ro frame-loss-test-pdu-dscp?              dscp
+    |              +--ro service-acceptance-criteria-profile
+    |              |  +--ro information-rate-mean
+    |              |  |  +--ro low?    decimal64
+    |              |  |  +--ro high?   decimal64
+    |              |  +--ro frame-transfer-delay
+    |              |  |  +--ro max?    uint32
+    |              |  |  +--ro mean?   uint32
+    |              |  +--ro frame-delay-variation
+    |              |  |  +--ro max?    uint32
+    |              |  |  +--ro mean?   uint32
+    |              |  +--ro frame-loss-ratio?        decimal64
+    |              +--ro result
+    |                 +--ro normative-status?     sat-test-normative-status
+    |                 +--ro informative-status?   string
+    |                 +--ro config-test-result
+    |                 |  +--ro normative-status?      sat-test-normative-status
+    |                 |  +--ro informative-status?    string
+    |                 |  +--ro frame-delivery-test* [frame-delivery-test-type]
+    |                 |  |  +--ro frame-delivery-test-type     frame-delivery-type
+    |                 |  |  +--ro normative-status?            sat-test-normative-status
+    |                 |  |  +--ro informative-status?          string
+    |                 |  |  +--ro frames-tx?                   uint32
+    |                 |  |  +--ro frames-rx-proper-format?     uint32
+    |                 |  |  +--ro frames-rx-improper-format?   uint32
+    |                 |  |  +--ro test-info
+    |                 |  |     +--ro start-time?                            yang:date-and-time
+    |                 |  |     +--ro end-time?                              yang:date-and-time
+    |                 |  |     +--ro service-acceptance-criteria-results
+    |                 |  |        +--ro information-rate-mean?   PASS-FAIL
+    |                 |  |        +--ro frame-transfer-delay
+    |                 |  |        |  +--ro max?    PASS-FAIL
+    |                 |  |        |  +--ro mean?   PASS-FAIL
+    |                 |  |        +--ro frame-delay-variation
+    |                 |  |        |  +--ro max?    PASS-FAIL
+    |                 |  |        |  +--ro mean?   PASS-FAIL
+    |                 |  |        +--ro frame-loss-ratio?        PASS-FAIL
+    |                 |  +--ro bw-profile-test* [bw-profile-test-type bw-profile-rate]
+    |                 |     +--ro bw-profile-test-type                bw-test-type
+    |                 |     +--ro bw-profile-rate                     sat-float-value
+    |                 |     +--ro normative-status?                   sat-test-normative-status
+    |                 |     +--ro informative-status?                 string
+    |                 |     +--ro dmm-transmit-period?                sat-config-test-duration
+    |                 |     +--ro transmitted-dmm-pdus?               uint32
+    |                 |     +--ro received-dmr-pdus?                  uint32
+    |                 |     +--ro tx-rate?                            sat-float-value
+    |                 |     +--ro frame-transfer-delay-min?           sat-float-value
+    |                 |     +--ro frame-transfer-delay-average?       sat-float-value
+    |                 |     +--ro frame-transfer-delay-max?           sat-float-value
+    |                 |     +--ro frame-transfer-variation-min?       sat-float-value
+    |                 |     +--ro frame-transfer-variation-average?   sat-float-value
+    |                 |     +--ro frame-transfer-variation-max?       sat-float-value
+    |                 |     +--ro green-rx-min-rate?                  sat-float-value
+    |                 |     +--ro green-rx-average-rate?              sat-float-value
+    |                 |     +--ro green-rx-max-rate?                  sat-float-value
+    |                 |     +--ro green-frame-loss-count?             int32
+    |                 |     +--ro green-frame-loss-ratio?             sat-float-value
+    |                 |     +--ro yellow-rx-min-rate?                 sat-float-value
+    |                 |     +--ro yellow-rx-average-rate?             sat-float-value
+    |                 |     +--ro yellow-rx-max-rate?                 sat-float-value
+    |                 |     +--ro yellow-frame-loss-count?            int32
+    |                 |     +--ro yellow-frame-loss-ratio?            sat-float-value
+    |                 |     +--ro test-info
+    |                 |        +--ro start-time?                            yang:date-and-time
+    |                 |        +--ro end-time?                              yang:date-and-time
+    |                 |        +--ro service-acceptance-criteria-results
+    |                 |           +--ro information-rate-mean?   PASS-FAIL
+    |                 |           +--ro frame-transfer-delay
+    |                 |           |  +--ro max?    PASS-FAIL
+    |                 |           |  +--ro mean?   PASS-FAIL
+    |                 |           +--ro frame-delay-variation
+    |                 |           |  +--ro max?    PASS-FAIL
+    |                 |           |  +--ro mean?   PASS-FAIL
+    |                 |           +--ro frame-loss-ratio?        PASS-FAIL
+    |                 +--ro performance-result
+    |                    +--ro normative-status?                sat-test-normative-status
+    |                    +--ro informative-status?              string
+    |                    +--ro dmm-transmit-period?             sat-config-test-duration
+    |                    +--ro transmitted-dmm-pdus?            uint32
+    |                    +--ro received-dmr-pdus?               uint32
+    |                    +--ro tx-rate?                         sat-float-value
+    |                    +--ro frame-transfer-delay-min?        sat-float-value
+    |                    +--ro frame-transfer-delay-average?    sat-float-value
+    |                    +--ro frame-transfer-delay-max?        sat-float-value
+    |                    +--ro frame-delay-variation-min?       sat-float-value
+    |                    +--ro frame-delay-variation-average?   sat-float-value
+    |                    +--ro frame-delay-variation-max?       sat-float-value
+    |                    +--ro green-rx-min-rate?               sat-float-value
+    |                    +--ro green-rx-average-rate?           sat-float-value
+    |                    +--ro green-rx-max-rate?               sat-float-value
+    |                    +--ro green-frame-loss-count?          int32
+    |                    +--ro green-frame-loss-ratio?          sat-float-value
+    |                    +--ro yellow-rx-min-rate?              sat-float-value
+    |                    +--ro yellow-rx-average-rate?          sat-float-value
+    |                    +--ro yellow-rx-max-rate?              sat-float-value
+    |                    +--ro yellow-frame-loss-count?         int32
+    |                    +--ro yellow-frame-loss-ratio?         sat-float-value
+    |                    +--ro test-info
+    |                       +--ro requested-test-duration?               uint32
+    |                       +--ro start-time?                            yang:date-and-time
+    |                       +--ro end-time?                              yang:date-and-time
+    |                       +--ro service-acceptance-criteria-results
+    |                          +--ro information-rate-mean?   PASS-FAIL
+    |                          +--ro frame-transfer-delay
+    |                          |  +--ro max?    PASS-FAIL
+    |                          |  +--ro mean?   PASS-FAIL
+    |                          +--ro frame-delay-variation
+    |                          |  +--ro max?    PASS-FAIL
+    |                          |  +--ro mean?   PASS-FAIL
+    |                          +--ro frame-loss-ratio?        PASS-FAIL
+    +---x run-sat-test
+    |  +---w input
+    |  |  +---w sat-configuration-name    -> /system/sat-configuration/sat-configuration-name
+    |  +--ro output
+    |     +--ro error-tag         sat-rpc-error-tag
+    |     +--ro error-message?    string
+    |     +--ro transaction-id    uint32
+    +---x create-sat-test
+    |  +---w input
+    |  |  +---w uni                          if:interface-ref
+    |  |  +---w test-profile-name?           -> /profile/test-profile/sat-profile-name
+    |  |  +---w evc* [service-tag]
+    |  |  |  +---w service-tag             -> /evc:evcs/evc/etag
+    |  |  |  +---w test-flow-attributes
+    |  |  |  |  +---w delay-test-pdu-format?                       delay-test-pdu-format-type
+    |  |  |  |  +---w frame-loss-test-pdu-source-mac-addr?         yang:mac-address
+    |  |  |  |  +---w frame-loss-test-pdu-unicast-dest-mac-addr?   yang:mac-address
+    |  |  |  |  +---w frame-loss-test-pdu-mcast-dest-mac-addr?     yang:mac-address
+    |  |  |  |  +---w meg?                                         meg-name
+    |  |  |  |  +---w level?                                       meg-level
+    |  |  |  |  +---w local-mep-id?                                mep-id
+    |  |  |  |  +---w remote-peer?                                 remote-type
+    |  |  |  +---w cos* [cos-type]
+    |  |  |     +---w cos-type                               int8
+    |  |  |     +---w frame-loss-test-pdu-size?              frame-size-value
+    |  |  |     +---w frame-loss-test-pdu-emix-pattern?      emix-pattern-value
+    |  |  |     +---w frame-loss-test-pdu-cvlan?             vlan-id
+    |  |  |     +---w frame-loss-test-pdu-ptag-pcp?          pcp
+    |  |  |     +---w frame-loss-test-pdu-cvlan-pcp?         pcp
+    |  |  |     +---w frame-loss-test-pdu-dscp?              dscp
+    |  |  |     +---w service-acceptance-criteria-profile?   -> /profile/service-acceptance-criteria-profile/name
+    |  |  +---w performance-test?            enabled-disabled
+    |  |  +---w performance-test-duration?   sat-performance-test-duration
+    |  +--ro output
+    |     +--ro error-tag         sat-rpc-error-tag
+    |     +--ro error-message?    string
+    |     +--ro transaction-id    uint32
+    +---x abort-sat-test
+    |  +---w input
+    |  |  +---w uni               if:interface-ref
+    |  |  +---w transaction-id    uint32
+    |  +--ro output
+    |     +--ro error-tag        sat-rpc-error-tag
+    |     +--ro error-message?   string
+    +---x get-available-sat-results
+       +---w input
+       |  +---w uni?              if:interface-ref
+       |  +---w transaction-id?   uint32
+       +--ro output
+          +--ro error-tag        sat-rpc-error-tag
+          +--ro error-message?   string
+          +--ro report* [transaction-id]
+             +--ro transaction-id        uint32
+             +--ro sat-test-date?        yang:date-and-time
+             +--ro normative-status?     sat-test-normative-status
+             +--ro informative-status?   string

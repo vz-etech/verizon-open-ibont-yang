@@ -1,0 +1,682 @@
+submodule verizon-oam-ethernet-cfm-lt-body {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+  include verizon-oam-ethernet-cfm-types;
+  include verizon-oam-ethernet-cfm-mep-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection YANG data types and grouping 
+     definitions for the management of the linktrace (LT) protocol 
+     of a MEP as specified in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  feature dot1ag-lt {
+    description
+      "Indicates support for the Linktrace protocol acc. to
+       IEEE 802.1ag CFM at a MEP.";
+  }
+  feature dot1ag-ltm-egress-identifier-tlv {
+    description
+      "Indicates support for the LTM Egress Identifier TLV.";
+    reference
+      "IEEE 802.1ag clause 21.8.8.";
+  }
+  feature dot1ag-ltr-egress-identifier-tlv {
+    description
+      "Indicates support for the LTR Egress Identifier TLV.";
+    reference
+      "IEEE 802.1ag clause 21.9.7.";
+  }
+  feature dot1ag-reply-ingress-tlv {
+    description
+      "Indicates support for the Reply Ingress TLV.";
+    reference
+      "IEEE 802.1ag clause 21.9.8.";
+  }
+  feature dot1ag-reply-egress-tlv {
+    description
+      "Indicates support for the Reply Egress TLV.";
+    reference
+      "IEEE 802.1ag clause 21.9.9.";
+  }
+  feature dot1ag-sender-id-tlv {
+    description
+      "Indicates support for the Sender ID TLV.";
+    reference
+      "IEEE 802.1ag clause 21.5.3.";
+  }
+  feature dot1ag-organization-specific-tlv {
+    description
+      "Indicates support for the Organization-Specific TLV.";
+    reference
+      "IEEE 802.1ag clause 21.5.2.";
+  }
+
+  typedef transmit-linktrace-result {
+    type enumeration {
+      enum "ok" {
+        description
+          "The request to transmit linktrace messages (LTM) was
+           successful and LTMs will be or have been sent.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.4.3:a:5";
+      }
+      enum "mep-not-found" {
+        description
+          "The request to transmit linktrace messages (LTM) was
+           rejected due to a non-existent MEP.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.4.3:a:1";
+      }
+      enum "invalid-target-mac-address" {
+        description
+          "The request to transmit linktrace messages (LTM) was
+           rejected due to invalid Target MAC Address to be 
+           transmitted.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.4.3:a:3";
+      }
+      enum "not-ok-session-active" {
+        description
+          "The request to transmit linktrace messages (LTM) was
+           rejected, because a linktrace session is currently
+           active at the MEP.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.4.3:a:6";
+      }
+    }
+    description
+      "Defines the results of a transmit-linktrace RPC.";
+    reference
+      "IEEE 802.1ag clause 12.14.7.4.3:a";
+  }
+
+  typedef egress-identifier {
+    type string;
+    description
+      "Defines the egress identifier used in Egress Identifier 
+       TLVs.";
+  }
+
+  grouping egress-identifier-tlv {
+    description
+      "Defines the representation of the LTM Egress Identifier TLV.";
+    container egress-identifier-tlv {
+      if-feature "dot1ag-ltm-egress-identifier-tlv";
+      presence "A LTM Egress Identifier TLV transmitted in the LTM.";
+      description
+        "This container provides the contents of the LTM Egress 
+         Identifier TLV value transmitted in the LTM.";
+
+      leaf egress-identifier {
+        type egress-identifier;
+        description
+          "An octet string holding the Egress Identifier field 
+           transmitted in the LTM Egress Identifier TLV of the LTM.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.4.3:c and 21.8.8.";
+      }
+    }
+  }
+
+  grouping port-id {
+    description
+      "Defines the port ID, which is an alpha-numeric string that 
+       contains the specific identifier for the port, the format 
+       of which is dependent on the port ID subtype.";
+    choice port-id-subtype {
+      description
+        "The format of the Port ID field.";
+      case interface-alias {
+        leaf interface-alias {
+          type string {
+            length "0..64";
+          }
+          description
+            "The name for the interface as specified by a network 
+             manager.";
+          reference
+            "IEEE 802.1AB-2005 Table 9.2; 'ifAlias' 
+             (IETF RFC 2863).";
+        }
+      }
+      case port-component {
+        leaf port-component {
+          type string {
+            length "0..32";
+          }
+          description
+            "The name for the physical entity that represents 
+             the port as specified by a network manager 
+             (entPhysicalAlias when entPhysicalClass has a value
+             'port(10)' or 'backplane(4)').";
+          reference
+            "IEEE 802.1AB-2005 Table 9.2; 'entPhysicalAlias' 
+             (IETF RFC 6933).";
+        }
+      }
+      case mac-address {
+        leaf mac-address {
+          type yang:mac-address;
+          description
+            "The MAC address of the port.";
+          reference
+            "IEEE 802.1AB-2005 Table 9.2.";
+        }
+      }
+      case network-address {
+        leaf network-address {
+          type inet:ip-address;
+          description
+            "The network address of the port.";
+          reference
+            "IEEE 802.1AB-2005 Table 9.2.";
+        }
+      }
+      case interface-name {
+        leaf interface-name {
+          type string {
+            length "0..255";
+            pattern '[ -~]*';
+          }
+          description
+            "The name of the interface.";
+          reference
+            "IEEE 802.1AB-2005 Table 9.2; 'ifName' 
+             (IETF RFC 2863).";
+        }
+      }
+      case agent-circuit-id {
+        leaf agent-circuit-id {
+          type string;
+          description
+            "The agent circuit ID identifying the port.";
+          reference
+            "IEEE 802.1AB-2005 Table 9.2; IETF RFC 3046.";
+        }
+      }
+      case locally-assigned {
+        leaf locally-assigned {
+          type string {
+            pattern '[a-zA-Z0-9]*';
+          }
+          description
+            "An alpha-numeric string that is locally assigned
+             identifying the port.";
+          reference
+            "IEEE 802.1AB-2005 Table 9.2.";
+        }
+      }
+    }
+  }
+
+  grouping linktrace-reply-parameters {
+    description
+      "Parameters associated with an entry in the linktrace response 
+       database of a MEP.";
+    leaf reply-ttl {
+      type uint8;
+      description
+        "The integer Reply TTL field value returned in the LTR.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.5.3:b and 20.36.2.2.";
+    }
+    leaf forwarded {
+      type boolean;
+      description
+        "A Boolean value stating whether an LTM was forwarded by the 
+         responding MP, as returned in the FwdYes flag of the Flags 
+         field.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.5.3:c and 20.36.2.1.";
+    }
+    leaf terminal-mep {
+      type boolean;
+      description
+        "A Boolean value stating whether the forwarded LTM reached a 
+         MEP enclosing its MA, as returned in the TerminalMEP flag 
+         of the Flags field.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.5.3:d and 20.36.2.1.";
+    }
+    leaf relay-action {
+      type enumeration {
+        enum "hit" {
+          description
+            "The LTM reached an MP whose MAC address matches the 
+             target MAC address.";
+          reference
+            "IEEE 802.1ag clause 21.9.5 and Table 21-27 (RlyHit).";
+        }
+        enum "filtering-database" {
+          description
+            "The Egress Port was determined by consulting the 
+             Filtering Database.";
+          reference
+            "IEEE 802.1ag clause 21.9.5 and Table 21-27 (RlyFDB).";
+        }
+        enum "mip-ccm-database" {
+          description
+            "The Egress Port was determined by consulting the MIP 
+             CCM Database.";
+          reference
+            "IEEE 802.1ag clause 21.9.5 and Table 21-27 (RlyMPDB).";
+        }
+      }
+      description
+        "An enumerated value indicating the value returned in the 
+         Relay Action field of the LTR.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.5.3:g and 20.36.2.5.";
+    }
+
+    container sender-id-tlv {
+      presence "A Sender ID TLV has been received in the LTR.";
+      description
+        "This container provides the contents of the Sender ID TLV, 
+         if received in the LTR.";
+      reference
+        "IEEE 802.1ag clause 21.5.3.";
+
+      uses sender-id-tlv;
+    }
+
+    container egress-identifier-tlv {
+      if-feature "dot1ag-ltr-egress-identifier-tlv";
+      presence 
+        "A LTR Egress Identifier TLV has been received in the LTR.";
+      description
+        "This container provides the contents of the LTR Egress 
+         Identifier TLV, if received in the LTR.";
+      reference
+        "IEEE 802.1ag clause 21.9.7.";
+
+      leaf last-egress-identifier {
+        type egress-identifier;
+        description
+          "An octet string holding the Last Egress Identifier field 
+           returned in the LTR Egress Identifier TLV of the LTR.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.5.3:e and 20.36.2.3.";
+      }
+
+      leaf next-egress-identifier {
+        type egress-identifier;
+        description
+          "An octet string holding the Next Egress Identifier field 
+           returned in the LTR Egress Identifier TLV of the LTR.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.5.3:f and 20.36.2.4.";
+      }
+    }
+    container reply-ingress-tlv {
+      if-feature "dot1ag-reply-ingress-tlv";
+      presence 
+        "A Reply Ingress TLV has been received in the LTR.";
+      description
+        "This container provides the contents of the Reply Ingress
+         TLV, if received in the LTR.";
+      leaf ingress-action {
+        type enumeration {
+          enum "ok" {
+            description
+              "The target data frame would be passed through to the 
+               MAC Relay Entity.";
+            reference
+              "IEEE 802.1ag clause 21.9.8.1 and Table 21-30 
+               (IngOK).";
+          }
+          enum "down" {
+            description
+              "The Bridge Port's MAC_Operational parameter is false.
+               This value could be returned, for example, by an 
+               operational Down MEP that has another Down MEP at a 
+               higher MD Level on the same Bridge Port that is 
+               causing the Bridge Port's MAC_Operational parameter 
+               to be false.";
+            reference
+              "IEEE 802.1ag clause 21.9.8.1 and Table 21-30 
+               (IngDown).";
+          }
+          enum "blocked" {
+            description
+              "The target data frame would not be forwarded if 
+               received on this Port due to active topology 
+               enforcement.";
+            reference
+              "IEEE 802.1ag clause 21.9.8.1 and Table 21-30 
+               (IngBlocked).";
+          }
+          enum "vid" {
+            description
+              "The ingress port is not in the member set of the LTM's 
+               VID, and ingress filtering is enabled, so the target 
+               data frame would be filtered by ingress filtering.";
+            reference
+              "IEEE 802.1ag clause 21.9.8.1 and Table 21-30 
+               (IngVID).";
+          }
+        }
+        description
+          "An enumerated value indicating the value returned in the 
+           Ingress Action field of the LTR, if returned in the LTR.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.5.3:k and 20.36.2.6.";
+      }
+      leaf ingress-mac-address {
+        type yang:mac-address;
+        description
+          "The MAC address returned in the Ingress MAC Address field 
+           of the LTR, if returned in the LTR.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.5.3:l and 20.36.2.7.";
+      }
+
+      container ingress-port-id {
+        description
+          "An octet string as specified by IEEE Std 802.1AB-2005 
+           clause 9.5.9.5, identifying the Ingress Port.";
+        uses port-id {
+          refine "port-id-subtype" {
+            reference
+              "IEEE 802.1ag clause 12.14.7.5.3:m and 20.36.2.8.";
+          }
+        }
+        reference
+          "IEEE 802.1ag clause 12.14.7.5.3:n and 20.36.2.9.";
+      }
+    }
+    container reply-egress-tlv {
+      if-feature "dot1ag-reply-egress-tlv";
+      presence 
+        "A Reply Egress TLV has been received in the LTR.";
+      description
+        "This container provides the contents of the Reply Egress
+         TLV, if received in the LTR.";
+      leaf egress-action {
+        type enumeration {
+          enum "ok" {
+            description
+              "The targeted data frame would be forwarded.";
+            reference
+              "IEEE 802.1ag clause 21.9.9.1 and Table 21-32 (EgrOK).";
+          }
+          enum "down" {
+            description
+              "The Egress Port can be identified, but that Bridge 
+               Port's MAC_Operational parameter is false.";
+            reference
+              "IEEE 802.1ag clause 21.9.9.1 and Table 21-32 
+               (EgrDown).";
+          }
+          enum "blocked" {
+            description
+              "The Egress Port can be identified, but the data frame 
+               would not pass through the Egress Port due to active 
+               topology management, i.e., the Bridge Port is not in 
+               the Forwarding state.";
+            reference
+              "IEEE 802.1ag clause 21.9.9.1 and Table 21-32 
+               (EgrBlocked).";
+          }
+          enum "vid" {
+            description
+              "The Egress Port can be identified, but the Bridge Port 
+               is not in the LTM's VID's member set, so would be 
+               filtered by egress filtering.";
+            reference
+              "IEEE 802.1ag clause 21.9.9.1 and Table 21-32 
+               (EgrVID).";
+          }
+        }
+        description
+          "An enumerated value indicating the value returned in the 
+           Ingress Action field of the LTR, if returned in the LTR.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.5.3:k and 20.36.2.6.";
+      }
+      leaf egress-mac-address {
+        type yang:mac-address;
+        description
+          "The MAC address returned in the Egress MAC Address field 
+           of the LTR, if returned in the LTR.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.5.3:p and 20.36.2.11.";
+      }
+      container egress-port-id {
+        description
+          "An octet string as specified by IEEE Std 802.1AB-2005
+           clause 9.5.9.5, identifying the Egress Port.";
+        uses port-id {
+          refine "port-id-subtype" {
+            reference
+              "IEEE 802.1ag clause 12.14.7.5.3:q and 20.36.2.12.";
+          }
+        }
+        reference
+          "IEEE 802.1ag clause 12.14.7.5.3:r and 20.36.2.13.";
+      }
+    }
+  }
+
+  grouping linktrace-config-parameters {
+    description
+      "Configuration parameters for the linktrace protocol 
+       of a MEP.";
+  }
+
+  grouping transmit-linktrace-session-parameters {
+    description
+      "Input parameters for the transmit-linktrace RPC.";
+
+
+    container target-address {
+      description
+        "Specifies the target for LTM PDUs.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.4.2:c";
+      uses frame-target;
+    }
+
+    leaf ttl {
+      type uint8;
+      description
+        "An initial value for the LTM TTL field.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.4.2:d";
+    }
+
+    container ltm-flags {
+      description
+        "Specifies the flags field for LTMs transmitted by the MEP.";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.4.2:b and 21.8.1.";
+
+      leaf use-fdb-only {
+        type boolean;
+        description
+          "The Boolean value of this leaf is used to populate the 
+           UseFDBonly bit of the Flags field for LTMs transmitted by 
+           the MEP.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.4.2:b and 21.8.1.";
+      }
+    }
+    uses egress-identifier-tlv;
+  }
+
+  grouping linktrace-status-parameters {
+    description
+      "Status parameters for the continuity check
+       protocol of a MEP.";
+
+    container transmit-sessions {
+      description
+        "Operational status of the current (status='active')
+         or previously executed (status='idle') linktrace
+         protocol session.";
+
+      leaf next-transaction-id {
+        type uint32;
+        description
+          "Next sequence number/transaction identifier to be sent in
+           a linktrace message. This sequence number can be zero
+           because it wraps around.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.1.3:ab and 20.36.1";
+      }
+
+      leaf status {
+        type enumeration {
+          enum "idle" {
+            description
+              "Indicates that no linktrace session is currently active
+               and that the MEP is not transmitting LTM PDUs, in which
+               case a linktrace session may be initiated.";
+          }
+          enum "active" {
+            description
+              "Indicates that a linktrace session is currently active
+               and that the MEP is transmitting LTM PDUs, in which
+               case no new linktrace session can be initiated.";
+          }
+        }
+        description
+          "Indicates whether LTM PDUs are currently being transmitted
+           by the MEP as a result of a successful invocation of the
+           transmit-linktrace RPC.
+           If status = active, no new session may be started. ";
+      }
+
+      list transmit-session {
+        key "transaction-id";
+        description
+          "A list of linktrace transactions.";
+        leaf transaction-id {
+          type uint32;
+          description
+            "The linktrace Transaction Identifier associated with 
+             the transmit session.";
+          reference
+            "IEEE 802.1ag clause 12.14.7.5.2:b.";
+        }
+        uses transmit-linktrace-session-parameters;
+
+        container linktrace-replies {
+          description
+            "The linktrace replies received during the transmit 
+             session.";
+
+          list linktrace-reply {
+            key "receive-order";
+            description
+              "A linktrace reply received for this transmit 
+               session.";
+            leaf receive-order {
+              type uint16;
+              description
+                "The order in which the linktrace reply was 
+                 received.";
+            }
+            uses linktrace-reply-parameters;
+          }
+        }
+      }
+    }
+  }
+
+  grouping linktrace-statistics-parameters {
+    description
+      "Statistics parameters for the linktrace protocol of a MEP.";
+
+    leaf in-ltr-unexpected {
+      type yang:counter64;
+      description
+        "The total number of unexpected LTRs received .";
+      reference
+        "IEEE 802.1ag 12.14.7.1.3:ac and 20.39.1";
+    }
+  }
+
+  grouping transmit-linktrace-input-parameters {
+    description
+      "Input parameters for the transmit-linktrace RPC.";
+
+    uses mep-identification-parameters {
+      refine "domain-admin-name" {
+        mandatory true;
+        reference
+          "IEEE 802.1ag clause 12.14.7.4.2:a";
+      }
+      refine "association-admin-name" {
+        mandatory true;
+        reference
+          "IEEE 802.1ag clause 12.14.7.4.2:a";
+      }
+      refine "mep-id" {
+        mandatory true;
+        reference
+          "IEEE 802.1ag clause 12.14.7.4.2:a";
+      }
+    }
+
+    uses transmit-linktrace-session-parameters {
+      refine "target-address/target-address-type" {
+        mandatory true;
+        reference
+          "IEEE 802.1ag clause 12.14.7.4.2:c";
+      }
+      refine "ttl" {
+        default "64";
+      }
+      refine "ltm-flags/use-fdb-only" {
+        default "false";
+      }
+    }
+  }
+
+  grouping transmit-linktrace-output-parameters {
+    description
+      "Input parameters for the transmit-linktrace RPC.";
+    leaf result {
+      type transmit-linktrace-result;
+      description
+        "The result of the invocation of the transmit-linktrace RPC.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.4.3:a";
+    }
+    leaf transaction-id {
+      type uint32;
+      description
+        "The Transaction Identifier used in the transmitted LTM.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.4.3:b.";
+    }
+    uses egress-identifier-tlv;
+     
+    uses rpc-common-output-parameters;
+ }
+}

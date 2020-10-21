@@ -1,0 +1,212 @@
+submodule verizon-oam-ethernet-cfm-fm-lb {
+  belongs-to verizon-oam-ethernet-cfm-fm {
+    prefix vz-oam-ecfm-fm;
+  }
+
+  import verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  include verizon-oam-ethernet-cfm-fm-lb-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions that 
+     extend the functionality of Connectivity Fault Management 
+     (CFM) as specified in IEEE 802.1ag with additional 
+     functionality to support the Ethernet Loopback (ETH-LB) 
+     function of Ethernet Service Layer OAM Fault Management as 
+     specified by ITU-T Y.1731 clause 7.2.
+
+     Note that MEG, MEG ID and MEG level in ITU-T Y.1731 align with 
+     MA, MAID and MA level respectively in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference 
+      "ITU-T Y.1731-2015 clause 7.2; MEF 7.2 clause 7.5.";
+  }
+
+
+  /* Augment MEP continuity check operational status ETH-LB specific 
+   *  nodes. 
+   */
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep"
+        + "/vz-oam-ecfm:loopback/vz-oam-ecfm:transmit-session" {
+    description
+      "Add operational status nodes to loopback to support the 
+       ETH-LB function.";
+
+    container loopback-responses {
+      if-feature "eth-lb";
+      description
+        "Multicast loopback message response information.";
+
+      list loopback-response {
+        key "transaction-id receive-order";
+        description
+          "A list of responses from a multicast loopback message.";
+
+        uses eth-lb-lbr-status-parameters;
+      }
+    }
+  }
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep"
+        + "/vz-oam-ecfm:loopback/vz-oam-ecfm:transmit-session"
+        + "/vz-oam-ecfm:destination-address"
+        + "/vz-oam-ecfm:destination-address-type" {
+    description
+      "Add the option of using a multicast destination for LBM 
+       for the ETH-LB function.";
+
+    case multicast {
+      if-feature "eth-lb";
+      leaf multicast {
+        type empty;
+        description
+          "The destination is to use the appropriate multicast 
+           MAC address.";
+        reference
+          "ITU-T Y.1731 clauses 7.2.2";
+      }
+    }
+  }
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep"
+        + "/vz-oam-ecfm:loopback/vz-oam-ecfm:transmit-session"
+        + "/vz-oam-ecfm:pattern-tlv/vz-oam-ecfm:tlv-option" {
+    description
+      "Add the additional TLV options supported by the ETH-LB 
+       function.";
+
+    case all-zeroes-data-tlv {
+      if-feature "eth-lb";
+      leaf all-zeroes-data-tlv {
+        type empty;
+        description
+          "The destination is to use the appropriate multicast 
+           MAC address.";
+      }
+    }
+    case all-ones-data-tlv {
+      if-feature "eth-lb";
+      leaf all-ones-data-tlv {
+        type empty;
+        description
+          "The destination is to use the appropriate multicast 
+           MAC address.";
+      }
+    }
+    case test-tlv {
+      if-feature "eth-lb";
+      if-feature "eth-lb-test-tlv";
+      leaf test-tlv {
+        type test-tlv-pattern;
+        description
+          "The type of Test TLV to transmit, if a Test TLV is 
+           selected.";
+        reference
+          "ITU-T Y.1731 clauses 7.2.1 and 9.3.2";
+      }
+    }
+  }
+
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep"
+        + "/vz-oam-ecfm:loopback/vz-oam-ecfm:transmit-session"
+        + "/vz-oam-ecfm:pattern-tlv" {
+    description
+      "Add the additional 'pattern-tlv' operational status required 
+       by the ETH-LB function.";
+
+    leaf frame-size {
+      when "not(../vz-oam-ecfm:no-tlv)" {
+        description
+          "frame-size is only valid when a TLV is defined and 
+           through the frame-size, the required size of the TLV 
+           can be derived.";
+      }
+      if-feature "eth-lb";
+      type uint16;
+      default "64";
+      description
+        "If a TLV is to be sent within the OAMPDU, indicates the 
+         total size of the frame.
+         The size of the TLV is adjusted accordingly to ensure 
+         frame is of the required total length.
+         In the case of a Data TLV, if the Data TLV to be inserted 
+         into the frame is shorter than the configured data  
+         pattern, the data pattern will be truncated; if the size of 
+         the Data TLV is longer than the configured pattern,
+         the pattern will be repeated to fill the TLV.";
+      reference
+        "ITU-T Y.1731 clause 7.2.1";
+    }
+  }
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep"
+        + "/vz-oam-ecfm:loopback/vz-oam-ecfm:transmit-session" {
+    description
+      "Add the option of using a multicast destination for LBM 
+       for the ETH-LB function.";
+
+    uses eth-lb-config-parameters;
+  }
+
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep"
+        + "/vz-oam-ecfm:statistics/vz-oam-ecfm:loopback" {
+    description
+      "Add additional statistics for the ETH-LB function.
+
+           Editor's note: 
+           Currently two solutions for implementing statistics 
+           within this model are included as the discussion of 
+           which solution to choose is ongoing:
+           1 - collect all statistics for a MEP at the MEP level
+               (this solution); 
+           2 - collect statistics per CFM protocol.";
+
+    uses eth-lb-statistics-parameters;
+  }
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep"
+        + "/vz-oam-ecfm:loopback/vz-oam-ecfm:statistics" {
+    description
+      "Add additional statistics for the ETH-LB function.
+
+           Editor's note: 
+           Currently two solutions for implementing statistics 
+           within this model are included as the discussion of 
+           which solution to choose is ongoing:
+           1 - collect all statistics for a MEP at the MEP level; 
+           2 - collect statistics per CFM protocol.
+               (this solution).";
+
+    uses eth-lb-statistics-parameters;
+  }
+}

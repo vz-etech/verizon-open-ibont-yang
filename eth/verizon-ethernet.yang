@@ -1,0 +1,179 @@
+module verizon-ethernet {
+  namespace "http://www.verizon.com/ns/verizon-ethernet"; 
+  prefix "eth";
+  import ietf-interfaces {
+  prefix if;
+  }
+  import iana-if-type {
+  prefix ianaift;
+  }
+
+  organization "Verizon";
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>" ;
+  description
+    "Ethernet Yang
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+//*******************************************************************/
+//                                 Typedefs
+//*******************************************************************/
+
+  typedef storm-pps {
+    type uint32 {
+      range "1..1000000";
+    }
+    description "Storm control rate limit in packets per 
+      second [1..1000000]";
+  }
+
+  typedef if-mtu {
+    type uint32 {
+      range "1500..9600";
+    }
+    description "Interface maximum transmission unit";
+  }
+
+  typedef if-eth-duplex {
+    type enumeration {
+      enum "auto" {
+        value "0";
+        description "Auto negotiated";
+      }
+      enum "half" {
+        value "1";
+        description "Half duplex";
+      }
+      enum "full" {
+        value "2";
+        description "Full duplex";
+      }
+    }
+    description "Ethernet port duplex setting";
+  }
+
+  typedef if-eth-flow-ctl {
+    type enumeration {
+      enum "auto" {
+        value "0";
+        description "Auto negotiated flow control";
+      }
+      enum "rx-tx" {
+         value "1";
+        description "Transmit/receive flow control";
+      }
+      enum "rx-pause" {
+        value "2";
+        description "Receive flow control";
+      }
+      enum "tx-pause" {
+        value "3";
+        description "Transmit flow control";
+      }
+      enum "none" {
+        value "4";
+        description "No flow control";
+      }
+    }
+    description "Ethernet port flow control setting";
+  }
+
+  typedef if-eth-cfg-speed {
+    type enumeration {
+      enum "auto" {
+        value "0";
+        description "Auto negotiated";
+      }
+      enum "module-rate" {
+        value "1";
+        description "pluggable module rate";
+      }
+      enum "10Mbs" {
+        value "2";
+        description "10Mbs";
+      }
+      enum "100Mbs" {
+        value "3";
+        description "100Mbs";
+      }
+      enum "1Gbs" {
+        value "4";
+        description "1Gbs";
+      }
+      enum "2.5Gbs" {
+        value "5";
+        description "2.5Gbs";
+      }
+      enum "10Gbs" {
+        value "6";
+        description "10Gbs";
+      }
+      enum "12.5Gbs" {
+        value "7";
+        description "12.5Gbs";
+      }
+      enum "40Gbs" {
+        value "8";
+        description "40Gbs";
+      }
+      enum "100Gbs" {
+        value "9";
+        description "100Gbs";
+      }
+    }
+    description "Ethernet port configured speed";
+  }
+//*******************************************************************/
+//                    Interface/Ethernet Config Objects
+//*******************************************************************/
+  augment /if:interfaces/if:interface {
+    when "if:type = 'ianaift:ethernetCsmacd'";
+    description "Augment the interface when type is ethernet.";
+    container ethernet {
+      description "Ethernet ports";
+      leaf duplex {
+        type if-eth-duplex;
+        default "auto";
+        description "Ethernet port duplex setting";
+      }
+      leaf flow-control {
+        type if-eth-flow-ctl;
+        default "none";
+        description "Ethernet port flow control setting";
+        }
+        leaf mtu {
+          type if-mtu;
+          default "2000";
+            description "Ethernet port MTU";
+        }
+        leaf speed {
+          type if-eth-cfg-speed;
+          default "auto";
+          description "Ethernet port configured Speed";
+        }
+        container storm-control {
+          description "Ingress storm control rate limits";
+          leaf broadcast {
+            type storm-pps;
+            description "Rate limit ingress broadcast packets";
+        }
+        leaf multicast {
+          type storm-pps;
+          description "Rate limit ingress multicast packets";
+        }
+        leaf unknown-unicast {
+          type storm-pps;
+          description "Rate limit ingress unknown-unicast packets";
+        }
+      }
+    }
+  }
+}
+

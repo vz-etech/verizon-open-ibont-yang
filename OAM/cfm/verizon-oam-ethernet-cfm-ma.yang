@@ -1,0 +1,105 @@
+submodule verizon-oam-ethernet-cfm-ma {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  include verizon-oam-ethernet-cfm-ma-body;
+  include verizon-oam-ethernet-cfm-base;
+  include verizon-oam-ethernet-cfm-md;
+  include verizon-oam-ethernet-cfm-types;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for the 
+     management of Maintenance Associations (MA) within Connectivity 
+     Fault Management as specified in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  augment "/vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain" {
+    description
+      "Add config data nodes for maintenance associations 
+       to domains.";
+    container associations {
+      description
+        "Management objects related to configuration of
+         maintenance associations and their attributes.";
+      reference
+        "IEEE 802.1ag clauses 3.17 and 18.2";
+
+      list association {
+        key "admin-name";
+        unique "short-ma-name/which-short-ma-name-format/"
+             + "primary-vid/primary-vid";
+        unique "short-ma-name/which-short-ma-name-format/"
+             + "character-string/character-string";
+        unique "short-ma-name/which-short-ma-name-format/uint16/"
+             + "uint16";
+        unique "short-ma-name/which-short-ma-name-format/"
+             + "rfc2685-vpn-id/rfc2685-vpn-id/vpn-oui short-ma-name/"
+             + "which-short-ma-name-format/rfc2685-vpn-id/"
+             + "rfc2685-vpn-id/vpn-index";
+        description
+          "A list of maintenance associations.
+           Note that a given 'short-ma-name' may only appear once in 
+           the list, see unique statements.";
+        reference
+          "IEEE 802.1ag clauses 3.17 and 18.2";
+
+        leaf admin-name {
+          type admin-name;
+          description
+            "A unique administratively assigned name used to
+             identify this association.";
+        }
+
+        uses maintenance-association-config-parameters;
+      }
+    }
+  }
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain" {
+    description
+      "Add non-config data nodes for maintenance associations 
+       to domains.";
+
+    container associations {
+      description
+        "Management objects related to the operation of
+         maintenance associations and their attributes.";
+      reference
+        "IEEE 802.1ag clauses 3.17 and 18.2";
+
+      list association {
+        key "admin-name";
+        description
+          "A list of maintenance associations.
+
+           When Y.1731 is enabled (enable-y1731='true'), the
+           association acts as the Maintenance Entity
+           Group(MEG).";
+        reference
+          "IEEE 802.1ag clauses 3.17 and 18.2";
+
+        leaf admin-name {
+          type admin-name;
+          description
+            "A unique administratively assigned name used to
+             identify this association.";
+        }
+      }
+    }
+  }
+}

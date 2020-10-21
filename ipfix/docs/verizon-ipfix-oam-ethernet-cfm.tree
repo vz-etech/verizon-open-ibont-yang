@@ -1,0 +1,8 @@
+
+module: verizon-ipfix-oam-ethernet-cfm
+  augment /verizon-oam-ecfm:cfm/verizon-oam-ecfm:domains/verizon-oam-ecfm:domain/verizon-oam-ecfm:associations/verizon-oam-ecfm:association/verizon-oam-ecfm:meps/verizon-oam-ecfm:mep/verizon-oam-ecfm-pm:delay-measurement/verizon-oam-ecfm-pm:sessions/verizon-oam-ecfm-pm:session:
+    +--rw ipfix
+       +--rw statistics-template*   -> /vz-ipfix:ipfix/vz-ipfix-bulkstats:statistics-template/name
+  augment /verizon-oam-ecfm:cfm/verizon-oam-ecfm:domains/verizon-oam-ecfm:domain/verizon-oam-ecfm:associations/verizon-oam-ecfm:association/verizon-oam-ecfm:meps/verizon-oam-ecfm:mep/verizon-oam-ecfm-pm:loss-measurement/verizon-oam-ecfm-pm:sessions/verizon-oam-ecfm-pm:session:
+    +--rw ipfix
+       +--rw statistics-template*   -> /vz-ipfix:ipfix/vz-ipfix-bulkstats:statistics-template/name

@@ -1,0 +1,248 @@
+module verizon-loopback-detection {
+  namespace "http://www.verizon.com/ns/verizon-loopback-detection";
+  prefix vz-lbk-det;
+
+  import verizon-traffic-management {
+    prefix vz-tm;
+  }
+  
+  import verizon-notifications {
+    prefix vz-nfc;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for
+     managing the detection of loopbacks.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+  
+  identity loopback-detected {
+    base vz-nfc:alarm-identity;
+    description
+      "A loopback has been detected on the EVC indicated in the
+       alarm resource.";
+  }
+  
+  augment "/vz-tm:evcs/vz-tm:evc" {
+    description
+      "Augment the EVC configuration with loopback detection 
+       configuration.";
+
+    container loopback-detection {
+      presence
+        "The presence of this container indicates loopback detection
+         is supported on this EVC.";
+      description
+        "Configuration associated with loopback detection.";
+      
+      leaf cvlan {
+        type union {
+          type uint16 {
+            range "0..4095";
+          }
+          type enumeration {
+            enum untagged {
+              description
+                "Loopback detection traffic is untagged.";
+            }
+          }
+        }
+        mandatory true;
+        description
+          "Identifies the CVLAN on which the loopback detection is
+           performed.";
+      }
+      
+      leaf direction {
+        type enumeration {
+          enum uni {
+            description 
+              "Traffic is sent out of the UNI.";
+          }
+          enum wan {
+            description
+              "Traffic is sent out of the WAN. The SVLAN associated 
+               with the EVC is added to the loopback detection 
+               traffic prior to sending it out.";
+          }
+          enum both {
+            description
+              "Traffic is sent out both the UNI and the WAN. In the 
+               WAN direction, the SVLAN associated with the EVC is 
+               added to the loopback detection traffic prior to 
+               sending it out.";
+          }
+        }
+        mandatory true;
+        description
+          "Indicates the direction the test packets are to be sent.";
+      }
+      
+      leaf packet-rate {
+        type uint8 {
+          range "1 | 10";
+        }
+        units "seconds";
+        mandatory true;
+        description
+          "Rate at which packets are sent over a given interface.";
+      }
+      
+      leaf loopback-detected-threshold {
+        type uint8 {
+          range "1..255";
+        }
+        units "packets";
+        mandatory true;
+        description
+          "Number of consecutive packets detected before loopback is 
+           declared.";
+      }
+          
+      leaf loopback-cleared-threshold {
+        type uint8 {
+          range "1..255";
+        }
+        units "packets";
+        mandatory true;
+        description
+          "Number of consecutive packets that are NOT detected before 
+           loopback is declared cleared.";
+      }
+       
+      leaf detection-action {
+        type enumeration {
+          enum alarm-only {
+            description
+              "Only send an alarm when a loopback is detected.";
+          }
+          enum alarm-and-block-traffic {
+            description
+              "Send and alarm and block traffic in both directions
+               when a loopback is detected.";
+          }
+        }
+        mandatory true;
+        description
+          "The action to take when a loopback is detected.";
+      }
+      
+      leaf block-duration { 
+        type union {
+          type uint8 {
+            range "1..255";
+          }
+          type enumeration {
+            enum forever {
+              description
+                "Manual clearing of the traffic block is required.";
+            }
+          }
+        }
+        units "minutes";
+        description
+          "Number of minutes that traffic is blocked (if configured to
+           block traffic). If 'forever', a manual clearing of the 
+           block is required.";
+      }
+      
+      leaf enabled {
+        type boolean;
+        mandatory true;
+        description
+          "If true, loopback detection is enabled for this EVC. If
+           false, loopback detection is disabled and all timers, 
+           alarms and traffic blocks are cleared.";
+      }
+    }
+  }
+  
+  augment "/vz-tm:evcs-state/vz-tm:evc" {
+    description
+      "Augment the EVC state data with loopback detection 
+       state data.";
+
+    container loopback-detection {
+      presence
+        "The presence of this container indicates loopback detection
+         is supported on this EVC.";
+      description
+        "State data associated with loopback detection.";
+    
+      leaf enabled {
+        type boolean;
+        mandatory true;
+        description
+          "If true, loopback detection is enabled for this EVC. If
+           false, loopback detection is disabled and all timers, 
+           alarms and traffic blocks are cleared.";
+      }
+      
+      leaf error {
+        type bits {
+          bit cvlan-error {
+            description
+              "Configured CVLAN does not exist in the service 
+               configuration";
+          }
+        }
+        mandatory true;
+        description
+          "The overall operational state of the loopback detection 
+           process.";
+      }
+      
+      leaf detection-state {
+        type union {
+          type enumeration {
+            enum no-loopback-detected {
+              description
+                "No loopback is detected.";
+            }
+          }
+          type bits {
+            bit loopback-detected-alarmed {
+              description
+                "A loopback has been detected and alarm has been 
+                 generated.";
+            }
+            bit loopback-detected-blocked {
+              description
+                "A loopback has been detected and traffic has been 
+                 blocked.";
+            }
+          }
+        }
+        mandatory true;
+        description
+          "The state of the detection of loopbacks.";
+      }
+      
+      leaf block-time-remaining {
+        type uint8 {
+          range "1..255";
+        }
+        units "minutes";
+        description
+          "Time remaining to block traffic if traffic blocking is
+           configured.";
+      }
+    }
+  }
+  
+}
+
+

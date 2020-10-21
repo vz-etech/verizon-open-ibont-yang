@@ -1,0 +1,20 @@
+
+submodule: verizon-oam-ethernet-cfm-statistics-mip (belongs-to verizon-oam-ethernet-cfm-statistics)
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:mips/vz-oam-ecfm:mip:
+    +--ro statistics
+       +--ro up-mhf
+       |  +--ro in-lbm?             yang:counter64
+       |  +--ro out-lbr?            yang:counter64
+       |  +--ro in-ltm?             yang:counter64
+       |  +--ro forwarded-ltm?      yang:counter64
+       |  +--ro out-ltm?            yang:counter64
+       |  +--ro out-ltr?            yang:counter64
+       |  +--ro in-ltm-discarded?   yang:counter64
+       +--ro down-mhf
+          +--ro in-lbm?             yang:counter64
+          +--ro out-lbr?            yang:counter64
+          +--ro in-ltm?             yang:counter64
+          +--ro forwarded-ltm?      yang:counter64
+          +--ro out-ltm?            yang:counter64
+          +--ro out-ltr?            yang:counter64
+          +--ro in-ltm-discarded?   yang:counter64

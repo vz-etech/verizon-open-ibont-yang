@@ -1,0 +1,6 @@
+
+module: verizon-system
+  augment /sys:system-state/sys:platform:
+    +--ro schema-version?   string
+  augment /sys:system:
+    +--rw name?   string

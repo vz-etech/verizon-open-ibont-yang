@@ -1,0 +1,105 @@
+submodule verizon-oam-ethernet-cfm-mep {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  include verizon-oam-ethernet-cfm-types;
+  include verizon-oam-ethernet-cfm-base;
+  include verizon-oam-ethernet-cfm-md;
+  include verizon-oam-ethernet-cfm-ma;
+  include verizon-oam-ethernet-cfm-mep-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for the 
+     management of Maintenance Association End Points (MEP) within 
+     Connectivity Fault Management (CFM) as specified in 
+     IEEE 802.1ag.
+
+    Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  augment "/vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain"
+        + "/vz-oam-ecfm:associations/vz-oam-ecfm:association" {
+    description
+      "Add configuration nodes for MEPs to Maintenance Associations.";
+
+    container meps {
+      description
+        "Management objects related to configuration of MEPs.";
+
+      list mep {
+        key "mep-id";
+        description
+          "A MEP associated with this Maintenance Domain and 
+           Maintenance Association.";
+
+        leaf mep-id {
+          type mep-id;
+          description
+            "The MEP Identifier unique to this Maintenance 
+             Association.";
+          reference
+            "IEEE 802.1ag clauses 3.19, 19.2 and 12.14.7";
+        }
+
+        uses mep-config-parameters;
+      }
+    }
+  }
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association" {
+    description
+      "Add operational status nodes for MEPs to Maintenance 
+       Associations.";
+
+    container meps {
+      description
+        "Operational status of MEPs.";
+
+      list mep {
+        key "mep-id";
+
+        description
+          "A list of MEPs associated with this Maintenance Domain 
+           and Maintenance Association.";
+
+        leaf mep-id {
+          type mep-id;
+          description
+            "The MEP Identifier unique to this Maintenance 
+             Association.";
+          reference
+            "IEEE 802.1ag clauses 3.19, 19.2 and 12.14.7";
+        }
+
+        uses mep-status-parameters;
+
+        container statistics {
+          description
+            "Statistical counters for the MEP.
+
+             Editor's note: 
+             Currently two solutions for implementing statistics 
+             within this model are included as the discussion of 
+             which solution to choose is ongoing:
+             1 - collect all statistics for a MEP at the MEP level 
+                 (this solution);
+             2 - collect statistics per CFM protocol.";
+        }
+      }
+    }
+  }
+}

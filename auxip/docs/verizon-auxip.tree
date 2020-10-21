@@ -1,0 +1,94 @@
+module: verizon-auxip
+  +--rw auxip
+  |  +--rw local-ip?                   ietf:ipv4-address
+  |  +--rw local-ip-mask?              ietf:ipv4-prefix
+  |  +--rw reply-to-ports?             auxip-port
+  |  +--rw reply-to-any-cevlan-id?     boolean
+  |  +--rw reply-to-this-cevlan-id?    vlan-id
+  |  +--rw limit-to-hundred-per-sec?   boolean
+  +--ro auxip-state
+     +--ro configuration-info
+     |  +--ro configuration-warning    auxip-configuration-warning
+     +--ro invoked-test-info
+     |  +--ro num-tests-requested             uint16
+     |  +--ro num-tests-accepted              uint16
+     |  +--ro num-tests-explicitly-aborted    uint16
+     |  +--ro num-tests-auto-aborted          uint16
+     |  +--ro num-tests-in-progress           uint16
+     +--ro reply-info
+        +--ro num-arp-reqs-received             uint16
+        +--ro num-invalid-arp-reqs-received     uint16
+        +--ro num-arp-responses-sent            uint16
+        +--ro num-echo-reqs-received            uint16
+        +--ro num-invalid-echo-reqs-received    uint16
+        +--ro num-echo-replies-sent             uint16
+
+  rpcs:
+    +---x run-auxip-ping-test
+    |  +---w input
+    |  |  +---w remote-ip         ietf:ipv4-address
+    |  |  +---w number-to-send?   uint8
+    |  |  +---w ce-vlan?          vlan-id
+    |  |  +---w ce-vlan-pbit?     pcp
+    |  |  +---w s-vlan            vlan-id
+    |  |  +---w s-vlan-pbit       pcp
+    |  |  +---w dscp?             dscp
+    |  |  +---w payload-size      payload-size
+    |  |  +---w dont-fragment?    boolean
+    |  |  +---w rtt-timeout?      rtt-range
+    |  |  +---w multiplier?       rtt-timeout-multiplier
+    |  +--ro output
+    |     +--ro error-tag         identityref
+    |     +--ro error-message?    string
+    |     +--ro transaction-id?   uint32
+    +---x abort-auxip-ping-test
+    |  +---w input
+    |  |  +---w transaction-id    uint32
+    |  +--ro output
+    |     +--ro error-tag        identityref
+    |     +--ro error-message?   string
+    +---x get-auxip-ping-test-results
+    |  +---w input
+    |  |  +---w transaction-id    uint32
+    |  +--ro output
+    |     +--ro error-tag         identityref
+    |     +--ro error-message?    string
+    |     +--ro transaction-id?   uint32
+    |     +--ro test-summary
+    |     |  +--ro status-tag?    auxip-test-execution-status
+    |     |  +--ro warning-tag?   auxip-test-warning
+    |     |  +--ro start-time?    yang:date-and-time
+    |     +--ro test-config
+    |     |  +--ro local-ip?         ietf:ipv4-address
+    |     |  +--ro remote-ip?        ietf:ipv4-address
+    |     |  +--ro ce-vlan?          vlan-id
+    |     |  +--ro ce-vlan-pbit?     pcp
+    |     |  +--ro s-vlan            vlan-id
+    |     |  +--ro s-vlan-pbit       pcp
+    |     |  +--ro dscp?             dscp
+    |     |  +--ro payload-size?     payload-size
+    |     |  +--ro dont-fragment?    boolean
+    |     |  +--ro number-to-send?   uint8
+    |     |  +--ro rtt-timeout?      rtt-range
+    |     |  +--ro multiplier?       rtt-timeout-multiplier
+    |     +--ro test-results
+    |        +--ro number-sent?       uint8
+    |        +--ro number-received?   uint8
+    |        +--ro percent-lost?      uint8
+    |        +--ro min-rtt?           rtt-range
+    |        +--ro max-rtt?           rtt-range
+    |        +--ro avg-rtt?           rtt-range
+    |        +--ro transaction* [number]
+    |           +--ro number    uint8
+    |           +--ro rtt       rtt-range
+    |           +--ro ttl       uint8
+    +---x get-available-auxip-results
+       +---w input
+       |  +---w transaction-id    uint32
+       +--ro output
+          +--ro error-tag        identityref
+          +--ro error-message?   string
+          +--ro report* [transaction-id]
+             +--ro transaction-id    uint32
+             +--ro test-time         yang:date-and-time
+             +--ro status            auxip-test-execution-status

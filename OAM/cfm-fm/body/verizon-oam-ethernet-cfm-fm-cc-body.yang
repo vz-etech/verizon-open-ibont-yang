@@ -1,0 +1,153 @@
+submodule verizon-oam-ethernet-cfm-fm-cc-body {
+  belongs-to verizon-oam-ethernet-cfm-fm {
+    prefix vz-oam-ecfm-fm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection YANG data types and
+     grouping definitions that extend the functionality of 
+     Connectivity Fault Management (CFM) as specified in 
+     IEEE 802.1ag with additional functionality to support 
+     the Ethernet Continuity Check (ETH-CC) function of 
+     Ethernet Service Layer OAM Fault Management as specified 
+     by ITU-T Y.1731 clause 7.1.
+
+     Note that MEG, MEG ID and MEG level in ITU-T Y.1731 align with 
+     MA, MAID and MA level respectively in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference 
+      "ITU-T Y.1731-2015 clause 7.1, MEF 7.2 clause 7.5.";
+ }
+
+  feature eth-cc {
+    description
+      "Indicates support for the Ethernet Continuity Check (ETH-CC)
+       protocol acc. to ITU-T Y.1731.";
+  }
+  feature ccm-multicast {
+    description
+      "Indicates support for the multicast destination address (DA) 
+       in CCM PDUs transmitted by a MEP.";
+  }
+
+  typedef connectivity-status {
+    type enumeration {
+      enum "unknown" {
+        description
+          "The connectivity status is unknown as no information is 
+           available; either the MEP  is disabled, ETH-CC is disabled 
+           or no peer MEPs have been provisioned.";
+      }
+      enum "inactive" {
+        description
+          "No CCM is being received from any remote MEP configured 
+           within the MEG (MA).";
+      }
+      enum "partially-active" {
+        description
+          "In a multipoint MEG (MA), CCMs are being received from one 
+           or more remote peer MEPs configured within the MEG (MA), 
+           but CCMs are not being received from all remote peer 
+           MEPs.";
+      }
+      enum "active" {
+        description
+          "CCMs are being received from all known remote MEPs 
+           configured within the MEG (MA).";
+      }
+    }
+    description
+      "Defines the current connectivity statuses reported by a MEP.";
+    reference
+      "MEF 7.2 clause I.2 (ConnectivityStatusType).";
+  }
+
+  grouping eth-cc-config-parameters {
+    description
+      "ITU-T Y.1731-specific Parameters at the maintenance
+       entity group end point (MEP).";
+
+    leaf multicast {
+      if-feature "eth-cc";
+      if-feature "ccm-multicast";
+      type boolean;
+      default "true";
+      description
+        "Specifies whether a MEP uses unicast or multicast 
+         destination address (DA) to send the ETH-CC messages (CCMs). 
+         The value 'true' indicates multicast is to be used. 
+         The value 'false' indicates unicast is to be used.";
+      reference
+        "MEF 7.2 clause 7.5.1.2 (multicastEnabled).";
+    }
+  }
+
+
+  grouping eth-cc-status-parameters {
+    description
+      "ITU-T Y.1731-specific Parameters at the maintenance entity 
+       group end point (MEP).";
+
+    leaf connectivity-status {
+      if-feature "eth-cc";
+      type connectivity-status;
+      description
+        "Indicates the connectivity status for a MEP to its remote 
+         MEPs. 
+         The value 'active' refers to the ability of the MEP to 
+         exchange CCMs between all of its remote MEPs. 
+         The value 'partially-active' refers to the ability of the 
+         MEP to exchange CCMs among some, but not all its remote 
+         MEPs. 
+         The value 'inactive' refers to the inability of the MEP to 
+         exchange CCM frames among any of its remote MEPs.
+         The value 'unknown' implies that no information is 
+         available to determine the connectivity status; either the 
+         MEP is disabled, ETH-CC is disabled or no peer MEPs have 
+         been provisioned. ";
+      reference
+        "MEF 7.2 clause 7.4.3 (connectivityStatus)";
+    }
+    leaf rdi-transmit-status {
+      if-feature "eth-cc";
+      type boolean;
+      description
+        "Indicates whether the MEP is generating a Remote
+         Defect Indicator (RDI) bit in the CCM frames that
+         it is transmitting.";
+    }
+    reference
+      "MEF 7.2 clause 7.4.3 (connectivityStatus)";
+  }
+
+  grouping eth-cc-statistics-parameters {
+    description
+      "Statistics parameters for the continuity check 
+       protocol of a MEP.";
+
+    leaf in-ccm {
+      type yang:counter64;
+      description
+        "The total number of Continuity Check (CCM) messages 
+         received by the MEP.";
+      reference
+        "MEF 7.2 clause 7.5.1.2 (inCcmTotal).";
+    }
+  }
+}

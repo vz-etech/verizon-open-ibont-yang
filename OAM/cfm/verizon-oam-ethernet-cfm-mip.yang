@@ -1,0 +1,82 @@
+submodule verizon-oam-ethernet-cfm-mip {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  include verizon-oam-ethernet-cfm-types;
+  include verizon-oam-ethernet-cfm-base;
+  include verizon-oam-ethernet-cfm-md;
+  include verizon-oam-ethernet-cfm-ma;
+  include verizon-oam-ethernet-cfm-mip-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for the 
+     management of Maintenance Domain Intermediate Points (MIP) 
+     within Connectivity Fault Management (CFM) as specified in 
+     IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  feature ecfm-mips {
+    description
+      "Indicates that the direct configuration of MIPs is 
+       supported.";
+  }
+
+
+  augment "/vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain"
+        + "/vz-oam-ecfm:associations/vz-oam-ecfm:association" {
+    description
+      "Add configuration nodes for MIPs to maintenance 
+       associations.";
+    container mips {
+      if-feature "ecfm-mips";
+      description
+        "Management objects related to configuration of MIPs.";
+
+      list mip {
+        key "mip-id";
+        description
+          "A list of MIPs associated with this maintenance domain 
+           and association.";
+
+        uses mip-config-parameters;
+      }
+    }
+  }
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association" {
+    description
+      "Add operational status nodes for MIPs to maintenance 
+       associations.";
+    container mips {
+      if-feature "ecfm-mips";
+      description
+        "Operational status of MIPs.";
+
+      list mip {
+        key "mip-id";
+
+        description
+          "A list of MIPs associated with this maintenance domain 
+           and association.";
+
+        uses mip-status-parameters;
+      }
+    }
+  }
+}

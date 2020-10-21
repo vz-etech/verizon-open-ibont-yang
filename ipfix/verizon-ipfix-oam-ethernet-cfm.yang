@@ -1,0 +1,91 @@
+module verizon-ipfix-oam-ethernet-cfm {
+  namespace 
+    "http://www.verizon.com/ns/verizon-ipfix-oam-ethernet-cfm";
+  prefix vz-ipfix-oam-ecfm;
+
+  import verizon-ipfix {
+    prefix vz-ipfix;
+  }
+  
+  import verizon-ipfix-statistics {
+    prefix vz-ipfix-bulkstats;
+  }
+  
+  import verizon-oam-ethernet-cfm {
+    prefix verizon-oam-ecfm;
+  }
+  
+  import verizon-oam-ethernet-cfm-pm {
+    prefix verizon-oam-ecfm-pm;
+  }
+
+  organization
+      "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "Verizon's modeling of verizon-oam-ethernet-cfm export via IPFIX
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  /*
+   * Data Definitions
+   */
+
+  // Augment MEP configuration with ETH-DM specific nodes.
+  augment '/verizon-oam-ecfm:cfm'
+        + '/verizon-oam-ecfm:domains'
+        + '/verizon-oam-ecfm:domain/verizon-oam-ecfm:associations'
+        + '/verizon-oam-ecfm:association/verizon-oam-ecfm:meps'
+        + '/verizon-oam-ecfm:mep'
+        + '/verizon-oam-ecfm-pm:delay-measurement'
+        + '/verizon-oam-ecfm-pm:sessions'
+        + '/verizon-oam-ecfm-pm:session' {
+    description "Augment monitored entity to include ipfix.";
+    container ipfix {
+      description "Add ipfix container to monitored entity";
+      leaf-list statistics-template {
+        type leafref {
+         path "/vz-ipfix:ipfix"
+            + "/vz-ipfix-bulkstats:statistics-template"
+            + "/vz-ipfix-bulkstats:name";
+    }
+    description
+      "statistics-template being pointed/referenced from the
+       monitored entity";
+      }
+    }
+  }
+
+  // Augment MEP configuration with ETH-DM specific nodes.
+  augment '/verizon-oam-ecfm:cfm/verizon-oam-ecfm:domains'
+        + '/verizon-oam-ecfm:domain/verizon-oam-ecfm:associations'
+        + '/verizon-oam-ecfm:association/verizon-oam-ecfm:meps'
+        + '/verizon-oam-ecfm:mep/verizon-oam-ecfm-pm:loss-measurement'
+        + '/verizon-oam-ecfm-pm:sessions'
+        + '/verizon-oam-ecfm-pm:session' {
+    description "Augment monitored entity to include ipfix";
+    container ipfix {
+      description "Container for ipfix templates";
+      leaf-list statistics-template {
+        type leafref {
+         path "/vz-ipfix:ipfix"
+            + "/vz-ipfix-bulkstats:statistics-template"
+            + "/vz-ipfix-bulkstats:name";
+        }
+      description
+        "Sampling-template being pointed/referenced
+         from the monitored entity";
+      }
+    }
+  }
+}

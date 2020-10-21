@@ -1,0 +1,78 @@
+module verizon-ipfix-exporter-address {
+  namespace 
+    "http://www.verizon.com/ns/verizon-ipfix-exporter-address";
+  prefix vz-ipfix-addr;
+
+  import verizon-ipfix {
+    prefix vz-ipfix;
+  }
+
+  organization
+    "Verizon";
+    
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+     
+  description
+    "This module contains augmentations to the IPFIX
+     vz-ipfix.yang module.  It adds
+     dhcp support to destination-address and
+     source-address attributes.
+     
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+  
+revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  /*
+   * Data Statements
+   */
+
+  // UDP Augmentations to support DHCP for
+  //  the collector's destination-address.
+  augment "/vz-ipfix:ipfix"
+        + "/vz-ipfix:exporting-process"
+        + "/vz-ipfix:destination"
+        + "/vz-ipfix:destination-parameters"
+        + "/vz-ipfix:udp-exporter"
+        + "/vz-ipfix:udp-exporter"
+        + "/vz-ipfix:destination-method" {
+    description
+      "augment choice statement of destination address
+       configuration.";
+    case dhcp-acquired-address {
+      leaf dhcp-acquired-address {
+        type empty;
+        description
+          "Acquire IPFIX Collector address via DHCP.
+           Use inet:host if dhcp not present.";
+      }
+    }
+  }
+
+  // TCP Augmentations to support DHCP for
+  // the collector's destination-address.
+  augment "/vz-ipfix:ipfix"
+        + "/vz-ipfix:exporting-process"
+        + "/vz-ipfix:destination"
+        + "/vz-ipfix:destination-parameters"
+        + "/vz-ipfix:tcp-exporter"
+        + "/vz-ipfix:tcp-exporter"
+        + "/vz-ipfix:destination-method" {
+    description
+      "augment choice statement of destination address
+       configuration.";
+    case dhcp-acquired-address {
+      leaf dhcp-acquired-address {
+        type empty;
+        description
+          "Acquire IPFIX Collector address via DHCP.
+           Use inet:host if dhcp not present.";
+      }
+    }
+  }
+}

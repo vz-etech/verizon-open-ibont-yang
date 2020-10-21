@@ -1,0 +1,8 @@
+module: ietf-interfaces-ethernet-like
+augment /if:interfaces/if:interface:
+   +--rw ethernet-like
+      +--rw mac-address?   yang:mac-address
+augment /if:interfaces-state/if:interface:
+   +--ro ethernet-like
+      +--ro mac-address?       yang:mac-address
+      +--ro bia-mac-address?   yang:mac-address

@@ -1,0 +1,25 @@
+submodule: verizon-oam-ethernet-cfm-md (belongs-to verizon-oam-ethernet-cfm)
+  +--rw cfm
+  |  +--rw domains
+  |     +--rw domain* [admin-name]
+  |        +--rw admin-name       admin-name
+  |        +--rw md-name
+  |        |  +--rw (which-md-name-format)?
+  |        |     +--:(no-name)
+  |        |     |  +--rw no-name?                  empty
+  |        |     +--:(domain-name)
+  |        |     |  +--rw domain-name?              inet:domain-name
+  |        |     +--:(mac-address-and-uint16)
+  |        |     |  +--rw mac-address-and-uint16
+  |        |     |     +--rw mac-address?   yang:mac-address
+  |        |     |     +--rw uint16?        uint16
+  |        |     +--:(character-string)
+  |        |        +--rw character-string?         string
+  |        +--rw level?           md-level
+  |        +--rw sender-id-tlv
+  |           +--rw chassis-id?           boolean
+  |           +--rw management-address?   boolean
+  +--ro cfm-state
+     +--ro domains
+        +--ro domain* [admin-name]
+           +--ro admin-name    admin-name

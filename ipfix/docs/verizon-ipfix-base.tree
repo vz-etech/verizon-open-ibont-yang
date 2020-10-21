@@ -1,0 +1,3 @@
+submodule: verizon-ipfix-base (belongs-to verizon-ipfix)
+  +--rw ipfix
+  +--ro ipfix-state

@@ -1,0 +1,77 @@
+submodule verizon-oam-ethernet-cfm-statistics-lm-body {
+  belongs-to verizon-oam-ethernet-cfm-statistics {
+    prefix vz-oam-ecfm-stats;
+  }
+  
+  import ietf-yang-types {
+    prefix yang;
+  }
+  
+  organization 
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>"; 
+ 
+  description 
+    "This module contains a collection YANG data types and grouping 
+     definitions to support loss management statistics that are not 
+     defined as part of the standards ITU-T Y.1731 or MEF 7.2.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  grouping loss-measurement-statistics-parameters {
+    description
+      "Defines statistics parameters for the loss measurement.";
+
+    leaf out-lmm {
+      type yang:counter64;
+      description
+        "The total number of LMMs transmitted by the MEP.";
+    }
+    leaf in-lmm {
+      type yang:counter64;
+      description
+        "The total number of LMMs received by the MEP.";
+    }
+    leaf out-lmr {
+      type yang:counter64;
+      description
+        "The total number of LMRs transmitted by the MEP.";
+    }
+    leaf in-lmr {
+      type yang:counter64;
+      description
+        "The total number of LMRs received by the MEP.";
+    }
+
+    leaf out-slm {
+      type yang:counter64;
+      description
+        "The total number of SLMs transmitted by the MEP.";
+    }
+    leaf in-slm {
+      type yang:counter64;
+      description
+        "The total number of SLMs received by the MEP.";
+    }
+    leaf out-slr {
+      type yang:counter64;
+      description
+        "The total number of SLRs transmitted by the MEP.";
+    }
+    leaf in-slr {
+      type yang:counter64;
+      description
+        "The total number of SLRs received by the MEP.";
+    }
+  }
+  
+}

@@ -1,0 +1,348 @@
+submodule verizon-oam-ethernet-cfm-lb {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  include verizon-oam-ethernet-cfm-types;
+  include verizon-oam-ethernet-cfm-base;
+  include verizon-oam-ethernet-cfm-md;
+  include verizon-oam-ethernet-cfm-ma;
+  include verizon-oam-ethernet-cfm-mep;
+  include verizon-oam-ethernet-cfm-lb-body;
+  include verizon-oam-ethernet-cfm-mep-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for the 
+     management of the loopback (LB) protocol of a MEP as specified 
+     in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+
+
+  /* Augment a MEP with loopback protocol operational status */
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps"
+        + "/vz-oam-ecfm:mep" {
+    description
+      "Add operational status nodes for the loopback protocol at a
+       MEPs.";
+
+    container loopback {
+      if-feature "dot1ag-lb";
+      description
+        "Operational status of the loopback protocol.";
+
+      uses loopback-config-parameters;
+
+      uses loopback-status-parameters;
+
+      container statistics {
+        description
+          "Statistical counters for the loopback protocol.
+
+           Editor's note: 
+           Currently two solutions for implementing statistics 
+           within this model are included as the discussion of 
+           which solution to choose is ongoing:
+           1 - collect all statistics for a MEP at the MEP level; 
+           2 - collect statistics per CFM protocol.
+               (this solution).";
+
+        uses loopback-statistics-parameters;
+      }
+    }
+  }
+
+  /* Augment MEP statistics with loopback protocol statistics */
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep"
+        + "/vz-oam-ecfm:statistics" {
+    description
+      "Add operational status nodes for the loopback protocol 
+       statistics at a MEP.";
+
+    container loopback {
+      if-feature "dot1ag-lb";
+      description
+        "Operational statistics of the loopback protocol.";
+
+      uses loopback-statistics-parameters;
+    }
+  }
+
+  rpc transmit-loopback {
+    if-feature "dot1ag-lb";
+    description
+      "To signal to the MEP to transmit some number of LBMs, which,  
+       if successful, will initiate a loopback session at the 
+       given MEP.
+       The RPC will fail, if a loopback session is already active 
+       at the given MEP. Check loopback/lbm-session/status of 
+       the MEP prior to invoking this RPC.";
+    reference
+      "IEEE 802.1ag clause 12.14.7.3.2";
+
+    input {
+      uses mep-identification-parameters {
+        refine "domain-admin-name" {
+          mandatory true;
+          reference
+            "IEEE 802.1ag clause 12.14.7.3.2:a";
+        }
+        refine "association-admin-name" {
+          mandatory true;
+          reference
+            "IEEE 802.1ag clause 12.14.7.3.2:a";
+        }
+        refine "mep-id" {
+          mandatory true;
+          reference
+            "IEEE 802.1ag clause 12.14.7.3.2:a";
+        }
+      }
+      container destination-address {
+        description
+          "Specifies the destination for LBM PDUs.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:c";
+
+        choice destination-address-type {
+          description
+            "This choice determines the how the destination is 
+             to be defined.";
+          case mep-id {
+            leaf mep-id {
+              type mep-id;
+              description
+                "The MEPID of another MEP in the same Maintenance 
+                 Association to which the a message is to be sent.
+
+                 NOTE: 
+                 The MEPID must be present as an entry in the 
+                 remote-mep-database of the MEP which is to send 
+                 the message.";
+            }
+          }
+          case mac-address {
+            leaf mac-address {
+              type string {
+                pattern '[0-9a-fA-F]{1}[02468aAcCeE]{1}'
+                      + '(:[0-9a-fA-F]{2}){5}' {
+                  description
+                    "Match on the standard MAC address format of
+                     xx:xx:xx:xx:xx:xx allowing both upper and 
+                     lowercase letters but disallow any address with 
+                     bit 0 in the first octet being set to a 1 which 
+                     represents a multicast address.";
+                }
+              }
+              must ". != '00:00:00:00:00:00'" {
+                description
+                  "Disallow a MAC address of 00:00:00:00:00:00";
+              }
+              description
+                "The unicast MAC address of the maintenance entity.";
+            }
+          }
+          case multicast {
+            leaf multicast {
+              type empty;
+              description
+                "The destination is to use the appropriate multicast 
+                 MAC address.";
+              reference
+                "ITU-T Y.1731 clauses 7.2.2";
+            }
+          }
+        }
+      }
+
+      leaf number-of-messages {
+        type uint32;
+        description
+          "The number of LBMs to be transmitted by the MEP.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:c";
+      }
+
+      container vlan {
+        description
+          "VLAN tag configuration for LBMs.";
+
+        leaf priority {
+          type frame-priority;
+          description
+            "The priority value for LBMs transmitted by the MEP.";
+          reference
+            "IEEE 802.1ag clause 12.14.7.3.2:e";
+        }
+
+        leaf drop-eligible {
+          type boolean;
+          description
+            "Specifies the value of the Drop Eligible Indicator (DEI)
+             to be used in the VLAN tag, if present in the transmitted
+             LBM.
+             If true, a DEI bit value of 1 will be used indicating 
+             that the LBMs are eligible to be dropped in the presence 
+             of congestion, if false a DEI bit value of 0 will be 
+             used.";
+          reference
+            "IEEE 802.1ag clause 12.14.7.3.2:e";
+        }
+      }
+
+      container pattern-tlv {
+        description
+          "Specifies which type of pattern TLV is to be included in
+           the LBM, if any.";
+
+        choice tlv-option {
+          default "no-tlv";
+          description
+            "Indication of whether a pattern TLV is to be included in
+             the LBM.";
+          case no-tlv {
+            leaf no-tlv {
+              type empty;
+              description
+                "Do not include a Data TLV in the LBM.";
+              reference
+                "IEEE 802.1ag clauses 12.14.7.3.2:d and 20.29.1";
+            }
+          }
+          case data-tlv {
+            leaf data-tlv {
+              type uint32;
+              description
+                "An arbitrary amount of data to be included in a
+                 Data TLV.";
+              reference
+                "IEEE 802.1ag clauses 12.14.7.3.2:d and 20.29.1";
+            }
+          }
+          case all-zeroes-data-tlv {
+            leaf all-zeroes-data-tlv {
+              type empty;
+              description
+                "The destination is to use the appropriate multicast
+                 MAC address.";
+              reference
+                "ITU-T Y.1731 clauses 7.2.1 and 9.3.2";
+            }
+          }
+          case all-ones-data-tlv {
+            leaf all-ones-data-tlv {
+              type empty;
+              description
+                "The destination is to use the appropriate multicast
+                 MAC address.";
+              reference
+                "ITU-T Y.1731 clauses 7.2.1 and 9.3.2";
+            }
+          }
+          case test-tlv {
+            leaf test-tlv {
+              type test-tlv-pattern;
+              description
+                "The type of Test TLV to transmit, if a Test TLV is
+                 selected.";
+              reference
+                "ITU-T Y.1731 clauses 7.2.1 and 9.3.2";
+            }
+          }
+        }
+
+        leaf frame-size {
+          when "not(../no-tlv)" {
+            description
+              "frame-size is only valid when a TLV is defined and
+               through the frame-size, the required size of the TLV
+               can be derived.";
+          }
+          type uint16;
+          default "64";
+          description
+            "If a TLV is to be sent within the OAMPDU, indicates the
+             total size of the frame.
+
+             The size of the TLV is adjusted accordingly to ensure
+             frame is of the required total length.
+
+             In the case of a Data TLV, if the Data TLV to be inserted
+             into the frame is shorter than the configured data
+             pattern, the data pattern will be truncated; if the size 
+             of the Data TLV is longer than the configured pattern,
+             the pattern will be repeated to fill the TLV.";
+          reference
+            "ITU-T Y.1731 clause 7.2.1";
+        }
+      }
+
+      leaf message-interval {
+        type uint16 {
+          range "1..600" {
+            description
+              "0.1 to 60 seconds";
+          }
+        }
+        units "0.1 seconds";
+        default "10";
+        description
+          "Specifies the period between LBM transmissions in a LB
+           session. ";
+        reference
+          "ITU-T Y.1731 clause 7.2.1 Note 3;
+           MEF 7.2 clause 7.5.2.1 (interval).";
+      }
+
+      leaf message-timeout {
+        type uint16 {
+          range "1..10000" {
+            description
+              "100 ms to 10 seconds";
+          }
+        }
+        units "milliseconds";
+        default "5000";
+        description
+          "Specifies the maximum amount of time to receive a LBR in
+           response to an LBM sent by the MEP.";
+        reference
+          "MEF 7.2 clause 7.5.2.1 (timeoout).";
+      }
+    }
+
+    output {
+      uses transmit-loopback-output-parameters;
+    }
+  }
+
+  rpc abort-loopback {
+    if-feature "dot1ag-lb";
+    description
+      "To signal to the MEP to abort transmission of LBMs.
+       The RPC will effectively force the number-of-messages 
+       to zero.";
+    input {
+      uses abort-loopback-input-parameters;
+    }
+  }
+}

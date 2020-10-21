@@ -1,0 +1,152 @@
+submodule verizon-sat-service-acceptance-criteria {
+  belongs-to verizon-sat {
+    prefix vz-sat;
+  }
+
+  organization "Verizon";
+  contact 
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description 
+    "SAT Schema for service acceptance criteria profiles.
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+  typedef PASS-FAIL {
+    type enumeration {
+      enum fail {description "Fail test result.";}
+      enum pass {description "Pass test result";}
+    }
+    description "Test Result status";
+  }
+
+  grouping service-acceptance-criteria {
+    description
+      "A grouping containing nodes needed to configure the service 
+       acceptance criteria";
+    container information-rate-mean {
+      description 
+        "Tuple defining thresholds for mean information rate (IR)
+         relative to CIR";
+        leaf low {
+          type decimal64 {
+            fraction-digits 3;
+              range "0.000..100.000";
+          }
+          units "percent";
+          description 
+            "Low end threshold for acceptable information rate";
+        }
+        leaf high {
+          type decimal64 {
+            fraction-digits 3;
+              range "0.000..100.000";
+          }
+          units "percent";
+          description 
+            "High end threshold for acceptable information rate";
+        }
+      }
+      container frame-transfer-delay {
+        description "Thresholds for frame transfer delay (FTD)";
+        leaf max {
+          type uint32;
+          units "milliseconds";
+          description 
+            "Threshold for acceptance max frame transfer delay 
+             (FTD-max)";
+        }
+        leaf mean {
+        type uint32;
+        units "milliseconds";
+        description 
+          "Threshold for acceptance mean frame transfer delay 
+           (FTD-mean)";
+        }
+      }
+      container frame-delay-variation {
+        description "Threshold for frame delay variations (FDV)";
+        leaf max {
+          type uint32;
+          units "milliseconds";
+          description 
+            "Threshold for acceptable max frame delay variation 
+             (FDV-max)";
+        }
+        leaf mean {
+          type uint32;
+          units "milliseconds";
+          description 
+            "Threshold for acceptable mean frame delay variation 
+             (FDV-mean)";
+        }
+      }
+      leaf frame-loss-ratio {
+        type decimal64 {
+          fraction-digits 3;
+          range "0.000..100.000";
+        }
+        units "percent";
+        description "Threshold for acceptable frame loss ratio (FLR)";
+      }	
+    }
+
+    grouping service-acceptance-criteria-results {
+      description
+        "Grouping containing nodes needed to report pass/fail 
+         for service acceptance criteria";
+       
+         container service-acceptance-criteria-results {
+           description 
+             "Collection of nodes to report pass/fail for 
+              service acceptance criteria";
+           leaf information-rate-mean {
+             type PASS-FAIL;
+             description "Measured result within threshold for 
+               acceptable information rate";
+           }
+         container frame-transfer-delay {
+           description "Pass/fail results for thresholds for frame 
+             transfer delay (FTD)";
+           leaf max {
+             type PASS-FAIL;
+             description 
+               "Measured result within threshold for acceptance max 
+                frame transfer delay (FTD-max)";
+           }
+           leaf mean {
+             type PASS-FAIL;
+             description 
+               "Measured result within threshold for acceptance mean  
+                frame transfer delay (FTD-mean)";
+           }
+         }
+         container frame-delay-variation {
+           description "Pass/fail results for thresholds for frame 
+             delay variations (FDV)";
+             leaf max {
+               type PASS-FAIL;
+               description 
+                 "Measured result within threshold for acceptable   
+                  max frame delay variation (FDV-max)";
+             }
+             leaf mean {
+               type PASS-FAIL;
+               description 
+                 "Measured result within threshold for acceptable 
+                  mean frame delay variation (FDV-mean)";
+             }
+           }
+         leaf frame-loss-ratio {
+             type PASS-FAIL;
+             description "Measured result within threshold for  
+               acceptable frame loss ratio (FLR)";
+         }
+      }
+   }
+}

@@ -1,0 +1,26 @@
+module verizon-ipfix {
+  namespace "http://www.verizon.com/ns/verizon-ipfix";
+  prefix vz-ipfix;
+
+  include verizon-ipfix-base;
+  include verizon-ipfix-exporter;
+  include verizon-ipfix-collector;
+
+  organization
+    "Verizon/Calix/ADTRAN IPFIX";
+    
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+     
+  description
+    "Verizon/Calix/Adtran's modeling of IPFIX.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+}

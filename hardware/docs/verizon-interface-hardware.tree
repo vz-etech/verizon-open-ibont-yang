@@ -1,0 +1,5 @@
+
+module: verizon-interface-hardware
+  augment /if:interfaces-state/if:interface:
+    +--ro hardware!
+       +--ro component?   vz-hw:hardware-component-state-ref

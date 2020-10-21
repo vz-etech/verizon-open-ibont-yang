@@ -1,0 +1,131 @@
+submodule verizon-oam-ethernet-cfm-lt {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  include verizon-oam-ethernet-cfm-types;
+  include verizon-oam-ethernet-cfm-base;
+  include verizon-oam-ethernet-cfm-md;
+  include verizon-oam-ethernet-cfm-ma;
+  include verizon-oam-ethernet-cfm-mep;
+  include verizon-oam-ethernet-cfm-lt-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for the 
+     management of the linktrace (LT) protocol of a MEP as specified 
+     in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+
+  /* Augment a MEP with linktrace protocol configuration */
+  /* Currently no configuration required, so augment statement has 
+   * been commented out.
+   */
+
+  /*
+  augment 
+    "/vz-oam-ecfm:cfm/vz-oam-ecfm:domains" +
+    "/vz-oam-ecfm:domain/vz-oam-ecfm:associations" +
+    "/vz-oam-ecfm:association/vz-oam-ecfm:meps" +
+    "/vz-oam-ecfm:mep" {
+    description 
+      "Add configuration nodes for the linktrace protocol 
+       at maintenance end points.";
+
+    container linktrace {
+      if-feature dot1ag-lt;
+      description
+        "Configuration of the linktrace protocol.";
+
+      uses linktrace-config-parameters;
+    }
+  }
+   */  
+
+  /* Augment a MEP with linktrace protocol operational status */
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps"
+        + "/vz-oam-ecfm:mep" {
+    description
+      "Add operational status nodes for the linktrace 
+       protocol at maintenance end points.";
+
+    container linktrace {
+      if-feature "dot1ag-lt";
+      description
+        "Operational status of the linktrace protocol.";
+
+      uses linktrace-config-parameters;
+
+      uses linktrace-status-parameters;
+
+      container statistics {
+        description
+          "Statistical counters for the linktrace protocol.
+
+           Editor's note: 
+           Currently two solutions for implementing statistics 
+           within this model are included as the discussion of 
+           which solution to choose is ongoing:
+           1 - collect all statistics for a MEP at the MEP level; 
+           2 - collect statistics per CFM protocol.
+               (this solution).";
+
+        uses linktrace-statistics-parameters;
+      }
+    }
+  }
+
+  /* Augment MEP statistics with linktrace protocol statistics */
+
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep"
+        + "/vz-oam-ecfm:statistics" {
+    description
+      "Add operational status nodes for the linktrace 
+       protocol statistics at maintenance end points.";
+
+    container linktrace {
+      if-feature "dot1ag-lt";
+      description
+        "Operational statistics of the linktrace protocol.";
+
+      uses linktrace-statistics-parameters;
+    }
+  }
+
+  rpc transmit-linktrace {
+    if-feature "dot1ag-lt";
+    description
+      "To signal to the MEP to transmit some number of LTMs, which,  
+       if successful, will initiate a linktrace session at the 
+       given MEP.
+       The RPC will fail, if a linktrace session is already active 
+       at the given MEP. Check linktrace/LTM-session/status of 
+       the MEP prior to invoking this RPC.";
+    reference
+      "IEEE 802.1ag clause 12.14.7.4.";
+    input {
+      uses transmit-linktrace-input-parameters;
+    }
+    output {
+      uses transmit-linktrace-output-parameters;
+    }
+  }
+}

@@ -1,0 +1,46 @@
+module: verizon-notifications
+  +--ro notification-state
+     +--ro notification-history
+        +--ro number-of-notifications?   yang:gauge32
+        +--ro last-changed?              yang:date-and-time
+        +--ro notification* [sequence-number]
+           +--ro sequence-number    uint32
+           +--ro timestamp          yang:date-and-time
+           +--ro event-id?          identityref
+           +--ro resource           resource
+           +--ro description?       string
+           +--ro additional-info?   string
+           +--ro equipment-type?    enumeration
+           +--ro pon-id?            hex-characters
+           +--ro pon-system-id?     hex-characters
+           +--ro alarm-data!
+              +--ro perceived-severity    severity-with-clear
+              +--ro service-affecting?    boolean
+              +--ro probable-cause?       string
+              +--ro repair-action?        string
+
+  notifications:
+    +---n event-notification
+    |  +--ro sequence-number?   uint32
+    |  +--ro timestamp          yang:date-and-time
+    |  +--ro event-id?          identityref
+    |  +--ro resource           resource
+    |  +--ro description?       string
+    |  +--ro additional-info?   string
+    |  +--ro equipment-type?    enumeration
+    |  +--ro pon-id?            hex-characters
+    |  +--ro pon-system-id?     hex-characters
+    +---n alarm-notification
+       +--ro sequence-number?      uint32
+       +--ro timestamp             yang:date-and-time
+       +--ro event-id?             identityref
+       +--ro resource              resource
+       +--ro description?          string
+       +--ro additional-info?      string
+       +--ro equipment-type?       enumeration
+       +--ro pon-id?               hex-characters
+       +--ro pon-system-id?        hex-characters
+       +--ro perceived-severity    severity-with-clear
+       +--ro service-affecting?    boolean
+       +--ro probable-cause?       string
+       +--ro repair-action?        string

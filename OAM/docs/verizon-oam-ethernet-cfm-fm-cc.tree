@@ -1,0 +1,11 @@
+
+submodule: verizon-oam-ethernet-cfm-fm-cc (belongs-to verizon-oam-ethernet-cfm-fm)
+  augment /vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:continuity-check:
+    +--rw multicast?   boolean {eth-cc,ccm-multicast}?
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:continuity-check:
+    +--ro connectivity-status?   connectivity-status {eth-cc}?
+    +--ro rdi-transmit-status?   boolean {eth-cc}?
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:statistics/vz-oam-ecfm:continuity-check:
+    +--ro in-ccm?   yang:counter64
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:continuity-check/vz-oam-ecfm:statistics:
+    +--ro in-ccm?   yang:counter64

@@ -1,0 +1,41 @@
+
+module: verizon-file-transfer
+  augment /sys:system-state:
+    +--ro file-transfers
+       +--ro file-transfer* [index]
+          +--ro index               uint32
+          +--ro remote-server       inet:uri
+          +--ro file-upload-type    enumeration
+          +--ro file-name?          string
+          +--ro status              enumeration
+          +--ro status-msg?         string
+          +--ro progress            percent
+          +--ro files-remaining     uint8
+
+  rpcs:
+    +---x file-transfer
+    |  +---w input
+    |  |  +---w action                      enumeration
+    |  |  +---w remote-server               inet:uri
+    |  |  +---w file-upload-type            enumeration
+    |  |  +---w (credentials-type)?
+    |  |     +--:(simple-credentials)
+    |  |        +---w simple-credentials
+    |  |           +---w username    string
+    |  |           +---w password    ianach:crypt-hash
+    |  +--ro output
+    |     +--ro index        uint32
+    |     +--ro error-msg?   string
+    +---x vendor-file-transfer
+       +---w input
+       |  +---w action                      enumeration
+       |  +---w remote-server               inet:uri
+       |  +---w file-name                   string
+       |  +---w (credentials-type)?
+       |     +--:(simple-credentials)
+       |        +---w simple-credentials
+       |           +---w username    string
+       |           +---w password    ianach:crypt-hash
+       +--ro output
+          +--ro index        uint32
+          +--ro error-msg?   string

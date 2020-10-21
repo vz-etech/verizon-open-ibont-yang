@@ -1,0 +1,40 @@
+
+module: verizon-hardware-transceivers
+  augment /vz-hw:hardware-state/vz-hw:component:
+    +--ro transceiver
+       +--ro physical-device?    identityref
+       +--ro compliance-codes
+       |  +--ro ten-gigabit-ethernet?               enumeration
+       |  +--ro infiniband?                         enumeration
+       |  +--ro ethernet?                           enumeration
+       |  +--ro fibre-channel-link-length?          enumeration
+       |  +--ro fiber-channel-technology?           enumeration
+       |  +--ro sfp-plus-cable-technology?          enumeration
+       |  +--ro fibre-channel-transmission-media?   bits
+       |  +--ro fibre-channel-speed?                bits
+       +--ro vendor
+       |  +--ro name?            string
+       |  +--ro part-number?     string
+       |  +--ro revision?        string
+       |  +--ro serial-number?   string
+       |  +--ro date-code?       string
+       +--ro links
+       |  +--ro maximum-link-length?   uint32
+       |  +--ro link* [number]
+       |     +--ro number        uint32
+       |     +--ro wavelength?   uint32
+       +--ro diagnostics
+          +--ro diagnostics-valid?   boolean
+          +--ro temperature?         decimal64
+          +--ro supply-voltage?      decimal64
+          +--ro alarm-flag*          identityref
+          +--ro warning-flag*        identityref
+          +--ro link* [number]
+             +--ro number               uint32
+             +--ro tx-bias?             decimal64
+             +--ro tx-power?            decimal64
+             +--ro rx-power?            decimal64
+             +--ro laser-temperature?   int32
+             +--ro tec-current?         int16
+             +--ro alarm-flag*          identityref
+             +--ro warning-flag*        identityref

@@ -1,0 +1,53 @@
+module verizon-interface-hardware {
+  namespace "http://www.verizon.com/ns/verizon-interface-hardware";
+  prefix vz-if-hw;
+
+  import ietf-interfaces {
+    prefix if;
+  }
+  
+  import verizon-hardware {
+    prefix vz-hw;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+   "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for
+     managing hardware.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+  
+  augment "/if:interfaces-state/if:interface" {
+    description
+      "Augment the interface state data with hardware information.";
+    
+    container hardware {
+      presence
+        "This presence of this container indicates this interface
+         has a hardware association.";
+      description
+        "Interface state data associated with its hardware.";
+
+      leaf component {
+        type vz-hw:hardware-component-state-ref;
+        description
+          "The association of a hardware component to this 
+           interface.";
+      }
+    }
+  }
+}
+ 
+

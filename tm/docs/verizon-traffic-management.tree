@@ -1,0 +1,33 @@
+module: verizon-traffic-management
+  +--rw evcs
+  |  +--rw evc* [etag]
+  |     +--rw etag                  vlan-id
+  |     +--rw evc-admin-status?     enumeration
+  |     +--rw uni?                  -> /if:interfaces/interface/name
+  |     +--rw evc-ckt               string
+  |     +--rw evc-type              enumeration
+  |     +--rw ethertype?            ethertype
+  |     +--rw cvlans?               vlan-range
+  |     +--rw cvlan-translation?    vlan-range
+  |     +--rw egress-policing?      boolean
+  |     +--rw l2cp-protocol?        l2cp-profile
+  |     +--rw l2cp-cir?             cir
+  |     +--rw l2cp-cbs?             cbs
+  |     +--rw l2cp-eir?             eir
+  |     +--rw l2cp-ebs?             ebs
+  |     +--rw nid-seq-id?           string
+  |     +--rw nid-seq-list?         string
+  |     +--rw pm-session-control?   pm-session-control
+  |     +--rw cos* [cos-type]
+  |        +--rw cos-type                pcp-value
+  |        +--rw cos-dscp?               dscp
+  |        +--rw cos-pbit?               pcp-range-value
+  |        +--rw cos-pbit-translation?   pcp-range-value
+  |        +--rw cir                     cir
+  |        +--rw cbs                     cbs
+  |        +--rw eir                     eir
+  |        +--rw ebs                     ebs
+  |        +--rw pm-session-control?     pm-session-control
+  +--ro evcs-state
+     +--ro evc* [etag]
+        +--ro etag    -> /evcs/evc/etag

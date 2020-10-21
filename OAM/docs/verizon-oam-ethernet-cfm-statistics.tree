@@ -1,0 +1,66 @@
+
+module: verizon-oam-ethernet-cfm-statistics
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:statistics/vz-oam-ecfm:continuity-check:
+    +--ro in-ccm-rdi?                   yang:counter64
+    +--ro out-ccm-rdi?                  yang:counter64
+    +--ro in-ccm-sender-id-invalid?     yang:counter64
+    +--ro in-ccm-port-status-invalid?   yang:counter64
+    +--ro in-ccm-if-status-invalid?     yang:counter64
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:continuity-check/vz-oam-ecfm:statistics:
+    +--ro in-ccm-rdi?                   yang:counter64
+    +--ro out-ccm-rdi?                  yang:counter64
+    +--ro in-ccm-sender-id-invalid?     yang:counter64
+    +--ro in-ccm-port-status-invalid?   yang:counter64
+    +--ro in-ccm-if-status-invalid?     yang:counter64
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:statistics/vz-oam-ecfm:loopback:
+    +--ro out-lbm?   yang:counter64
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:loopback/vz-oam-ecfm:statistics:
+    +--ro out-lbm?   yang:counter64
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:statistics/vz-oam-ecfm-pm:loss-measurement:
+    +--ro out-lmm?   yang:counter64
+    +--ro in-lmm?    yang:counter64
+    +--ro out-lmr?   yang:counter64
+    +--ro in-lmr?    yang:counter64
+    +--ro out-slm?   yang:counter64
+    +--ro in-slm?    yang:counter64
+    +--ro out-slr?   yang:counter64
+    +--ro in-slr?    yang:counter64
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm-pm:loss-measurement:
+    +--ro statistics
+       +--ro out-lmm?   yang:counter64
+       +--ro in-lmm?    yang:counter64
+       +--ro out-lmr?   yang:counter64
+       +--ro in-lmr?    yang:counter64
+       +--ro out-slm?   yang:counter64
+       +--ro in-slm?    yang:counter64
+       +--ro out-slr?   yang:counter64
+       +--ro in-slr?    yang:counter64
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:statistics/vz-oam-ecfm-pm:delay-measurement:
+    +--ro out-dmm?   yang:counter64
+    +--ro in-dmm?    yang:counter64
+    +--ro out-dmr?   yang:counter64
+    +--ro in-dmr?    yang:counter64
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm-pm:delay-measurement:
+    +--ro statistics
+       +--ro out-dmm?   yang:counter64
+       +--ro in-dmm?    yang:counter64
+       +--ro out-dmr?   yang:counter64
+       +--ro in-dmr?    yang:counter64
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:mips/vz-oam-ecfm:mip:
+    +--ro statistics
+       +--ro up-mhf
+       |  +--ro in-lbm?             yang:counter64
+       |  +--ro out-lbr?            yang:counter64
+       |  +--ro in-ltm?             yang:counter64
+       |  +--ro forwarded-ltm?      yang:counter64
+       |  +--ro out-ltm?            yang:counter64
+       |  +--ro out-ltr?            yang:counter64
+       |  +--ro in-ltm-discarded?   yang:counter64
+       +--ro down-mhf
+          +--ro in-lbm?             yang:counter64
+          +--ro out-lbr?            yang:counter64
+          +--ro in-ltm?             yang:counter64
+          +--ro forwarded-ltm?      yang:counter64
+          +--ro out-ltm?            yang:counter64
+          +--ro out-ltr?            yang:counter64
+          +--ro in-ltm-discarded?   yang:counter64

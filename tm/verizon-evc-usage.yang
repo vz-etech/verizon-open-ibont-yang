@@ -1,0 +1,219 @@
+module verizon-evc-usage{
+  namespace "http://www.verizon.com/ns/evc-usage";
+  prefix evcu;
+
+  import ietf-yang-types {prefix yang;}
+  import verizon-traffic-management {prefix tm;}
+  import verizon-oam-ethernet-cfm-pm {prefix verizon-cfm-pm;}
+
+  organization "Verizon";
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description 
+    "Evc usage data
+
+    Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  } 
+
+//***************************************************************/
+//                                 Typedefs
+//**************************************************************/
+
+  typedef vlan-id {
+    type uint16{
+      range "1..4094";
+    }
+    description "VlanId (range: 1-4094)";
+  }
+
+  typedef pcp-value{
+    type string {
+      pattern '[0-7]';
+    }
+    description "PCP-value";
+  }
+
+  typedef number-of-intervals {
+    type uint32 {
+      range "0..96" ;
+    }
+    description "Number of measurement intervals";
+  }
+
+//************************************************************/
+//                      Groupings
+//***********************************************************/
+
+  grouping evc-usage-data {
+    description
+      "Parameters used to configure EVC Usage Data.";
+    leaf ingress-green-frame-count {
+      type yang:counter64;
+      description "The number of green frames that were
+        received on a ME-NE for the associated
+        bandwidth profile.";
+     reference "[MEF 15] 8.2; [Q.840.1] 6.2.4";
+    }
+    leaf ingress-yellow-frame-count {
+      type yang:counter64;
+      description "The number of yellow frames that were
+        received on the ME-NE for the associated
+        bandwidth profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4";
+    }
+    leaf ingress-red-frame-count {
+      type yang:counter64;
+      description "The number of red frames that were
+        received on the ME-NE for the associated
+        bandwidth profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4";
+    }
+    leaf ingress-green-octets {
+      type yang:counter64;
+      description "The number of valid green -octets
+        that were received on the ME-NE for the
+        associated bandwidth profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4";
+    }
+    leaf ingress-yellow-octets {
+      type yang:counter64;
+      description "The number of valid yellow -octets
+        that were received on the ME-NE for the
+        associated bandwidth profile.";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4 ";
+    }
+    leaf ingress-red-octets {
+      type yang:counter64;
+      description "The number of valid red -octets
+        that were received on the ME-NE for the
+        associated bandwidth profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4 ";
+    }
+    leaf ingress-green-frame-discards {
+     type yang:counter64;
+     description "The number of green frames that were
+       discarded due to congestion within the
+       ME-NE for the associated bandwidth
+       profile. ";
+     reference "[MEF 15] 8.2; [Q.840.1] 6.2.4 ";
+    }
+    leaf ingress-yellow-frame-discards {
+      type yang:counter64;
+      description "The number of yellow frames that were
+        discarded due to congestion within the
+        ME-NE for the associated bandwidth
+        profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4";
+    }
+    leaf ingress-green-octets-discards {
+      type yang:counter64;
+      description "The number of valid green -octets that
+        were discarded due to congestion within
+        the ME-NE for the associated bandwidth
+        profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4 ";
+    }
+    leaf ingress-yellow-octets-discards {
+      type yang:counter64;
+      description "The number of valid yellow -octets that
+        were discarded due to congestion within
+        the ME-NE for the associated bandwidth
+        profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4 ";
+    }
+    leaf egress-green-frame-count {
+      type yang:counter64;
+      description "The number of green frames that were
+        transmitted on the ME-NE for the
+        associated bandwidth profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4 ";
+    }
+    leaf egress-yellow-frame-count {
+      type yang:counter64;
+      description "The number of yellow frames that were
+        transmitted on the ME-NE for the
+        associated bandwidth profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4 ";
+    }
+    leaf egress-green-octets {
+      type yang:counter64;
+      description "The number of valid green -octets that
+        were transmitted on the ME-NE for the
+        associated bandwidth profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4 ";
+    }
+    leaf egress-yellow-octets {
+      type yang:counter64;
+      description "The number of valid yellow -octets that
+        were transmitted on the ME-NE for the
+        associated bandwidth profile. ";
+      reference "[MEF 15] 8.2; [Q.840.1] 6.2.4 ";
+    }
+  }
+
+
+//*****************************************************/
+//                  EVC Usage Data
+//****************************************************/
+
+
+  augment "/tm:evcs-state/tm:evc" {
+   description
+    "Augment EVC to include usage data.";
+   container evc-current-usage-data {
+      description "Container containing evc data attributes";
+      uses evc-usage-data;
+      list cos {
+        key "cos-type";
+        max-elements "4";
+       description "list of cos-types"; 
+        leaf cos-type {
+          type pcp-value ;
+          description "This attribute specifies the
+            p-bit value to be used on the E-tag
+            associated with this EVC (for single
+            CoS) or this CoS within the EVC (for
+            multi-CoS). The mapping from {RT, PD,
+            DATA, BASIC} to p-bit value is
+            performed in the EMS";
+        }
+        uses evc-usage-data; // Data defined per cos
+      }
+    }
+   container evc-history-usage-data {
+     config false ;
+     description "Container of EVC History Usage data"; 
+     list evc-history {
+       key "interval-number";
+       uses "verizon-cfm-pm:"+
+         "common-history-performance-dataset-parameters";
+       uses evc-usage-data;
+       description "list of EVC History"; 
+       list cos {
+         key "cos-type";
+         max-elements "4";
+         description "Cos list";
+         leaf cos-type {
+           type pcp-value ;
+           description "This attribute specifies the
+             p-bit value to be used on the E-tag
+             associated with this EVC (for single
+             CoS) or this CoS within the EVC (for
+             multi-CoS). The mapping from {RT, PD,
+             DATA, BASIC} to p-bit value is
+             performed in the EMS";
+          }
+        uses evc-usage-data; // Data defined per cos
+        }
+      }
+    }
+  }
+}
+

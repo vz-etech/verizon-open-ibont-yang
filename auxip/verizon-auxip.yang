@@ -1,0 +1,715 @@
+module verizon-auxip {
+  namespace "http://www.verizon.com/ns/verizon-auxip";
+  prefix vz-auxip;
+
+  import ietf-inet-types {prefix ietf;}
+  import ietf-yang-types {prefix yang;}
+
+  organization "Verizon";
+  contact 
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>" ;
+  description 
+    "Auxillary IP Address Yang Model
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description 
+      "Initial revision";
+    reference "None";
+  }
+
+//*******************************************************************/
+//                                 Typedefs
+//*******************************************************************/
+
+
+  typedef auxip-port{
+    type enumeration {
+      enum uni  {
+        value 0;
+        description "Auto respond through UNI only" ;
+      }
+      enum pon  {
+        value 1;
+        description "Auto respond through PON only" ;
+      }
+      enum both {
+        value 2;
+        description "Auto respond through pon and uni" ;
+      }
+      enum none {
+        value 3; // Used to disable auto-respond
+        description "Disable auto-respond" ;
+      }
+    }
+    description 
+      "Enum identifying which port or ports through which 
+       IBONT is eligible to respond to echo requests" ;
+  }
+
+  typedef ping-multiplier { 
+    type uint8 {
+      range 10..255;
+    }
+    description 
+      "Product of parameter with this type and parameter of 
+       type  rtt-range equals inter-ping period in units of ms";
+  }
+
+  typedef vlan-id {
+    type uint16 {
+      range 0..4094;
+    }
+   description "VlanId (range: 0-4094)";
+  }
+
+  typedef pcp{
+    type uint8{
+      range 0..7 ;
+    }
+    description "Priority Code Point (802.1p) (range: 0-7)" ;
+  }
+
+  typedef dscp{
+    type uint8{
+      range 0..63  ;
+    }
+    description "Diffserv code point expressed as decimal" ;
+  }
+
+  typedef payload-size {
+    type uint16{
+      range 40..9550;
+    }
+    description "Packet size to be used in ping requests" ;
+  }
+
+  typedef rtt-range {
+    type decimal64 {
+      fraction-digits 6;
+      range "0.00000..3.99999";
+    }
+    description 
+      "Valid range for round trip time timeout in ms 
+       (i.e. how long IBONT waits to get echo reply after having 
+       sent echo request)" ;
+  }
+
+  typedef rtt-timeout-multiplier {
+    type uint8 ;
+    description 
+      "Integer whose product with round trip time timeout 
+       value represens time between echo request
+       transmissions" ;
+  }
+
+  typedef auxip-test-execution-status{
+    type enumeration {
+      enum completed {
+        value 0;
+        description "test completed" ;
+      }
+      enum running {
+        value 1;
+        description "test running" ;
+      }
+      enum pending {
+        value 2;
+          description "test pending" ;
+      }
+      enum explicitly-aborted {
+        value 3;
+        description "test aborted by user" ;
+      }
+      enum auto-aborted {
+        value 4;
+        description "test aborted by system " ;
+      }
+    }
+    description 
+      "Enum identifying execution status of an RPC-initiated 
+       ping test" ;
+  }
+
+  typedef auxip-configuration-warning{
+    type bits {
+    bit "invalid-local-ip" {
+      position 0;
+      description 
+        "Local IP invalid e.g., it is not unicast, or, 
+         when viewed through prism of mask,
+         is network number or subnet broadcast";
+    }
+      bit "no-evc-matches-this-cevlan-id" {
+      position 1;
+      description 
+        "Value of reply-to-this-cevlan-id is relevant but 
+         does not correspond to any provisioned EVCs";
+      }
+    }
+    description 
+      "Bit mask where each bit expresses a distinct reason 
+       why current configuration might affect 
+       operation of auto-respond capability" ;
+  }
+
+  typedef auxip-test-warning{
+    type bits {
+      bit "invalid-remote-ip" {
+        position 0;
+        description 
+          "Remote ip invalid e.g., multicast, reserved address,
+           or is not in same subnet as local-ip, etc";
+      }
+      bit "no-cos-with-svlan-and-svlan-pbit" {
+        position 1;
+        description "No EVC COS defined with this SVLAN VID and Pbit";
+     }
+     bit "cvlan-cvlan-pbit-or-dscp-not-mapped-to-svlan-and-svlanpbit"
+      {
+       position 2;
+       description 
+         "CVLAN VID, CVLAN Pbit and/or DSCP not mapped to this 
+          SVLAN VID and Pbit";
+     }
+   }
+   description 
+      "Bit mask where each bit expresses a distinct reason why 
+       requested ping test might
+       yield no useful results" ;
+  }
+
+
+//*******************************************************************/
+//                                 Identities
+//******************************************************************/
+
+  identity rpc-error-tag {
+    description "Base identity for defining error tags for aux ip 
+      RPCs";
+  }
+
+  identity rpc-no-error {
+    base rpc-error-tag;
+    description "The RPC could be meaningfully executed.";
+  }
+
+  identity rpc-failed-resource-or-capacity {
+    base rpc-error-tag;
+    description 
+      "The RPC cannot be meaningfully executed due to insufficient 
+       resources or capacity";
+  }
+
+  identity rpc-failed-invalid-transaction-id {
+    base rpc-error-tag;
+    description "The RPC cannot be meaningfully executed due to 
+      invalid transaction-id" ; 
+  }
+
+  identity rpc-failed-misconfigured {
+    base rpc-error-tag;
+    description 
+      "The RPC cannot be meaningfully executed due to basic 
+       misconfiguration e.g. invalid local-ip" ;
+  }
+
+  identity rpc-failed-other {
+    base rpc-error-tag;
+    description 
+      "The rpc cannot be meaningfully executed for a reason that 
+       cannot be expresed with more specific error-tag value i.e.  
+       this is a catch-all" ;
+  }
+
+
+//******************************************************************/
+//                                Configuration
+//*****************************************************************/
+
+  container auxip {
+    description 
+      "This container contains the auxilliary IP address 
+       config data" ;
+    leaf local-ip {
+      type ietf:ipv4-address;
+      description "Auxiliary IP address of NID";
+    }
+
+    leaf local-ip-mask {
+      type ietf:ipv4-prefix ;
+      description "Network number of NID’s auxiliary IP address";
+    }
+
+    leaf reply-to-ports {
+      type auxip-port ;
+      default "both" ;
+      description 
+        "Ports through which NID can auto respond to echo requests – 
+         value none disables auto-respond";
+    }
+
+    leaf reply-to-any-cevlan-id {
+      type boolean ;
+      default true ;
+      description 
+        "Yes/no as to whether auto-respond feature will listen for
+         echo requests on all CE-VLAN IDs affiliated 
+         with EVCs";
+    }
+
+    leaf reply-to-this-cevlan-id {
+      type vlan-id ;
+      description 
+        "The only CE-VLAN over which unit will auto-respond to echo
+         requests applicable only if reply-to-any-cevlan-id is FALSE";
+    }
+
+    leaf limit-to-hundred-per-sec {
+      type boolean ;
+      default true ;
+      description 
+        "Yes/no as to whether unit will limit auto-generated echo 
+         and/or ARP replies to 100 per second";
+    }
+  }
+
+  container auxip-state {
+
+    config false ;
+    description 
+      "This container contains the auxilliary IP address status 
+       data" ;
+
+    container configuration-info {
+      description 
+        "Status information about unit’s aux-ip configuration" ;
+      leaf configuration-warning {
+        type auxip-configuration-warning ;
+        mandatory true ;
+        description 
+          "Bit mask where each position represents distinct  
+           reason why current configuration might affect  
+           operation of auto-respond capability ";
+      }
+    }
+
+    container invoked-test-info {
+      description 
+        "Statistics about initiated and running ping tests;  
+         all parameters are volatile" ;
+      leaf num-tests-requested {
+        type uint16 ;
+        mandatory true ;
+        description 
+          "Number of times run-auxip-ping-test RPC was invoked";
+      }
+
+      leaf num-tests-accepted {
+        type uint16 ;
+        mandatory true ;
+        description "Number of invoked run-auxip-ping-tests that were 
+          meaningfully executed";
+      }
+
+      leaf num-tests-explicitly-aborted {
+        type uint16 ;
+        mandatory true ;
+        description "Number of running ping tests aborted by user";
+      }
+
+      leaf num-tests-auto-aborted {
+       type uint16 ;
+        mandatory true ;
+        description "Number of ping tests auto-aborted by unit";
+      }
+
+      leaf num-tests-in-progress {
+        type uint16 ;
+        mandatory true ;
+        description "Number of currently executing ping tests";
+      }
+    }
+
+    container reply-info {
+      description 
+       "Statistics concerning operation of auto-respond capability; 
+        all parameters are volatile" ;
+      leaf num-arp-reqs-received {
+        type uint16 ;
+        mandatory true ;
+        description 
+          "Number of ARP requests received; ‘valid’ requests equals 
+           this minus num-arp-responses-sent";
+      }
+
+      leaf num-invalid-arp-reqs-received {
+        type uint16 ;
+        mandatory true ;
+        description 
+          "Number of invalid ARP requests received; can be invalid  
+           e.g., IPDA is not that of aux ip host, request arrived on 
+           invalid CE-VLAN, etc..";
+      }
+
+      leaf num-arp-responses-sent {
+        type uint16 ;
+        mandatory true ;
+        description "Number of ARP responses transmitted";
+      }
+
+      leaf num-echo-reqs-received {
+        type uint16 ;
+        mandatory true ;
+        description "Number of echo requests received";
+      }
+
+      leaf num-invalid-echo-reqs-received {
+        type uint16 ;
+        mandatory true ;
+        description 
+          "Number of invalid echo requests received; can be invalid, 
+           e.g., IPDA is not that of aux ip host, request arrived on 
+           invalid CE-VLAN, etc..";
+      }
+
+      leaf num-echo-replies-sent {
+        type uint16 ;
+        mandatory true ;
+        description "Number echo replies transmitted";
+      }
+    }
+  }
+
+//******************************************************************/
+//                                 RPCs
+//*****************************************************************/
+
+  rpc run-auxip-ping-test {
+    description "RPC for executing the ping test";
+    input {
+      leaf remote-ip {
+        type ietf:ipv4-address ;
+        mandatory true ;
+        description "IPv4 address of remote NID which is target for 
+          echo requests";
+      }
+      leaf number-to-send {
+        type uint8 ;
+        default 4 ;
+        description "Number of echo requests to send";
+      }
+      leaf ce-vlan {
+        type vlan-id;
+        description 
+          "VID of CE-VLAN header added to echo request; absence  
+           implies request has no CE-VLAN header";
+      }
+      leaf ce-vlan-pbit {
+        type pcp ;
+        description "Pbit of CE-VLAN header if added to 
+          echo request ";
+      }
+      leaf s-vlan {
+        type vlan-id;
+        mandatory true ;
+        description "VID of STAG header added to echo request;  
+          identifies EVC";
+      }
+      leaf s-vlan-pbit {
+        type pcp ;
+        mandatory true ;
+        description "Pbit of STAG header added to echo request ";
+      }
+      leaf dscp {
+        type dscp ;
+        description "Diffserv code point to employ in echo request ";
+      }
+      leaf payload-size {
+        type payload-size ;
+        mandatory true ;
+        description "Payload size of echo request";
+      }
+      leaf dont-fragment {
+        type boolean ;
+          default true ;
+          description "Value of DF bit in echo request";
+      }
+      leaf rtt-timeout {
+        type rtt-range ;
+        default 3.99999 ;
+        description 
+          "Timeout period (how much time has to pass waiting for 
+           echo reply)";
+      }
+      leaf multiplier {
+        type rtt-timeout-multiplier ;
+        default 20 ;
+        description 
+         "Time between echo requests == multiplier * rtt-timeout";
+      }
+    }
+    output {
+      leaf error-tag {
+        type identityref {
+          base "rpc-error-tag" ;
+        }
+        mandatory true ;
+        description
+          "Indication whether RPC could be meaningfully executed 
+           and if not why not";
+      }
+      leaf error-message {
+        type string ;
+        description 
+          "Human readable message that can supplement error tag";
+      }
+      leaf transaction-id{
+        type uint32;
+        description "Transaction ID created as part of the ping test";
+      }
+    }
+  }
+
+  rpc abort-auxip-ping-test {
+    description "RPC for aborting a ping test";
+    input {
+      leaf transaction-id{
+        type uint32;
+        mandatory true ;
+        description "Transaction ID created as part of the ping test";
+      }
+    }
+    output {
+      leaf error-tag {
+        type identityref {
+          base "rpc-error-tag";
+        }
+          mandatory true ;
+          description 
+            "Indication whether RPC could be meaningfully 
+             executed and if not why not ";
+      }
+      leaf error-message {
+        type string ;
+        description 
+          "Human readable message that can supplement error tag ";
+      }
+    }
+  }
+
+  rpc get-auxip-ping-test-results {
+    description "RPC for retreiving ping test results";
+    input {
+      leaf transaction-id{
+        type uint32;
+        mandatory true ;
+        description "Transaction ID created as part of the ping test";
+      }
+    }
+    output {
+      leaf error-tag {
+        type identityref {
+          base "rpc-error-tag";
+        }
+        mandatory true ;
+        description 
+          "Indication whether RPC could be meaningfully executed 
+           and if not why not ";
+      }
+      leaf error-message {
+        type string ;
+        description 
+         "Human readable message that can supplement error tag ";
+      }
+      leaf transaction-id{
+        type uint32;
+        description "Transaction ID created as part of the ping test";
+      }
+      container  test-summary {
+        description "This container has the test summary results" ;
+        leaf  status-tag {
+          type auxip-test-execution-status ;
+          description 
+            "Status of test e.g. whether it is running, completed";
+        } // e.g., whether test is running, pending, etc
+        leaf  warning-tag {
+          type auxip-test-warning ;
+          description 
+            "Bit mask where each bit expresses a distinct reason why  
+             requested ping test might yield no useful results  
+             or look funky ";
+        }    // warnings about problems that result in ‘failed’ test
+        leaf start-time {
+          type yang:date-and-time;
+          description "Time at which test was initiated";
+        }
+      }
+      container test-config {
+        description 
+          "This container has the test configuration for the 
+           results being provided" ;
+        leaf  local-ip    {
+          type ietf:ipv4-address ;
+          description "Aux IP address of this NID";
+        }
+        leaf  remote-ip{
+          type ietf:ipv4-address ;
+          description 
+            "aux IP address of remote NID to which echo requests 
+             were sent";
+        }
+        leaf  ce-vlan{
+          type vlan-id ;
+          description "VID of CE-VLAN header added to echo request";
+            }// untagged if absent
+        leaf  ce-vlan-pbit{
+          type pcp;
+          description "Pbit of CE-VLAN header added to echo request ";
+        }
+        leaf  s-vlan    {
+          type vlan-id;
+          mandatory true ;
+          description "VID of S-VLAN header added to echo request ";
+        }
+        leaf  s-vlan-pbit{
+          type pcp;
+          mandatory true ;
+          description "Pbit of S-VLAN header added to echo request ";
+        }
+        leaf  dscp{
+          type dscp;
+          description "Diffserv code point used in echo requests";
+        }
+        leaf  payload-size{
+          type payload-size;
+          description "Payload size of echo requests";
+        }
+        leaf dont-fragment{
+          type boolean;
+          description "Value of DF bit in echo requests";
+        }
+        leaf number-to-send{
+          type uint8;
+          description 
+            "Number of echo requests to be sent as part of this test";
+        }
+        leaf rtt-timeout{
+          type rtt-range;
+          description "Length of time to wait for echo reply";
+        }
+        leaf  multiplier{
+          type rtt-timeout-multiplier ;
+          description 
+           "Time between echo requests == multiplier * rtt-timeout";
+        }
+      }
+      container test-results {
+        description "This container contains the test results" ;
+        leaf number-sent{
+          type uint8;
+          description "Number of echo requests sent ";
+        }
+        leaf  number-received{
+          type uint8 ;
+          description "Number of echo replies received";
+        }
+        leaf percent-lost{
+          type uint8 ; //decimal64 ;
+          description 
+           "Percent of echo requests that did not yield (timely) 
+            echo reply";
+        }
+        leaf  min-rtt{
+          type rtt-range;
+          description "Round trip time of request/reply pair with 
+            lowest round trip time";
+        }
+        leaf  max-rtt{
+          type rtt-range;
+          description 
+            "Round trip time of request/reply pair with highest 
+             round trip time";
+        }
+        leaf avg-rtt{
+          type rtt-range;
+          description 
+            "Average round trip time of all request/reply pairs";
+        }
+        list transaction {
+          key number ;
+          description 
+            "Each entry in this list describes a successful 
+             request/response transaction." ;
+          leaf number {
+            type uint8 ;
+            description "Request/response transaction number";
+          }
+          leaf rtt {
+            type rtt-range;
+            mandatory true ;
+            description "Measured round trip time";
+          }
+          leaf ttl {
+            type uint8;
+            mandatory true ;
+            description "Time to live in response";
+          }
+        }
+      }
+    }
+  }
+
+  rpc get-available-auxip-results {
+    description 
+      "RPC for retreiving the list of tests that have 
+       results available";
+    input {
+      leaf transaction-id {
+        type uint32;
+        mandatory true ;
+        description "Transaction ID created as part of the ping test";
+      }
+    }
+    output {
+      leaf error-tag {
+        type identityref {
+          base "rpc-error-tag";
+        }
+        mandatory true ;
+        description 
+          "Indication whether RPC could be meaningfully executed and 
+           if not why not";
+      }
+      leaf error-message {
+        type string ;
+        description 
+          "Human readable message that can supplement error tag";
+      }
+      list report {
+        key transaction-id ;
+        description 
+          "Each entry in this list describes one test whose 
+           results are available" ;
+        leaf transaction-id{
+          type uint32;
+          description 
+            "Transaction ID created as part of the ping test";
+        }
+        leaf test-time{
+          type yang:date-and-time;
+          mandatory true;
+          description "Time at which test was initiated ";
+        }
+        leaf status {
+          type auxip-test-execution-status;
+          mandatory true ;
+          description 
+            "Status of test e.g. still running, completed, etc";
+        }
+      }
+    }
+  }
+}

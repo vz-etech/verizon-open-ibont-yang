@@ -1,0 +1,21 @@
+
+module: verizon-ipfix-statistics
+  augment /vz-ipfix:ipfix:
+    +--rw statistics-template* [name] {statistics}?
+       +--rw name                     vz-ipfix:name-type
+       +--rw export-interval?         uint32
+       +--rw observation-domain-id?   uint32
+       +--rw field-layout
+       |  +--rw field* [name]
+       |     +--rw name                    vz-ipfix:name-type
+       |     +--rw (identifier)
+       |     |  +--:(ie-id)
+       |     |     +--rw ie-id?            vz-ipfix:ie-id-type
+       |     +--rw ie-length?              uint16
+       |     +--rw ie-enterprise-number?   uint32
+       +--rw exporting-process*       -> /vz-ipfix:ipfix/exporting-process/name {vz-ipfix:exporter}?
+  augment /vz-ipfix:ipfix-state:
+    +--ro statistics-template* [name] {statistics}?
+       +--ro name                  -> /vz-ipfix:ipfix/statistics-template/name
+       +--ro data-records?         yang:counter64
+       +--ro discontinuity-time?   yang:date-and-time

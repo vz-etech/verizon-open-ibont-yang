@@ -1,0 +1,559 @@
+submodule verizon-oam-ethernet-cfm-pm-types {
+  belongs-to verizon-oam-ethernet-cfm-pm {
+    prefix vz-oam-ecfm-pm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  import verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of common YANG definitions for
+     the management of Ethernet Service Layer OAM Performance
+     Monitoring (PM) as specified by ITU-T Y.1731 clause 8, MEF 35.1 
+     and the management information models specified in MEF 7.2 
+     clause 7.6.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference
+      "ITU-T Y.1731-2015 clause 8; MEF 35.1; MEF 7.2 clause 7.6.";
+  }
+
+  feature repetition-interval {
+    description
+      "Indicates that the device supports a repetition interval for 
+       PM sessions.";
+  }
+  feature pdu-versions {
+    description
+      "Indicates support of different known versions of OAM PDUs for 
+       PM sessions.
+       PDU Version values are defined in revisions of ITU-T Y.1731.
+       If this feature is not supported by a device, then only 
+       PDU version 0 of the respective OAM PDU will be supported.";
+  }
+  feature data-tlv {
+    description
+      "Indicates support for the Data TLV in PM OAM PDUs where they 
+       are supported. ";
+  }
+  feature test-tlv {
+    description
+      "Indicates support for the Test TLV in PM OAM PDUs where they 
+       are supported. ";
+  }
+  feature proactive-sessions {
+    description
+      "Indicates support for proactive performance measurement 
+       sessions.";
+  }
+  feature on-demand-sessions {
+    description
+      "Indicates support for on-demand performance measurement 
+       sessions.";
+  }
+
+  feature metric-selection {
+    description
+      "Indicates support for metric values.";
+  }
+
+
+  typedef frame-loss-ratio {
+    type uint32 {
+      range "0..100000";
+    }
+    units "milli-percent";
+    description
+      "Used to indicates a frame loss ratio.";
+  }
+
+  typedef session-status-type {
+    type enumeration {
+      enum "idle" {
+        description
+          "Indicates that a session is not currently active and that
+           the MEP is not transmitting PDUs.";
+      }
+      enum "active" {
+        description
+          "Indicates that a session is currently active and that the
+           MEP is transmitting PDUs.";
+      }
+    }
+    description
+      "Indicates the status of a session.";
+  }
+
+  typedef session-type {
+    type enumeration {
+      enum "proactive" {
+        description
+          "The session measurements are running continuously after
+           they have been established. Proactive measurements can
+           only be temporarily disabled.";
+      }
+      enum "on-demand" {
+        description
+          "Session measurements run due to a specific request.";
+      }
+    }
+    description
+      "Defines the session types for PM measurement sessions.";
+
+    reference
+      "ITU-T G.8001";
+  }
+
+  typedef pdu-version {
+    type uint8;
+
+    description
+      "This object indicates the version of the PDUs to be used to 
+       perform the measurement. 
+
+       PDU Version values are defined in revisions of ITU-T Y.1731.
+
+       Known values for LMM and DMM: 
+        0  - Use PDUs as defined in ITU-T Y.1731-2008.
+        1  - Use PDUs as defined in ITU-T Y.1731-2015.
+             ITU-T Y.1731-2015 defines a Type flag within the Flags
+             field.";
+  }
+
+  typedef test-tlv-pattern {
+    type enumeration {
+      enum "null" {
+        description
+          "Null signal without CRC-32.";
+      }
+      enum "null-crc-32" {
+        description
+          "Null signal with CRC-32.";
+      }
+      enum "prbs" {
+        description
+          "Pseudorandom binary sequence (PRBS) (2^-31 - 1) signal 
+           without CRC-32.";
+      }
+      enum "prbs-crc-32" {
+        description
+          "Pseudorandom binary sequence (PRBS) (2^-31 - 1) signal 
+           with CRC-32.";
+      }
+    }
+    description
+      "To define the types of Test TLV patterns that may 
+       be configured.";
+    reference
+      "ITU-T Y.1731 Figure 9.3-4";
+  }
+
+
+  grouping common-current-performance-dataset-parameters {
+    description
+      "Defines the parameters that are common for each current 
+       performance dataset.";
+
+    leaf interval-number {
+      type uint32;
+      description
+        "The number of the measurement interval for the given 
+         performance dataset.
+         Interval numbers are assigned sequentially by a 
+         PM session, starting from 1. 
+         Referential integrity is necessary, i.e., the value needs 
+         to be persistent upon a reboot or restart of a device.  
+         The interval number is never reused while this session is 
+         active, until it wraps to zero, the value always increasing 
+         up to that time.";
+    }
+    leaf start-date-and-time {
+      type yang:date-and-time;
+      description
+        "The date and time that the current measurement interval 
+         started.";
+    }
+    leaf elapsed-time {
+      type uint32;
+      units "0.01 seconds";
+      description
+        "Represents the difference between the current time and the 
+         'start-date-and-time' in 0.01 seconds.";
+    }
+    leaf is-suspect {
+      type boolean;
+      description
+        "When 'true' indicates that the performance data for the 
+         current measurement interval may not be reliable.";
+    }
+  }
+
+  grouping common-history-performance-dataset-parameters {
+    description
+      "Defines the parameters that are common for each current 
+       performance dataset.";
+
+    leaf interval-number {
+      type uint32;
+      description
+        "";
+    }
+    leaf end-date-and-time {
+      type yang:date-and-time;
+      description
+        "The date and time that the measurement interval ended.";
+    }
+    leaf elapsed-time {
+      type uint32;
+      units "0.01 seconds";
+      description
+        "Represents the time the measurement interval ran in 0.01 
+         seconds.";
+    }
+    leaf is-suspect {
+      type boolean;
+      description
+        "When 'true' indicates that the performance data for the 
+         measurement interval may not be reliable.";
+    }
+  }
+
+  grouping pdu-config-parameters {
+    description
+      "Defines the common PDU parameters for measurement sessions.";
+
+    leaf pdu-version {
+      if-feature "pdu-versions";
+      type pdu-version;
+      default "0";
+      description
+        "Indicates the version of the PDUs to be used to perform the 
+         specific PM. The value is placed in the Version field of 
+         the PDU and indicates that the PDU format used is the 
+         format defined in ITU-T Y.1731 with that version.";
+      reference
+        "MEF 7.2 clause 7.6.1.1 (version).";
+    }
+
+    container vlan {
+      description
+        "VLAN tag configuration for measurement PDUs.";
+
+      leaf priority {
+        type vz-oam-ecfm:frame-priority;
+        mandatory true;
+        description
+          "The priority for frames containing OAM PDUs when 
+           transmitted by the MEP for measurement purposes within a 
+           measurement session.";
+
+        reference
+          "ITU-T Y.1731 clause 8.1.";
+      }
+    }
+  }
+
+  grouping session-identification-parameters {
+    description
+      "Defines parameters that identify a PM session.";
+
+    uses vz-oam-ecfm:mep-identification-parameters {
+      refine "domain-admin-name" {
+        mandatory true;
+      }
+      refine "association-admin-name" {
+        mandatory true;
+      }
+      refine "mep-id" {
+        mandatory true;
+      }
+    }
+
+    leaf session-name {
+      type string;
+      description
+        "The name of the PM session at the local MEP.";
+    }
+  }
+
+  grouping pattern-tlv {
+    description
+      "Configures whether an option DATA TLV is to be sent in the
+       OAM PDU.";
+
+
+    leaf frame-size {
+      when "not(../no-tlv)" {
+        description
+          "Configuration of 'frame-size' is only required when a  
+           a DATA TLV is selected to determine the size of the 
+           frame.";
+      }
+      type uint32 {
+        range "64..2000";
+      }
+      default "64";
+      description
+        "If a pattern-based TLV is to be sent within the OAM PDU,
+         this configures the total size of the frame, whereby the
+         size of the pattern TLV used is adjusted accordingly to
+         ensure frame is of the required total length.";
+      reference
+        "ITU-T Y.1731-2011 clause 9.15.2.";
+    }
+
+    choice tlv-option {
+      default "no-tlv";
+      description
+        "Configures whether an optional pattern-based TLV is to be 
+         sent in the OAM PDU.";
+      reference
+        "ITU-T Y.1731-2011 clause 9.15.2 and figure 9.3-3.";
+
+      case no-tlv {
+        leaf no-tlv {
+          type empty;
+          description
+            "Do not include a TLV in the OAM PDU.";
+        }
+      }
+      case data-tlv {
+        if-feature "data-tlv";
+        leaf data-tlv {
+          type string{ 
+		  length "0 | 1..1522";
+           }
+          description
+            "An arbitrary amount of data to be included in a DATA 
+             TLV.
+
+             If the DATA TLV is shorter than the given pattern, the
+             pattern will be truncated.
+             If the DATA TLV is longer than the given pattern, the
+             pattern will be repeated to fill the DATA TLV.";
+        }
+      }
+      case all-zeroes-data-tlv {
+        if-feature "data-tlv";
+        leaf all-zeroes-data-tlv {
+          type empty;
+          description
+            "The DATA TLV is to contain all zeroes.";
+        }
+      }
+      case all-ones-data-tlv {
+        if-feature "data-tlv";
+        leaf all-ones-data-tlv {
+          type empty;
+          description
+            "The DATA TLV is to contain all ones.";
+        }
+      }
+      case test-tlv {
+        if-feature "test-tlv";
+        leaf test-tlv {
+          type test-tlv-pattern;
+          description
+            "The type of Test TLV to transmit, if a Test TLV is 
+             selected.";
+          reference
+            "ITU-T Y.1731 clauses 7.2.1 and 9.3.2";
+        }
+      }
+    }
+  }
+
+  grouping common-proactive-session-config-parameters {
+    description
+      "Defines the common configuration parameters for proactive 
+       PM sessions.";
+
+    leaf enabled {
+      type boolean;
+      default "true";
+      description
+        "Enables ('true') and disables ('false') a PM session.";
+    }
+  }
+
+  grouping common-session-config-parameters {
+    description
+      "Defines configuration parameters common to all PM sessions.";
+    reference
+      "MEF 7.2 clause 7.6.1.1 (EthOamPerfMonCfg).";
+
+    leaf message-interval {
+      type uint32 {
+        range "100..10000";
+      }
+      units "milliseconds";
+      default "100";
+      description
+        "The interval at which OAM messages are to be sent by a
+         MEP within a measurement session.";
+
+      reference
+        "ITU-T Y.1731 clause 8.1; 
+         MEF 7.2 clause 7.6.1.1 (interval).";
+    }
+
+    container measurement-interval-alignment {
+      description
+        "Configuration of measurement interval alignment to the 
+         real-time clock.";
+
+      choice which-measurement-interval-alignment {
+        default "disabled";
+        description
+          "Choose whether the measurement intervals for the PM 
+           session are aligned with a zero offset to real time.";
+
+        case disabled {
+          leaf disabled {
+            type empty;
+            description
+              "Do not align measurement intervals to a zero offset to 
+               real-time.";
+          }
+        }
+        case enabled {
+          leaf offset {
+            type uint32 {
+              range "0..525600";
+            }
+            units "minutes";
+            default "0";
+            description
+              "Specifies the offset in minutes from the time of day 
+               value and the repetition time is a factor of 60 
+               minutes.";
+          }
+        }
+      }
+    }
+
+
+    leaf repetition-interval {
+      if-feature "repetition-interval";
+      type union {
+        type enumeration {
+          enum "none" {
+            description
+              "No repetition interval is to be applied to the 
+               measurement session.";
+          }
+        }
+        type uint32 {
+          range "1..max";
+        }
+      }
+      units "minutes";
+      must ".='none' or .>= ../measurement-interval" {
+        error-message
+          "If a repetition interval is specified, it must be greater 
+           than or equal to the measurement interval.";
+        description
+          "If a repetition interval is specified, it must be greater 
+           than or equal to the measurement interval.";
+      }
+      default "none";
+      description
+        "For each PM Session, a repetition interval can be specified, 
+         if it is not desirable to perform measurements continuously. 
+         If 'repetition-interval' = 'none', then a new measurement 
+         interval is started immediately after the previous one 
+         finishes, and hence performance measurements are made 
+         continuously.
+         If a 'repetition-interval' is specified, a new measurement 
+         interval is not started until after repetition time has 
+         passed since the previous measurement interval started. 
+         During the time between the end of the previous measurement 
+         interval and the start of the next one, no OAM PM frames 
+         are sent by the Controller MEP relating to the PM Session, 
+         and no measurements are initiated.";
+      reference
+        "MEF 7.2 clause 7.6.1.1 (repetitionPeriod).";
+    }
+
+    leaf number-of-historical-intervals {
+      type uint32 {
+        range "2..1000";
+      }
+      default "32";
+      description
+        "Defines the possible number of measurement intervals that 
+         are to be stored within the history by a device for the 
+         given PM session.";
+      reference
+        "MEF 7.2 clause 7.6.1.1 (numIntervalsStored).";
+    }
+
+    uses pdu-config-parameters;
+
+    container destination-address {
+      description
+        "Specifies the destination for DMM PDUs.";
+      uses vz-oam-ecfm:frame-destination {
+        refine "destination-address-type" {
+          mandatory true;
+        }
+      }
+    }
+  }
+
+  grouping common-session-status-parameters {
+    description
+      "Defines configuration parameters common to all PM sessions.";
+    reference
+      "MEF 7.2 clause 7.6.1.1 (EthOamPerfMonCfg).";
+
+    leaf session-type {
+      type session-type;
+      description
+        "Defines whether the PM measurement session is 'proactive' 
+         or 'on-demand'.";
+
+      reference
+        "ITU-T G.8001; 
+         MEF 7.2 clause 7.6.1.1 (sessionType)";
+    }
+
+    leaf session-status {
+      type session-status-type;
+      description
+        "Indicates whether an DMM PDU has been sent and the MEP is
+         waiting for DMR PDUs to be received.";
+    }
+  }
+
+
+  grouping measurements-restarted {
+    description
+      "Defines parameters providing information on the restarting 
+       of an active measurement interval.";
+    leaf measurements-restarted {
+      type boolean;
+      mandatory true;
+      description
+        "Indicates whether measurements for an active measurement 
+         session have been restarted as a result of the invocation of 
+         this RPC.";
+    }
+  }
+}

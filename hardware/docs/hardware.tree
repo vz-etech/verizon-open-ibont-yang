@@ -1,0 +1,94 @@
+module: ietf-interfaces
+    +--rw interfaces
+    |  +--rw interface* [name]
+    |     +--rw name                        string
+    |     +--rw description?                string
+    |     +--rw type                        identityref
+    |     +--rw enabled?                    boolean
+    |     +--rw link-up-down-trap-enable?   enumeration {if-mib}?
+    +--ro interfaces-state
+       +--ro interface* [name]
+          +--ro name                 string
+          +--ro type                 identityref
+          +--ro admin-status         enumeration {if-mib}?
+          +--ro oper-status          enumeration
+          +--ro last-change?         yang:date-and-time
+          +--ro if-index             int32 {if-mib}?
+          +--ro phys-address?        yang:phys-address
+          +--ro higher-layer-if*     interface-state-ref
+          +--ro lower-layer-if*      interface-state-ref
+          +--ro speed?               yang:gauge64
+          +--ro statistics
+          |  +--ro discontinuity-time    yang:date-and-time
+          |  +--ro in-octets?            yang:counter64
+          |  +--ro in-unicast-pkts?      yang:counter64
+          |  +--ro in-broadcast-pkts?    yang:counter64
+          |  +--ro in-multicast-pkts?    yang:counter64
+          |  +--ro in-discards?          yang:counter32
+          |  +--ro in-errors?            yang:counter32
+          |  +--ro in-unknown-protos?    yang:counter32
+          |  +--ro out-octets?           yang:counter64
+          |  +--ro out-unicast-pkts?     yang:counter64
+          |  +--ro out-broadcast-pkts?   yang:counter64
+          |  +--ro out-multicast-pkts?   yang:counter64
+          |  +--ro out-discards?         yang:counter32
+          |  +--ro out-errors?           yang:counter32
+          +--ro vz-if-hw:hardware!
+             +--ro vz-if-hw:component?   vz-hw:hardware-component-state-ref
+module: verizon-hardware
+    +--ro hardware-state
+       +--ro last-change?   yang:date-and-time
+       +--ro component* [name]
+          +--ro name                     string
+          +--ro class                    identityref
+          +--ro description?             string
+          +--ro parent?                  -> ../../component/name
+          +--ro parent-rel-pos?          int32
+          +--ro contains-child*          -> ../../component/name
+          +--ro hardware-rev?            string
+          +--ro firmware-rev?            string
+          +--ro software-rev?            string
+          +--ro serial-num?              string
+          +--ro mfg-name?                string
+          +--ro model-name?              string
+          +--ro alias?                   string
+          +--ro asset-id?                string
+          +--ro is-fru?                  boolean
+          +--ro mfg-date?                yang:date-and-time
+          +--ro vz-hw-xvr:transceiver
+             +--ro vz-hw-xvr:physical-device?    identityref
+             +--ro vz-hw-xvr:compliance-codes
+             |  +--ro vz-hw-xvr:ten-gigabit-ethernet?               enumeration
+             |  +--ro vz-hw-xvr:infiniband?                         enumeration
+             |  +--ro vz-hw-xvr:ethernet?                           enumeration
+             |  +--ro vz-hw-xvr:fibre-channel-link-length?          enumeration
+             |  +--ro vz-hw-xvr:fiber-channel-technology?           enumeration
+             |  +--ro vz-hw-xvr:sfp-plus-cable-technology?          enumeration
+             |  +--ro vz-hw-xvr:fibre-channel-transmission-media?   bits
+             |  +--ro vz-hw-xvr:fibre-channel-speed?                bits
+             +--ro vz-hw-xvr:vendor
+             |  +--ro vz-hw-xvr:name?            string
+             |  +--ro vz-hw-xvr:part-number?     string
+             |  +--ro vz-hw-xvr:revision?        string
+             |  +--ro vz-hw-xvr:serial-number?   string
+             |  +--ro vz-hw-xvr:date-code?       string
+             +--ro vz-hw-xvr:links
+             |  +--ro vz-hw-xvr:maximum-link-length?   uint32
+             |  +--ro vz-hw-xvr:link* [number]
+             |     +--ro vz-hw-xvr:number        uint32
+             |     +--ro vz-hw-xvr:wavelength?   uint32
+             +--ro vz-hw-xvr:diagnostics
+                +--ro vz-hw-xvr:diagnostics-valid?   boolean
+                +--ro vz-hw-xvr:temperature?         decimal64
+                +--ro vz-hw-xvr:supply-voltage?      decimal64
+                +--ro vz-hw-xvr:alarm-flag*          identityref
+                +--ro vz-hw-xvr:warning-flag*        identityref
+                +--ro vz-hw-xvr:link* [number]
+                   +--ro vz-hw-xvr:number               uint32
+                   +--ro vz-hw-xvr:tx-bias?             decimal64
+                   +--ro vz-hw-xvr:tx-power?            decimal64
+                   +--ro vz-hw-xvr:rx-power?            decimal64
+                   +--ro vz-hw-xvr:laser-temperature?   int32
+                   +--ro vz-hw-xvr:tec-current?         int16
+                   +--ro vz-hw-xvr:alarm-flag*          identityref
+                   +--ro vz-hw-xvr:warning-flag*        identityref

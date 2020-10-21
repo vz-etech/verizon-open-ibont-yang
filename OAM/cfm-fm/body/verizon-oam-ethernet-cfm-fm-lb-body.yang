@@ -1,0 +1,178 @@
+submodule verizon-oam-ethernet-cfm-fm-lb-body {
+  belongs-to verizon-oam-ethernet-cfm-fm {
+    prefix vz-oam-ecfm-fm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection YANG data types and
+     grouping definitions that extend the functionality of 
+     Connectivity Fault Management (CFM) as specified in 
+     IEEE 802.1ag with additional functionality to support 
+     the Ethernet Loopback (ETH-LB) function of Ethernet Service 
+     Layer OAM Fault Management as specified by ITU-T Y.1731 
+     clause 7.2.
+
+     Note that MEG, MEG ID and MEG level in ITU-T Y.1731 align with 
+     MA, MAID and MA level respectively in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference 
+      "ITU-T Y.1731-2015 clause 7.2; MEF 7.2 clause 7.5.";
+  }
+
+
+  feature eth-lb {
+    description
+      "Indicates support for the Ethernet Loopback (ETH-LB)
+       protocol acc. to ITU-T Y.1731.";
+  }
+
+  feature eth-lb-test-tlv {
+    description
+      "Indicates support for the Test TLV in the ETH-LB function.";
+  }
+
+  feature lbr-timeout-config {
+    description
+      "Indicates support for the configuration of the the maximum 
+       amount of time to receive a LBR to a transmitted LBM.";
+  }
+
+  typedef test-tlv-pattern {
+    type enumeration {
+      enum "null" {
+        description
+          "Null signal without CRC-32.";
+      }
+      enum "null-crc-32" {
+        description
+          "Null signal with CRC-32.";
+      }
+      enum "prbs" {
+        description
+          "Pseudorandom binary sequence (PRBS) (2^-31 - 1) signal 
+           without CRC-32.";
+      }
+      enum "prbs-crc-32" {
+        description
+          "Pseudorandom binary sequence (PRBS) (2^-31 - 1) signal 
+           with CRC-32.";
+      }
+    }
+    description
+      "To define the types of Test TLV patterns that may 
+       be configured.";
+    reference
+      "ITU-T Y.1731 clause 7.2.1 and 9.3.2";
+  }
+
+  grouping eth-lb-config-parameters {
+    description
+      "ETH-LB-specific loopback session parameters 
+       at the MEP.";
+    reference
+      "MEF 7.2 clause 7.5.2.1 (EthOamLbCfg).";
+
+    leaf message-interval {
+      if-feature "eth-lb";
+      type uint16 {
+        range "1..600" {
+          description
+            "0.1 to 60 seconds";
+        }
+      }
+      units "0.1 seconds";
+      default "10";
+      description
+        "Specifies the period between LBM transmissions in a LB 
+         session. ";
+      reference
+        "ITU-T Y.1731 clause 7.2.1 Note 3; 
+         MEF 7.2 clause 7.5.2.1 (interval).";
+    }
+
+    leaf message-timeout {
+      if-feature "eth-lb";
+      if-feature "lbr-timeout-config";
+      type uint16 {
+        range "1..10000" {
+          description
+            "100 ms to 10 seconds";
+        }
+      }
+      units "milliseconds";
+      default "5000";
+      description
+        "Specifies the maximum amount of time to receive a LBR in  
+         response to an LBM sent by the MEP.";
+      reference
+        "MEF 7.2 clause 7.5.2.1 (timeoout).";
+    }
+  }
+
+  grouping eth-lb-lbr-status-parameters {
+    description
+      "Basic status parameters associated with loopback responses
+       received by a MEP.";
+    reference
+      "ITU-T Y.1731 clause 7.2.2.1";
+
+    leaf transaction-id {
+      type uint32;
+      description
+        "Loopback transaction identifier returned by the incoming
+         LBR from the LBM to which it is responding.";
+    }
+    leaf receive-order {
+      type uint32;
+      description
+        "An index to distinguish the received order among multiple
+         LBRs with the same LBR Transaction Identifier field value.
+         receive-order is assigned sequentially from 1, in the
+         order that the Loopback Initiator received the LBR.";
+    }
+    leaf reply-mac-address {
+      type yang:mac-address;
+      description
+        "Source MAC address returned in the LBR Ethernet frame.";
+    }
+  }
+
+  grouping eth-lb-statistics-parameters {
+    description
+      "ITU-T Y.1731-specific loopback statistics parameters 
+       at the MEP.";
+    reference
+      "MEF 7.2 clause 7.5.2.2 (EthOamLbStats).";
+
+    leaf in-lbr-crc-errors {
+      if-feature "eth-lb";
+      if-feature "eth-lb-test-tlv";
+      type yang:counter64;
+      description
+        "The total number of Loopback Reply (LBR) messages received 
+         by the MEP with CRC errors. This leaf is only applicable 
+         when the LBM/LBR messages contain the Test TLV (Test 
+         Pattern).";
+      reference
+        "ITU-T clause 7.2.1.3;
+         MEF 7.2 clause 7.5.2.2 (numLbrInCrcErrors).";
+    }
+  }
+}

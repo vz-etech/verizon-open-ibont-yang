@@ -1,0 +1,1308 @@
+submodule verizon-oam-ethernet-cfm-pm-dm-body {
+  belongs-to verizon-oam-ethernet-cfm-pm {
+    prefix vz-oam-ecfm-pm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  import verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  include verizon-oam-ethernet-cfm-pm-types;
+  include verizon-oam-ethernet-cfm-pm-tca;
+
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG data types and grouping
+     definitions that extend the functionality of Connectivity Fault
+     Management (CFM) as specified in IEEE 802.1ag with additional
+     functionality to support the Ethernet Frame Delay Measurement 
+     (ETH-DM) function of Ethernet Service Layer OAM Performance 
+     Monitoring as specified by ITU-T Y.1731 clause 8.2, MEF 35.1 
+     and the management information models specified in MEF 7.2 
+     clause 7.6.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference
+      "ITU-T Y.1731-2015 clause 8.2; MEF 35.1; MEF 7.2 clause 7.6.";
+  }
+
+  feature eth-dm {
+    description
+      "Indicates support for the Ethernet Delay Measurement (ETH-DM) 
+       function acc. to ITU-T Y.1731 clause 8.2.";
+  }
+  feature dm-single-ended-responder-enable-disable {
+    description
+      "Indicates support for the explicit enabling and disabling of 
+       the DM Single-ended Responder.";
+  }
+  feature delay-measurement-bins {
+    description
+      "Indicates support for measurement bins for delay measurement 
+       sessions.";
+    reference
+      "MEF 35.1 Appendix C.";
+  }
+
+  typedef dm-measurement-type {
+    type enumeration {
+      enum "dmm" {
+        description
+          "DMM OAM PDUs generated and received DMR responses tracked";
+      }
+    }
+    description
+      "This object specifies what type of Delay Measurement is to be 
+       performed.";
+    reference
+      "MEF 7.2 clause I.2 (DelayMeasType).";
+  }
+
+  typedef delay-measurement-metric {
+    type enumeration {
+      enum "frame-delay-two-way" {
+        description
+          "The two-way frame delay calculated by a MEP from the last 
+           received OAM PDU.";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (frameDelayTwoWay).";
+      }
+      enum "frame-delay-forward" {
+        description
+          "The frame delay in the forward direction calculated by a 
+           MEP from the last received OAM PDU. ";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (frameDelayForward).";
+      }
+      enum "frame-delay-backward" {
+        description
+          "The frame delay in the backward direction calculated by a 
+           MEP from the last received OAM PDU. ";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (frameDelayBackward).";
+      }
+      enum "inter-frame-delay-variation-two-way" {
+        description
+          "The last two-way inter-frame delay interval calculated by 
+           a MEP.";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (idfvTwoWay).";
+      }
+      enum "inter-frame-delay-variation-forward" {
+        description
+          "The last one-way inter-frame delay interval in the forward 
+           direction calculated by a MEP.";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (idfvForward).";
+      }
+      enum "inter-frame-delay-variation-backward" {
+        description
+          "The last one-way inter-frame delay interval in the 
+           backward direction calculated by a MEP.";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (idfvBackward).";
+      }
+      enum "frame-delay-two-way-min" {
+        description
+          "The minimum two-way frame delay in microseconds calculated 
+           by a MEP for a given measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (frameDelayTwoWayMin).";
+      }
+      enum "frame-delay-two-way-max" {
+        description
+          "The maximum two-way frame delay in microseconds calculated 
+           by a MEP for a given measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (frameDelayTwoWayMax).";
+      }
+      enum "frame-delay-two-way-avg" {
+        description
+          "The average two-way frame delay in microseconds calculated 
+           by a MEP for a given measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (frameDelayTwoWayAve).";
+      }
+      enum "frame-delay-forward-min" {
+        description
+          "The minimum one-way frame delay in the forward direction 
+           calculated by a MEP for a given measurement interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (frameDelayForwardMin).";
+      }
+      enum "frame-delay-forward-max" {
+        description
+          "The maximum one-way frame delay in the forward direction 
+           calculated by a MEP for a given measurement interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (frameDelayForwardMax).";
+      }
+      enum "frame-delay-forward-avg" {
+        description
+          "The average one-way frame delay in the forward direction 
+           calculated by a MEP for a given measurement interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (frameDelayForwardAve).";
+      }
+      enum "frame-delay-backward-min" {
+        description
+          "The minimum one-way frame delay in the backward direction 
+           calculated by a MEP for a given measurement interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (frameDelayBackwardMin).";
+      }
+      enum "frame-delay-backward-max" {
+        description
+          "The maximum one-way frame delay in the backward direction 
+           calculated by a MEP for a given measurement interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (frameDelayBackwardMax).";
+      }
+      enum "frame-delay-backward-avg" {
+        description
+          "The average one-way frame delay in the backward direction 
+           calculated by a MEP for a given measurement interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (frameDelayBackwardAve).";
+      }
+      enum "inter-frame-delay-variation-two-way-min" {
+        description
+          "The minimum two-way inter-frame delay interval calculated 
+           by a MEP for a given measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (ifdvTwoWayMin).";
+      }
+      enum "inter-frame-delay-variation-two-way-max" {
+        description
+          "The maximum two-way inter-frame delay interval calculated 
+           by a MEP for a given measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (ifdvTwoWayMax).";
+      }
+      enum "inter-frame-delay-variation-two-way-avg" {
+        description
+          "The average two-way inter-frame delay interval calculated 
+           by a MEP for a given measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (ifdvTwoWayAve).";
+      }
+      enum "inter-frame-delay-variation-forward-min" {
+        description
+          "The minimum one-way inter-frame delay interval in the 
+           forward direction calculated by a MEP for a given 
+           measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (ifdvForwardMin).";
+      }
+      enum "inter-frame-delay-variation-forward-max" {
+        description
+          "The maximum one-way inter-frame delay interval in the 
+           forward direction calculated by a MEP for a given 
+           measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (ifdvForwardMax).";
+      }
+      enum "inter-frame-delay-variation-forward-avg" {
+        description
+          "The average one-way inter-frame delay interval in the 
+           forward direction calculated by a MEP for a given 
+           measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (ifdvForwardAve).";
+      }
+      enum "inter-frame-delay-variation-backward-min" {
+        description
+          "The minimum one-way inter-frame delay interval in the 
+           backward direction calculated by a MEP for a given 
+           measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (ifdvBackwardMin).";
+      }
+      enum "inter-frame-delay-variation-backward-max" {
+        description
+          "The maximum one-way inter-frame delay interval in the 
+           backward direction calculated by a MEP for a given 
+           measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (ifdvBackwardMax).";
+      }
+      enum "inter-frame-delay-variation-backward-avg" {
+        description
+          "The average one-way inter-frame delay interval in the 
+           backward direction calculated by a MEP for a given 
+           measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (ifdvBackwardAve).";
+      }
+      enum "frame-delay-range-two-way-max" {
+        description
+          "The maximum two-way frame delay range calculated by a MEP 
+           for a given measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (FrameDelayRangeTwoWayMax).";
+      }
+      enum "frame-delay-range-two-way-avg" {
+        description
+          "The average two-way frame delay range calculated by a MEP 
+           for a given measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (FrameDelayRangeTwoWayAvg).";
+      }
+      enum "frame-delay-range-forward-max" {
+        description
+          "The maximum one-way frame delay range in the forward 
+           direction calculated by a MEP for this measurement 
+           interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (FrameDelayRangForwardMax).";
+      }
+      enum "frame-delay-range-forward-avg" {
+        description
+          "The average one-way frame delay range in the forward 
+           direction calculated by a MEP for this measurement 
+           interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (FrameDelayRangForwardAve).";
+      }
+      enum "frame-delay-range-backward-max" {
+        description
+          "The maximum one-way frame delay range in the backward 
+           direction calculated by a MEP for this measurement 
+           interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (FrameDelayRangBackwardMax).";
+      }
+      enum "frame-delay-range-backward-avg" {
+        description
+          "The average one-way frame delay range in the backward 
+           direction calculated by a MEP for this measurement 
+           interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (FrameDelayRangBackwardAve).";
+      }
+    }
+    description
+      "Defines delay measurement metrics.";
+  }
+
+
+  typedef delay-measurement-metric-with-tca {
+    type delay-measurement-metric;
+    description
+      "Defines delay measurement metrics that support threshold 
+       crossing alerts (TCA).";
+  }
+
+  typedef delay-measurement-bin-metric {
+    type enumeration {
+      enum "frame-delay-two-way" {
+        description
+          "The two-way frame delay calculated by a MEP from the last 
+           received OAM PDU.";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (frameDelayTwoWay).";
+      }
+      enum "frame-delay-forward" {
+        description
+          "The frame delay in the forward direction calculated by a 
+           MEP from the last received OAM PDU. ";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (frameDelayForward).";
+      }
+      enum "frame-delay-backward" {
+        description
+          "The frame delay in the backward direction calculated by a 
+           MEP from the last received OAM PDU. ";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (frameDelayBackward).";
+      }
+      enum "inter-frame-delay-variation-two-way" {
+        description
+          "The last two-way inter-frame delay interval calculated by 
+           a MEP.";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (idfvTwoWay).";
+      }
+      enum "inter-frame-delay-variation-forward" {
+        description
+          "The last one-way inter-frame delay interval in the forward 
+           direction calculated by a MEP.";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (idfvForward).";
+      }
+      enum "inter-frame-delay-variation-backward" {
+        description
+          "The last one-way inter-frame delay interval in the 
+           backward direction calculated by a MEP.";
+        reference
+          "MEF 7.2 clause 7.6.3.2 (idfvBackward).";
+      }
+      enum "frame-delay-range-two-way" {
+        description
+          "The maximum two-way frame delay range calculated by a MEP 
+           for a given measurement interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (FrameDelayRangeTwoWayMax).";
+      }
+      enum "frame-delay-range-forward" {
+        description
+          "The maximum one-way frame delay range in the forward 
+           direction calculated by a MEP for this measurement 
+           interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (FrameDelayRangForwardMax).";
+      }
+      enum "frame-delay-range-backward" {
+        description
+          "The maximum one-way frame delay range in the backward 
+           direction calculated by a MEP for this measurement 
+           interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.4 (FrameDelayRangBackwardMax).";
+      }
+    }
+    description
+      "Defines delay measurement metrics that are available for bin 
+       measurements.";
+  }
+
+  typedef bin-number {
+    type uint8 {
+      range "1..100";
+    }
+    description
+      "Defines a bin number.";
+  }
+
+  grouping latest-delay-measurements {
+    description
+      "Defines the latest measurements as calculated from the last 
+       received OAM PDU.";
+    reference
+      "MEF 7.2 clause 7.6.3.2 (EthOamDmLastReceivedResults).";
+
+    leaf frame-delay-two-way {
+      type yang:gauge32;
+      units "microseconds";
+      description
+        "Contains the two-way frame delay calculated by this MEP 
+         from the last received OAM PDU.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.3.2 (frameDelayTwoWay).";
+    }
+
+    leaf frame-delay-forward {
+      type yang:gauge32;
+      units "microseconds";
+      description
+        "Contains the frame delay in the forward direction calculated 
+         by this MEP from the last received OAM PDU. The value of 
+         may not be accurate in the absence of sufficiently precise 
+         clock synchronization.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.3.2 (frameDelayForward).";
+    }
+
+    leaf frame-delay-backward {
+      type yang:gauge32;
+      units "microseconds";
+      description
+        "Contains the frame delay in the backward direction 
+         calculated by this MEP from the last received OAM PDU. The 
+         value of may not be accurate in the absence of sufficiently 
+         precise clock synchronization.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.3.2 (frameDelayBackward).";
+    }
+
+    leaf inter-frame-delay-variation-two-way {
+      type yang:gauge32;
+      units "microseconds";
+      description
+        "Contains the last two-way inter-frame delay interval 
+         calculated by this MEP.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.3.2 (idfvTwoWay).";
+    }
+
+    leaf inter-frame-delay-variation-forward {
+      type yang:gauge32;
+      units "microseconds";
+      description
+        "Contains the last one-way inter-frame delay interval in the 
+         forward direction calculated by this MEP.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.3.2 (idfvForward).";
+    }
+
+    leaf inter-frame-delay-variation-backward {
+      type yang:gauge32;
+      units "microseconds";
+      description
+        "Contains the last one-way inter-frame delay interval in the 
+         backward direction calculated by this MEP.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.3.2 (idfvBackward).";
+    }
+  }
+
+  grouping delay-measurement-performance-dataset {
+    description
+      "Defines the dataset containing the results for performance
+       measurements during a measurement interval.";
+    reference
+      "MEF 7.2 clause 7.6.4.4 (EthOamDmStatsPerfDataSet).";
+
+
+    leaf frame-delay-two-way-min {
+      type uint32;
+      units "microseconds";
+      description
+        "Contains the minimum two-way frame delay in microseconds 
+         calculated by this MEP for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (frameDelayTwoWayMin).";
+    }
+
+    leaf frame-delay-two-way-max {
+      type uint32;
+      units "microseconds";
+      description
+        "Contains the maximum two-way frame delay in microseconds 
+         calculated by this MEP for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (frameDelayTwoWayMax).";
+    }
+
+    leaf frame-delay-two-way-avg {
+      type uint32;
+      units "microseconds";
+      description
+        "Contains the average two-way frame delay in microseconds 
+         calculated by this MEP for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (frameDelayTwoWayAve).";
+    }
+
+    leaf frame-delay-forward-min {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the minimum one-way frame delay in the forward 
+         direction in microseconds calculated by this MEP for this 
+         measurement interval. The value may not be accurate in the 
+         absence of sufficiently precise clock synchronization.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (frameDelayForwardMin).";
+    }
+
+    leaf frame-delay-forward-max {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the maximum one-way frame delay in the forward 
+         direction in microseconds calculated by this MEP for this 
+         measurement interval. The value may not be accurate in the 
+         absence of sufficiently precise clock synchronization.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (frameDelayForwardMax).";
+    }
+
+    leaf frame-delay-forward-avg {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the average one-way frame delay in the forward 
+         direction in microseconds calculated by this MEP for this 
+         measurement interval. The value may not be accurate in the 
+         absence of sufficiently precise clock synchronization.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (frameDelayForwardAve).";
+    }
+
+    leaf frame-delay-backward-min {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the minimum one-way frame delay in the backward 
+         direction in microseconds calculated by this MEP for this 
+         measurement interval. The value may not be accurate in the 
+         absence of sufficiently precise clock synchronization.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (frameDelayBackwardMin).";
+    }
+
+    leaf frame-delay-backward-max {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the maximum one-way frame delay in the backward 
+         direction in microseconds calculated by this MEP for this 
+         measurement interval. The value may not be accurate in the 
+         absence of sufficiently precise clock synchronization.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (frameDelayBackwardMax).";
+    }
+
+    leaf frame-delay-backward-avg {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the average one-way frame delay in the backward 
+         direction in microseconds calculated by this MEP for this 
+         measurement interval. The value may not be accurate in the 
+         absence of sufficiently precise clock synchronization.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (frameDelayBackwardAve).";
+    }
+
+    leaf inter-frame-delay-variation-two-way-min {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the minimum two-way inter-frame delay interval 
+         in microseconds calculated by this MEP for this measurement 
+         interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (ifdvTwoWayMin).";
+    }
+
+    leaf inter-frame-delay-variation-two-way-max {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the maximum two-way inter-frame delay interval 
+         in microseconds calculated by this MEP for this measurement 
+         interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (ifdvTwoWayMax).";
+    }
+
+    leaf inter-frame-delay-variation-two-way-avg {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the average two-way inter-frame delay interval 
+         in microseconds calculated by this MEP for this measurement 
+         interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (ifdvTwoWayAve).";
+    }
+
+    leaf inter-frame-delay-variation-forward-min {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the minimum one-way inter-frame delay interval in 
+         the forward direction in microseconds calculated by this MEP 
+         for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (ifdvForwardMin).";
+    }
+
+    leaf inter-frame-delay-variation-forward-max {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the maximum one-way inter-frame delay interval in 
+         the forward direction in microseconds calculated by this MEP 
+         for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (ifdvForwardMax).";
+    }
+
+    leaf inter-frame-delay-variation-forward-avg {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the average one-way inter-frame delay interval in 
+         the forward direction in microseconds calculated by this MEP 
+         for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (ifdvForwardAve).";
+    }
+
+    leaf inter-frame-delay-variation-backward-min {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the minimum one-way inter-frame delay interval in 
+         the backward direction in microseconds calculated by this 
+         MEP for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (ifdvBackwardMin).";
+    }
+
+    leaf inter-frame-delay-variation-backward-max {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the maximum one-way inter-frame delay interval in 
+         the backward direction in microseconds calculated by this 
+         MEP for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (ifdvBackwardMax).";
+    }
+
+    leaf inter-frame-delay-variation-backward-avg {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the average one-way inter-frame delay interval in 
+         the backward direction in microseconds calculated by this 
+         MEP for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (ifdvBackwardAve).";
+    }
+
+    leaf frame-delay-range-two-way-max {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the maximum two-way frame delay range calculated 
+         by this MEP for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (FrameDelayRangeTwoWayMax).";
+    }
+
+    leaf frame-delay-range-two-way-avg {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the average two-way frame delay range calculated 
+         by this MEP for this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (FrameDelayRangeTwoWayAvg).";
+    }
+
+    leaf frame-delay-range-forward-max {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the maximum one-way frame delay range in the 
+         forward direction calculated by this MEP for this 
+         measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (FrameDelayRangForwardMax).";
+    }
+
+    leaf frame-delay-range-forward-avg {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the average one-way frame delay range in the 
+         forward direction calculated by this MEP for this 
+         measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (FrameDelayRangForwardAve).";
+    }
+
+    leaf frame-delay-range-backward-max {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the maximum one-way frame delay range in the 
+         backward direction calculated by this MEP for this 
+         measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (FrameDelayRangBackwardMax).";
+    }
+
+    leaf frame-delay-range-backward-avg {
+      type uint32;
+      units "microseconds";
+      description
+        "Represents the average one-way frame delay range in the 
+         backward direction calculated by this MEP for this 
+         measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit or receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (FrameDelayRangBackwardAve).";
+    }
+
+    leaf out-oam-pdus {
+      type yang:counter32;
+      description
+        "Contains the count of the number of OAM PDUs sent during 
+         this measurement interval.
+         This leaf is not present for measurement sessions that 
+         receive 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (soamPdusSent).";
+    }
+
+    leaf in-oam-pdus {
+      type yang:counter32;
+      description
+        "Contains the count of the number of OAM PDUs received 
+         during this measurement interval.
+         This leaf is not present for measurement sessions that 
+         transmit 1DM PDUs.";
+      reference
+        "MEF 7.2 clause 7.6.4.4 (soamPdusReceived).";
+    }
+  }
+
+  grouping delay-measurement-stateless-tca-profile-parameters {
+    description
+      "Defines the parameters for stateless threshold crossing alert 
+       (TCA) reporting profiles for delay measurements.";
+
+    leaf metric {
+      type delay-measurement-metric;
+      description
+        "The PM metric for which a TCA function is to be created.";
+    }
+    uses common-stateless-tca-profile-parameters;
+  }
+
+  grouping delay-measurement-stateful-tca-profile-parameters {
+    description
+      "Defines the parameters for stateful threshold crossing alert 
+       (TCA) reporting profiles for delay measurements.";
+
+    leaf metric {
+      type delay-measurement-metric;
+      description
+        "The PM metric for which a TCA function is to be created.";
+    }
+    uses common-stateful-tca-profile-parameters;
+  }
+
+  grouping delay-measurement-bin-stateless-tca-profile-parameters {
+    description
+      "Defines the parameters for stateless threshold crossing alert 
+       (TCA) reporting profiles for delay measurement bins.";
+
+    leaf metric {
+      type delay-measurement-bin-metric;
+      description
+        "The PM metric for which a TCA function is to be created.";
+    }
+
+    leaf bin-number {
+      type bin-number;
+      description
+        "Defines the bin number of the measurement bin for which 
+         the threshold (upper bin count) applies.";
+    }
+
+    uses common-stateless-tca-profile-parameters {
+      refine "threshold" {
+        description
+          "The threshold applicable to the Upper Bin Count (UBC) 
+           of bin 'bin-number'and as such is the total of the counts 
+           for bins 'bin-number' and above, i.e., 
+           UBC('bin-number') = count of bin ('bin-number') + 
+           count of bin ('bin-number'+1) + ... + count of bin (n), 
+           where n is the last bin.";
+      }
+    }
+  }
+
+  grouping delay-measurement-bin-stateful-tca-profile-parameters {
+    description
+      "Defines the parameters for stateful threshold crossing alert 
+       (TCA) reporting profiles for delay measurement bins.";
+
+    leaf metric {
+      type delay-measurement-bin-metric;
+      description
+        "The PM metric for which a TCA function is to be created.";
+    }
+
+    leaf bin-number {
+      type bin-number;
+      description
+        "Defines the bin number of the measurement bin for which 
+         the threshold (upper bin count) applies.";
+    }
+
+    uses common-stateful-tca-profile-parameters {
+      refine "set-threshold" {
+        description
+          "The set threshold applicable to the Upper Bin Count (UBC) 
+           of bin 'bin-number'and as such is the total of the counts 
+           for bins 'bin-number' and above, i.e., 
+           UBC('bin-number') = count of bin ('bin-number') + 
+           count of bin ('bin-number'+1) + ... + count of bin (n), 
+           where n is the last bin.";
+      }
+      refine "clear-threshold" {
+        description
+          "The clear threshold applicable to the Upper Bin Count (UBC)
+           of bin 'bin-number'and as such is the total of the counts 
+           for bins 'bin-number' and above, i.e., 
+           UBC('bin-number') = count of bin ('bin-number') + 
+           count of bin ('bin-number'+1) + ... + count of bin (n), 
+           where n is the last bin.";
+      }
+    }
+  }
+
+  grouping which-bin-profile {
+    description
+      "Selects the type of bin profile configuration for a 
+       measurement bin.";
+    choice which-bin-profile {
+      default "no-bins";
+      description
+        "Select the type of bin profile configuration for a 
+         measurement bin.";
+
+      case no-bins {
+        leaf no-bins {
+          type empty;
+          description
+            "No bins are required for the metric.";
+        }
+      }
+      case lower-bounds {
+        description
+          "Configuration of the lower bound a bins for a bin type.
+           Bins are defined to be contiguous, and each is configured
+           with its lower bound. Because the bins are contiguous, 
+           it is only necessary to configure the lower bound of each 
+           bin. Furthermore, the lowest bin is assumed to always 
+           have a lower bound of 0, and the highest bin is assumed to 
+           have an upper bound of infinity.
+           The number of bins for the bin type will equal the number 
+           of entries in the leaf-list + 1, with a bin of 
+           lower-bound = 0 implied.;";
+        leaf-list lower-bound {
+          type uint32 {
+            range "1..max";
+          }
+          units "microseconds";
+          min-elements 1;
+          description
+            "A lower bound of a bin.";
+          reference
+            "MEF 35.1 clause 10.2.2.";
+        }
+      }
+    }
+  }
+
+  grouping bins-config-parameters {
+    description
+      "Defines the parameters for configuration of measurement bins.";
+    container frame-delay-bins {
+      description
+        "The bin profile for frame delay measurements.";
+      uses which-bin-profile;
+    }
+    container inter-frame-delay-variation-bins {
+      description
+        "The bin profile for inter frame delay variation 
+         measurements.";
+      uses which-bin-profile;
+    }
+    container frame-delay-range-bins {
+      description
+        "The bin profile for frame delay range measurements.";
+      uses which-bin-profile;
+    }
+  }
+
+  grouping bin-parameters {
+    description
+      "Defines a measurement bin.";
+
+    leaf bin-number {
+      type bin-number;
+      description
+        "The number of the bin.";
+    }
+    leaf lower-bound {
+      type uint32;
+      description
+        "The lower bound associated with the bin.";
+    }
+    leaf count {
+      type uint32;
+      description
+        "Records the number of measurements whose value falls within 
+         the range represented by the bin within the measurement 
+         interval.";
+    }
+  }
+
+
+  grouping measurement-bin-set {
+    description
+      "Defines measurement bins for a base measurement.";
+
+    list two-way {
+	  key bin-number;
+      description
+        "Measurement bins for two-way measurements.";
+
+      uses bin-parameters;
+    }
+    list forward {
+	  key bin-number;
+      description
+        "Measurement bins for measurements in the forward direction.";
+
+      uses bin-parameters;
+    }
+    list backward {
+	  key bin-number;
+      description
+        "Measurement bins for measurements in the backward 
+         direction.";
+
+      uses bin-parameters;
+    }
+  }
+
+  grouping measurement-bins {
+    description
+      "Defines the measurement bins for delay measurements.";
+
+    container frame-delay {
+      description
+        "Contains measurement bins for frame delay measurements.";
+
+      uses measurement-bin-set;
+    }
+    container inter-frame-delay-variation {
+      description
+        "Contains measurement bins for frame delay measurements.";
+
+      uses measurement-bin-set;
+    }
+    container frame-delay-range {
+      description
+        "Contains measurement bins for frame delay measurements.";
+
+      uses measurement-bin-set;
+    }
+  }
+
+  grouping delay-measurement-config-parameters {
+    description
+      "Configuration parameters for ETH-DM of a MEP.";
+
+    leaf dm-single-ended-responder-enabled {
+      if-feature "dm-single-ended-responder-enable-disable";
+      type boolean;
+      default "true";
+      description
+        "This object specifies whether the Delay Measurement (DM) 
+         Single-ended Responder is enabled ('true') or disabled 
+         'false' at the MEP.
+
+         If enabled, DMR messages will be sent in reply to an DMM 
+         message received by the MEP.
+         If disabled, no DMR message will be sent in response to an
+         DMM message received by the MEP and the DMM message will be 
+         discarded.
+
+         A MEP can be both a single-ended responder and controller 
+         simultaneously.";
+      reference
+        "ITU-T Y.1731 clause 8.2.2.2.";
+    }
+  }
+
+  grouping delay-measurement-session-config-parameters {
+    description
+      "Configuration parameters for a delay measurement session.";
+    reference
+      "MEF 7.2 clause 7.6.3.1 (EthOamDmCfg).";
+
+    leaf measurement-type {
+      type dm-measurement-type;
+      default "dmm";
+      description
+        "This object specifies what type of delay measurement is
+         to be performed.";
+      reference
+        "ITU-T Y.1731 clause 8.2.2;
+         MEF 7.2 clause 7.6.3.1 (type).";
+    }
+
+    leaf measurement-interval {
+      type uint32 {
+        range "1..1440";
+      }
+      units "minutes";
+      default "15";
+      description
+        "Specifies the measurement interval in minutes for this 
+         session.";
+      reference
+        "MEF 7.2 clause 7.6.1.1 (measurementInterval).";
+    }
+
+    leaf-list enabled-measurement {
+      if-feature "metric-selection";
+      type delay-measurement-metric;
+      description
+        "A delay measurement metric that is enabled for collection.";
+      reference
+        "MEF 7.2 clause 7.6.1.1 (measurementEnabled).";
+    }
+
+    uses common-session-config-parameters {
+      refine "message-interval" {
+        default "1000";
+      }
+      refine "measurement-interval-alignment/"
+           + "which-measurement-interval-alignment/enabled/offset" {
+        must "(../../repetition-interval != 'none' and "
+           + "(60 mod ../../repetition-interval = 0)) or "
+           + "(../../repetition-interval != 'none' and "
+           + "(60 mod ../../measurement-interval = 0))" {
+          error-message
+            "Measurement interval alignment cannot be set, 
+             because the 'repetition-interval' is not a factor 
+             of an hour (60 minutes) or, if no 'repetition-
+             interval' is configured, the 'measurement-
+             interval' is not a factor of an hour.";
+          description
+            "Ensure that the repetition-interval is a factor 
+             of an hour or, if no repetition-interval is 
+             configured, the 'measurement-interval' is a 
+             factor of an hour.";
+        }
+      }
+      refine "repetition-interval" {
+        must ".='none' or .>= ../measurement-interval" {
+          error-message
+            "If a repetition interval is specified, it must be 
+             greater than or equal to the measurement interval.";
+          description
+            "If a repetition interval is specified, it must be 
+             greater than or equal to the measurement interval.";
+        }
+      }
+      augment 'destination-address/destination-address-type' {
+        description
+          "Add the option of using a multicast destination for
+           delay measurement.";
+
+        case multicast {
+          leaf multicast {
+            type empty;
+            description
+              "The destination is to use the appropriate 
+               multicast MAC address.";
+          }
+        }
+      }
+    }
+
+    container pattern-tlv {
+      description
+        "Specifies which type of pattern TLV is to be included in 
+         the DMM or 1DM, if any.";
+
+      uses pattern-tlv;
+    }
+
+    leaf inter-frame-delay-variation-selection-offset {
+      type uint8 {
+        range "1..100";
+      }
+      default "1";
+      description
+        "Specifies the selection offset for inter-frame delay 
+         variation measurements. If this value is set to n, then the 
+         IFDV is calculated by taking the difference in frame delay 
+         between frame F and frame (F+n).";
+      reference
+        "MEF 7.2 clause 7.6.3.1 
+         (interFrameDelayVariationSelectionOffset).";
+    }
+  }
+
+  grouping delay-measurement-session-status-parameters {
+    description
+      "Status parameters for a delay measurement session.";
+
+    uses common-session-status-parameters;
+    uses delay-measurement-session-config-parameters;
+
+    container measurement-statistics {
+      description
+        "Performance measurements made during the delay measurement 
+         sessions.";
+
+      uses latest-delay-measurements;
+
+      container current {
+        description
+          "The performance measurements applicable to the current 
+           measurement interval.";
+        uses common-current-performance-dataset-parameters;
+        uses delay-measurement-performance-dataset;
+
+        container bins {
+          description
+            "Measurement bins applicable to the current measurement 
+             interval.";
+          uses measurement-bins;
+        }
+      }
+
+      container history {
+        description
+          "Historical performance measurements.";
+        list history {
+          key "interval-number";
+          description
+            "Measurement results for an historical measurement 
+             period.";
+          uses common-history-performance-dataset-parameters;
+          uses delay-measurement-performance-dataset;
+
+          container bins {
+            description
+              "Measurement bins applicable to the current measurement 
+               interval.";
+            uses measurement-bins;
+          }
+        }
+      }
+    }
+  }
+
+  grouping create-on-demand-delay-measurement-input-parameters {
+    description
+      "Input parameters for the create-on-demand-delay-measurement 
+       RPC.";
+
+    uses session-identification-parameters;
+    uses delay-measurement-session-config-parameters;
+  }
+
+  grouping create-on-demand-delay-measurement-output-parameters {
+    description
+      "Output parameters for the create-on-demand-delay-measurement 
+       RPC.";
+    uses vz-oam-ecfm:rpc-common-output-parameters;
+  }
+
+  grouping start-on-demand-delay-measurement-input-parameters {
+    description
+      "Input parameters for the start-on-demand-delay-measurement 
+       RPC.";
+
+    uses session-identification-parameters;
+  }
+
+  grouping start-on-demand-delay-measurement-output-parameters {
+    description
+      "Output parameters for the start-on-demand-delay-measurement 
+       RPC.";
+    uses measurements-restarted;
+    uses vz-oam-ecfm:rpc-common-output-parameters;
+  }
+
+  grouping stop-on-demand-delay-measurement-input-parameters {
+    description
+      "Input parameters for the stop-on-demand-delay-measurement 
+       RPC.";
+
+    uses session-identification-parameters;
+  }
+
+  grouping stop-on-demand-delay-measurement-output-parameters {
+    description
+      "Output parameters for the stop-on-demand-delay-measurement 
+       RPC.";
+    uses vz-oam-ecfm:rpc-common-output-parameters;
+  }
+
+  grouping delete-on-demand-delay-measurement-input-parameters {
+    description
+      "Input parameters for the delete-on-demand-delay-measurement 
+       RPC.";
+
+    uses session-identification-parameters;
+  }
+
+  grouping delete-on-demand-delay-measurement-output-parameters {
+    description
+      "Output parameters for the delete-on-demand-delay-measurement 
+       RPC.";
+    uses vz-oam-ecfm:rpc-common-output-parameters;
+  }
+}

@@ -1,0 +1,57 @@
+submodule: verizon-oam-ethernet-cfm-mep (belongs-to verizon-oam-ethernet-cfm)
+  +--rw cfm
+  |  +--rw domains
+  |     +--rw domain* [admin-name]
+  |        +--rw admin-name       admin-name
+  |        +--rw md-name
+  |        |  +--rw (which-md-name-format)?
+  |        |     +--:(no-name)
+  |        |     |  +--rw no-name?                  empty
+  |        |     +--:(domain-name)
+  |        |     |  +--rw domain-name?              inet:domain-name
+  |        |     +--:(mac-address-and-uint16)
+  |        |     |  +--rw mac-address-and-uint16
+  |        |     |     +--rw mac-address?   yang:mac-address
+  |        |     |     +--rw uint16?        uint16
+  |        |     +--:(character-string)
+  |        |        +--rw character-string?         string
+  |        +--rw level?           md-level
+  |        +--rw sender-id-tlv
+  |        |  +--rw chassis-id?           boolean
+  |        |  +--rw management-address?   boolean
+  |        +--rw associations
+  |           +--rw association* [admin-name]
+  |              +--rw admin-name       admin-name
+  |              +--rw short-ma-name
+  |              |  +--rw (which-short-ma-name-format)
+  |              |     +--:(primary-vid)
+  |              |     |  +--rw primary-vid?        empty
+  |              |     +--:(character-string)
+  |              |     |  +--rw character-string?   string
+  |              |     +--:(uint16)
+  |              |     |  +--rw uint16?             uint16
+  |              |     +--:(rfc2685-vpn-id)
+  |              |        +--rw rfc2685-vpn-id
+  |              |           +--rw vpn-oui?     uint32
+  |              |           +--rw vpn-index?   uint32
+  |              +--rw mep-list
+  |              |  +--rw mep-id*   mep-id
+  |              +--rw meps
+  |                 +--rw mep* [mep-id]
+  |                    +--rw mep-id              mep-id
+  |                    +--rw enabled?            boolean
+  |                    +--rw direction           enumeration
+  |                    +--rw ccm-ltm-priority    frame-priority
+  +--ro cfm-state
+     +--ro domains
+        +--ro domain* [admin-name]
+           +--ro admin-name      admin-name
+           +--ro associations
+              +--ro association* [admin-name]
+                 +--ro admin-name    admin-name
+                 +--ro meps
+                    +--ro mep* [mep-id]
+                       +--ro mep-id         mep-id
+                       +--ro oper-status?   enumeration
+                       +--ro mac-address?   yang:mac-address
+                       +--ro statistics

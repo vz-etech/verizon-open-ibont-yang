@@ -1,0 +1,60 @@
+module verizon-ipfix-interfaces {
+  namespace "http://www.verizon.com/ns/verizon-ipfix-interfaces";
+  prefix vz-ipfix-if;
+
+  import verizon-ipfix {
+    prefix vz-ipfix;
+  }
+  
+  import verizon-ipfix-statistics {
+    prefix vz-ipfix-bulkstats;
+  }
+  
+  import ietf-interfaces {
+    prefix if;
+  }
+
+  organization
+    "Verizon";
+    
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>" ;
+     
+  description
+    "This YANG module describes augmentations to ietf
+     interfaces module that have interfaces refering to the
+     sampling template for export via IPFIX.
+  
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+ 
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  /*
+   * Data Definitions
+   */
+
+  // Augment ietf-interface to include ipfix elements
+  augment /if:interfaces/if:interface {
+    description
+      "Augment interfaces to refer to the sampling template to apply
+       for ipfix messages";
+    container ipfix {
+      description "ipfix container containing templates to apply";
+      leaf-list statistics-template {
+        type leafref {
+        path "/vz-ipfix:ipfix"
+           + "/vz-ipfix-bulkstats:statistics-template"
+           + "/vz-ipfix-bulkstats:name";
+        }
+    description
+      "statistics-template being pointed/referenced
+       from the monitored entity";
+      }
+    }
+  }
+}

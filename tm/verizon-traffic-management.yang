@@ -1,0 +1,371 @@
+module verizon-traffic-management {
+  namespace "http://www.verizon.com/ns/traffic-management";
+  prefix vz-tm;
+
+  import ietf-interfaces {prefix if;}
+
+  organization 
+    "Verizon";
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+     
+  description "Traffic-Management Schema
+  
+  Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  } 
+
+
+//******************************************************************/
+//                 Typedefs
+//*****************************************************************/
+
+  typedef vlan-id {
+    type uint16{
+      range "1..4094";
+    }
+    description "VlanId (range: 1-4094)";
+  }
+
+  typedef ethertype {
+    type enumeration {
+      enum "0x8100" {
+        value "0";
+        description "IEEE 802.1Q C-Tag";
+      }
+      enum "0x88a8" {
+        value "1";
+        description "IEEE 802.1AD S-Tag";
+      }
+      enum "0x88ab" {
+        value "2";
+        description "Ethernet Powerlink";
+      }
+      enum "0x9100" {
+        value "3";
+        description "Q-in-Q";
+      }
+    }
+    description "Interface ethertype";
+  }
+
+  typedef vlan-range {
+    type string {
+    pattern '(\d{1,4}(-\d{1,4})?(,\d{1,4}(-\d{1,4})?)'
+      + '*)';
+    }
+    description
+     "A list of VLAN-IDs, or non overlapping VLAN ranges,
+      in ascending order, between 1 and 4094.
+      Example: 1,10-100,150,500-1000";
+  }
+
+  typedef cir {
+    type uint32{
+      range "0..10000000";
+    }
+    units "kbps in 64k increments";
+    description "Committed Information Rate";
+  }
+
+  typedef cbs{
+    type uint32 {
+      range "0..256000";
+    }
+    units "bytes";
+    description "Burst size in bytes";
+  }
+
+  typedef eir{
+    type uint32{
+      range "0..10000000";
+    }
+    units "kbps in 64k increments";
+    description "Excess Information Rate";
+  }
+
+  typedef ebs{
+    type uint32 {
+      range "0..128000";
+    }
+    units "bytes";
+    description "Excess burst size in bytes";
+  }
+
+  typedef pcp-range-value {
+       type string {
+        pattern '([0-7](-[0-7])?(,[0-7](-[0-7])?)*)';
+       }
+       description
+        "A set of p-bit values.
+        A list of PBIT bits values, or non overlapping
+        PBIT bits value ranges, in ascending order,
+        between 0 and 7.
+
+        Example: 0,2-4,7";
+  }
+
+  typedef pcp-value{
+    type string {
+      pattern '[0-7]?';
+    }
+    description "Pbit value (0-7)" ;
+  }
+
+  typedef dscp {
+    type string {
+      pattern '(([0-9]|[1-5][0-9]|6[0-4])(\-([0-9]|'+
+        '[1-5][0-9]|6[0-4]))?)(,(([0-9]|[1-5][0-9]|'+
+        '6[0-4])(\-([0-9]|[1-5][0-9]|6[0-4]))?))*' ;
+    }
+    description
+      "A list of valid Diffserv Codepoint values, or non
+       overlapping DSCP value ranges, in ascending order,
+       between 0 and 64.
+
+        Example: 0,20-24,63";
+  }
+
+  typedef l2cp-profile {
+    type enumeration {
+      enum "CTA" {
+        value "0";
+        description "MEF-45 L2CP profile CTA";
+      }
+      enum "CTB" {
+        value "1";
+        description "MEF-45 L2CP profile CTB";
+      }
+    }
+    description "MEF-45 L2CP profile";
+  }
+
+  typedef pm-session-control {
+    type boolean;
+    default true ;
+    description "Enable/dsiable PM session";
+  }
+   container evcs {
+    description "This container has the EVC provisioned data" ;
+    list evc {
+      key etag;
+      description "This list conatins the EVC provisioned data" ;
+      leaf etag {
+        type vlan-id;
+        description "EVC_ETAG";
+      }
+      leaf evc-admin-status {
+        type enumeration {
+          enum all-traffic-enabled {
+          description
+            "All traffic is able to flow over this EVC.";
+          }
+          enum all-traffic-disabled {
+          description
+            "All traffic is prevented from flowing over this EVC.";
+          }
+          enum data-traffic-disabled {
+          description
+            "Data traffic is prevented from flowing over this EVC.
+             However, OAM traffic is able to flow.";
+          }
+        }
+        default all-traffic-enabled ;
+        description
+          "The administrative state of the EVC.";
+      }
+
+      leaf uni {
+         type leafref {
+           path '/if:interfaces/if:interface/if:name';
+         }
+         description "Reference to the UNI interface associated 
+           with this EVC";
+      }
+      leaf evc-ckt {
+        type string {
+           length "1..32";
+        }
+        mandatory true;
+      description "EVC_CKT. This is
+           Verizon unique identifier for this EVC.";
+      }
+      leaf evc-type {
+        type enumeration {
+          enum tagged {
+            value 1;
+            description "Tagged" ;
+          }
+          enum untagged {
+            value 2;
+            description "Unagged" ;
+          }
+          enum range {
+            value 3;
+            description "Range" ;
+          }
+          enum tunnel {
+            value 4;
+            description "Tunnel" ;
+          }
+        }
+        mandatory true;
+        description "EVC_TYPE.
+            Verzion designated EVC type.";
+       }
+       leaf ethertype {
+         type ethertype;
+         description "EVC_ETHTYPE.  Optional";
+       }
+       leaf cvlans {
+         type vlan-range;
+         description "EVC_CVLANS. Optional.
+           This is single, range or set of VLANs to be matched 
+           on the IBONT UNI port.";
+       }
+       leaf cvlan-translation {
+         type vlan-range;
+         description "EVC_CVLAN_TRANSLATION.  Optional.
+          If VLAN translation is required this attribute 
+          provides the individual, range or set of VLANs
+          for translation of the values defined under cvlans. ";
+       }
+       leaf egress-policing {
+         type boolean;
+         description "EVC_EGRESS_POLICING.  Optional.
+          This attribute will control egress policing.";
+       }
+       leaf l2cp-protocol {
+         type l2cp-profile ;
+         description "L2CP_PROTOCOL_TEMPLATE. Optional. 
+           MEF-45 L2CP profile.";
+       }
+       leaf l2cp-cir {
+         type cir;
+         description "L2CP_CIR. Optional. CIR control 
+           for L2CP traffic";
+       }
+       leaf l2cp-cbs {
+         type cbs;
+         description "L2CP_CBS. Optional. CBS control for 
+           L2CP traffic";
+       }
+       leaf l2cp-eir {
+         type eir;
+         description "L2CP_EIR. Optional. EIR control for 
+            L2CP traffic";
+       }
+       leaf l2cp-ebs {
+         type ebs;
+         description "L2CP_EBS. Optional. EBS control for 
+           L2CP traffic";
+       }
+       leaf nid-seq-id {
+         type string;
+         description "NID_SEQ_ID";
+       }
+       leaf nid-seq-list {
+         type string;
+         description "NID_SEQ_LIST";
+       }
+       leaf pm-session-control {
+         type pm-session-control;
+         description "Admin status for PM session";
+       }
+       list cos {
+         key "cos-type";
+         max-elements "4";
+         description "This list contains the EVC COS data" ;
+         leaf cos-type {
+           type pcp-value ;
+           description "This attribute specifies the
+              p-bit value to be used on the E-tag
+              associated with this EVC (for single
+              CoS) or this CoS within the EVC (for
+              multi-CoS). The mapping from {RT, PD,
+              DATA, BASIC} to p-bit value is
+              performed in the EMS";
+         }
+         leaf cos-dscp {
+           type dscp;
+           description "COS_DSCP. Optional. This value defines
+                 the DSCP value to match on the UNI
+                 port for this COS";
+         }
+         leaf cos-pbit {
+           type pcp-range-value;
+           description "COS_PBIT_TRANSLATION. Optional. This attribute
+              defines the p-bit (set or range) to be
+              used if p-bit translation of the CE-tag
+              is required. There must be a one-to-one
+              correspondence between cos-pbit and
+              cos-pbit-translation such that a p-bit
+              value on the CE-tag on the UNI which
+              matches a value in cos-pbit translates
+              to a corresponding p-bit value on the
+              CE-tag on the PON from cos-pbit-
+              translation. If cos-pbit is not present
+              then cos-pbit-translation cannot be
+              present.";
+         }
+         leaf cos-pbit-translation {
+           type pcp-range-value;
+           description "COS_PBIT_TRANSLATION. Optional.This value
+                 defines the pbit to be used if
+                 pbit translation is required.
+                 The format will be an ordered
+                 list of new pbit values.
+                 e.g. '0,1,3,3,4,5,6,6'
+                 This value would translate
+                 pbits 2 to 3 and 7 to 6. ";
+         }
+         leaf cir {
+           type cir;
+           mandatory true;
+           description "COS_BW_CIR. CIR for this COS.";
+         }
+         leaf cbs {
+           type cbs;
+           mandatory true;
+           description "COS_BW_CBS. CBS for this COS.";
+         }
+         leaf eir {
+           type eir;
+           mandatory true;
+           description "COS_BW_EIR. EIR for this COS.";
+         }
+         leaf ebs {
+           type ebs;
+           mandatory true;
+           description "COS_BW_EBS. EBS for this COS.";
+         }
+         leaf pm-session-control {
+           type pm-session-control;
+           description "Admin status for PM session";
+        }
+       }
+     }
+   }
+
+  container evcs-state {
+    // This container provides an evc list to be used as
+    // an anchor point for adding evc state information.
+    config false ;
+    description "This container has the EVC stats data" ;
+    list evc {
+      key etag;
+      description "This list contains EVC status info" ;
+      leaf etag {
+        type leafref {
+           path "/vz-tm:evcs/vz-tm:evc/vz-tm:etag";
+        }
+        description "EVC_ETAG";
+      }
+    }
+  }
+}

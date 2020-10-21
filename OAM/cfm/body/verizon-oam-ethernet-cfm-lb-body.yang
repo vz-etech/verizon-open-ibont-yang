@@ -1,0 +1,379 @@
+submodule verizon-oam-ethernet-cfm-lb-body {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  include verizon-oam-ethernet-cfm-types;
+  include verizon-oam-ethernet-cfm-mep-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection YANG data types and grouping 
+     definitions for the management of the loopback (LB) protocol of 
+     a MEP as specified in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  feature dot1ag-lb {
+    description
+      "Indicates support for the Loopback protocol acc. to
+       IEEE 802.1ag CFM at a MEP.";
+  }
+
+  typedef transmit-loopback-result {
+    type enumeration {
+      enum "ok" {
+        description
+          "The request to transmit loopback messages(LBM) was
+           successful and LBMs will be or have been sent.";
+      }
+      enum "mep-not-found" {
+        description
+          "The request to transmit loopback messages(LBM) was
+           rejected due to a non-existent MEP.";
+      }
+      enum "not-ok-session-active" {
+        description
+          "The request to transmit loopback messages(LBM) was
+           rejected, because a loopback session is currently
+           active.";
+      }
+    }
+    description
+      "Defines the results of a transmit-loopback RPC";
+    reference
+      "IEEE 802.1ag claus 12.14.7.3.3:a";
+  }
+
+  typedef test-tlv-pattern {
+    type enumeration {
+      enum "null" {
+        description
+          "Null signal without CRC-32.";
+      }
+      enum "null-crc-32" {
+        description
+          "Null signal with CRC-32.";
+      }
+      enum "prbs" {
+        description
+          "Pseudorandom binary sequence (PRBS) (2^-31 - 1) signal 
+           without CRC-32.";
+      }
+      enum "prbs-crc-32" {
+        description
+          "Pseudorandom binary sequence (PRBS) (2^-31 - 1) signal 
+           with CRC-32.";
+      }
+    }
+    description
+      "To define the types of Test TLV patterns that may 
+       be configured.";
+    reference
+      "ITU-T Y.1731 clause 7.2.1 and 9.3.2";
+  }
+
+  grouping loopback-config-parameters {
+    description
+      "Configuration parameters for the loopback protocol of a MEP.";
+  }
+
+  grouping transmit-loopback-session-parameters {
+    description
+      "Input parameters for the transmit-loopback RPC.";
+
+    container destination-address {
+      description
+        "Specifies the destination for LBM PDUs.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.3.2:c";
+      uses frame-destination;
+    }
+
+    leaf number-of-messages {
+      type uint32;
+      default "3"; // Added by Calix!   TJETBD!!
+      description
+        "The number of LBMs to be transmitted by the MEP.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.3.2:c";
+    }
+
+    container vlan {
+      description
+        "VLAN tag configuration for LBMs.";
+
+      leaf priority {
+        type frame-priority;
+        description
+          "The priority value for LBMs transmitted by the MEP.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:e";
+      }
+
+      leaf drop-eligible {
+        type boolean;
+        description
+          "Specifies the value of the Drop Eligible Indicator (DEI) 
+           to be used in the VLAN tag, if present in the transmitted 
+           LBM.
+           If true, a DEI bit value of 1 will be used indicating that 
+           the LBMs are eligible to be dropped in the presence of 
+           congestion, if false a DEI bit value of 0 
+           will be used.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:e";
+      }
+    }
+
+    container pattern-tlv {
+      description
+        "Specifies which type of pattern TLV is to be included in 
+         the LBM, if any.";
+
+      choice tlv-option {
+        default "no-tlv";
+        description
+          "Indication of whether a pattern TLV is to be included in 
+           the LBM.";
+        case no-tlv {
+          leaf no-tlv {
+            type empty;
+            description
+              "Do not include a Data TLV in the LBM.";
+            reference
+              "IEEE 802.1ag clauses 12.14.7.3.2:d and 20.29.1";
+          }
+        }
+        case data-tlv {
+          leaf data-tlv {
+	    type string {
+		length "0 | 1..1522";
+                pattern "[a-fA-F0-9]*" ;
+            }
+            description
+              "An arbitrary amount of data to be included in a 
+               Data TLV.";
+            reference
+              "IEEE 802.1ag clauses 12.14.7.3.2:d and 20.29.1";
+          }
+        }
+      }
+    }
+  }
+
+  grouping loopback-status-parameters {
+    description
+      "Status parameters for the loopback protocol of a MEP.";
+
+    leaf next-transaction-id {
+      type uint32;
+      description
+        "Next sequence number/transaction identifier to be sent in
+         a loopback message. This sequence number can be zero
+         because it wraps around.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.1.3:x and 20.28.2";
+    }
+
+    container transmit-session {
+      description
+        "Operational status of the current (status='active')
+         or previously executed (status='idle') loopback
+         protocol session.";
+
+      leaf status {
+        type enumeration {
+          enum "idle" {
+            description
+              "Indicates that no loopback session is currently active
+               and that the MEP is not transmitting LBM PDUs, in which
+               case a loopback session may be initiated.";
+          }
+          enum "active" {
+            description
+              "Indicates that a loopback session is currently active
+               and that the MEP is transmitting LBM PDUs, in which
+               case no new loopback session can be initiated.";
+          }
+        }
+        description
+          "Indicates whether LBM PDUs are currently being transmitted
+           by the MEP as a result of a successful invocation of the
+           transmit-loopback RPC.
+           If status = active, no new session may be started. ";
+      }
+      leaf transaction-id {
+        type uint32;
+        description
+          "The Loopback Transaction Identifier of the first LBM
+           (to be) sent.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.3:b.";
+      }
+
+      uses transmit-loopback-session-parameters;
+    }
+  }
+
+  grouping loopback-statistics-parameters {
+    description
+      "Statistics parameters for the loopback protocol of a MEP.";
+
+    leaf in-lbr {
+      type yang:counter64;
+      description
+        "The total number of valid in-order Loopback Reply (LBR)
+         messages received by the MEP.";
+      reference
+        "IEEE 802.1ag 12.14.7.1.3:y and 20.31.1";
+    }
+
+    leaf in-lbr-out-of-order {
+      type yang:counter64;
+      description
+        "The total number of valid out-of-order Loopback Reply (LBR)
+         messages received by the MEP.";
+      reference
+        "IEEE 802.1ag 12.14.7.1.3:z and 20.31.1";
+    }
+
+    leaf in-lbr-bad-mdsu {
+      type yang:counter64;
+      description
+        "The total number of Loopback Reply (LBR) messages received
+         by the MEP whose mac_service_data_unit did not match (except
+         for the OpCode) that of the corresponding LBM.";
+      reference
+        "IEEE 802.1ag 12.14.7.1.3:aa and 20.2.3";
+    }
+
+    leaf out-lbr {
+      type yang:counter64;
+      description
+        "The total number of Loopback Reply (LBR) messages
+         transmitted by the MEP.";
+      reference
+        "IEEE 802.1ag 12.14.7.1.3:ad and 20.26.2";
+    }
+
+    leaf in-lbm {
+      type yang:counter64;
+      description
+        "The total number of LBMs received by the MEP.";
+    }
+
+    leaf out-lbm {
+      type yang:counter64;
+      description
+        "The total number of LBMs transmitted by the MEP.";
+    }
+    
+  }
+
+  grouping transmit-loopback-input-parameters {
+    description
+      "Input parameters for the transmit-loopback RPC.";
+
+    uses mep-identification-parameters {
+      refine "domain-admin-name" {
+        mandatory true;
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:a";
+      }
+      refine "association-admin-name" {
+        mandatory true;
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:a";
+      }
+      refine "mep-id" {
+        mandatory true;
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:a";
+      }
+    }
+
+    uses transmit-loopback-session-parameters {
+      refine "destination-address/destination-address-type" {
+        mandatory true;
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:b";
+      }
+      refine "number-of-messages" {
+        default "1";
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:c";
+      }
+      refine "vlan/priority" {
+        mandatory true;
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:e";
+      }
+      refine "vlan/drop-eligible" {
+        mandatory true;
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:e";
+      }
+      refine "pattern-tlv/tlv-option" {
+        default "no-tlv";
+        reference
+          "IEEE 802.1ag clause 12.14.7.3.2:d";
+      }
+    }
+  }
+
+  grouping transmit-loopback-output-parameters {
+    description
+      "Input parameters for the transmit-loopback RPC.";
+    leaf result {
+      type transmit-loopback-result;
+      description
+        "The result of the invocation of the transmit-loopback RPC.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.3.3:a";
+    }
+    leaf transaction-id {
+      type uint32;
+      description
+        "The Loopback Transaction Identifier of the first LBM
+         (to be) sent.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.3.3:b.";
+    }
+    
+    uses rpc-common-output-parameters;
+  }
+
+  grouping abort-loopback-input-parameters {
+    description
+      "Input parameters for the transmit-loopback RPC.";
+
+    uses mep-identification-parameters {
+      refine "domain-admin-name" {
+        mandatory true;
+      }
+      refine "association-admin-name" {
+        mandatory true;
+      }
+      refine "mep-id" {
+        mandatory true;
+      }
+    }
+  }
+}

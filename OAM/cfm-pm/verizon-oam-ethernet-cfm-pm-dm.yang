@@ -1,0 +1,458 @@
+submodule verizon-oam-ethernet-cfm-pm-dm {
+  belongs-to verizon-oam-ethernet-cfm-pm {
+    prefix vz-oam-ecfm-pm;
+  }
+
+  import verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  include verizon-oam-ethernet-cfm-pm-types;
+  include verizon-oam-ethernet-cfm-pm-tca;
+  include verizon-oam-ethernet-cfm-pm-base;
+  include verizon-oam-ethernet-cfm-pm-dm-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions that
+     extend the functionality of Connectivity Fault Management
+     (CFM) as specified in IEEE 802.1ag with additional
+     functionality to support the Ethernet Frame Delay Measurement 
+     (ETH-DM) function of Ethernet Service Layer OAM Performance 
+     Monitoring as specified by ITU-T Y.1731 clause 8.2, MEF 35.1 
+     and the management information models specified in MEF 7.2 
+     clause 7.6.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference
+      "ITU-T Y.1731-2015 clause 8.2; MEF 35.1; MEF 7.2 clause 7.6.";
+  }
+
+  feature reset-delay-measurement-statistics {
+    description
+      "Indicate support for the RPCs to reset delay measurement 
+       statistics.";
+  }
+
+  typedef delay-measurement-tca-profile-ref {
+    type leafref {
+      path "/vz-oam-ecfm:cfm/vz-oam-ecfm-pm:profiles"
+         + "/vz-oam-ecfm-pm:delay-measurement"
+         + "/vz-oam-ecfm-pm:tca-profiles/vz-oam-ecfm-pm:tca-profile"
+         + "/vz-oam-ecfm-pm:name";
+    }
+    description
+      "A reference to an entry in the tca-profile list for delay 
+       measurements.";
+  }
+
+  typedef delay-measurement-bins-tca-profile-ref {
+    type leafref {
+      path "/vz-oam-ecfm:cfm/vz-oam-ecfm-pm:profiles"
+         + "/vz-oam-ecfm-pm:delay-measurement-bins"
+         + "/vz-oam-ecfm-pm:tca-profiles/vz-oam-ecfm-pm:tca-profile"
+         + "/vz-oam-ecfm-pm:name";
+    }
+    description
+      "A reference to an entry in the tca-profile list for delay 
+       measurements.";
+  }
+
+  typedef delay-measurement-bins-profile-ref {
+    type leafref {
+      path "/vz-oam-ecfm:cfm/vz-oam-ecfm-pm:profiles"
+         + "/vz-oam-ecfm-pm:delay-measurement-bins"
+         + "/vz-oam-ecfm-pm:bins-profiles/vz-oam-ecfm-pm:bins-profile"
+         + "/vz-oam-ecfm-pm:name";
+    }
+    description
+      "A reference to an entry in the tca-profile list for delay 
+       measurements.";
+  }
+
+  grouping delay-measurement-profiles {
+    description
+      "Defines the profiles for delay measurements.
+
+       Editor's note: These leafs should preferably be included 
+       in the grouping 'delay-measurement-session-config-parameters', 
+       but this would cause a circular dependency when using the 
+       current submodule structure as the typedefs 
+       'delay-measurement-bins-profile-ref',
+       'delay-measurement-tca-profile-ref' and 
+       'delay-measurement-bins-tca-profile-ref' needed for these 
+       leafs are defined within this module.
+       For the long-term, the profile and or bins definitions could 
+       be extracted out into their own submodules.";
+
+    leaf bins-profile {
+      if-feature "delay-measurement-bins";
+      type delay-measurement-bins-profile-ref;
+      description
+        "A reference to a loss measurement bins profile. If no 
+         profile is referenced, measurement bins will be 
+         disabled for the session.";
+    }
+
+    leaf tca-profile {
+      if-feature "tca-reporting";
+      type delay-measurement-tca-profile-ref;
+      description
+        "A reference to a loss measurement TCA profile. If no 
+         profile is referenced, TCA reporting will be disabled 
+         for the session.";
+    }
+    leaf bins-tca-profile {
+      if-feature "tca-reporting";
+      type delay-measurement-bins-tca-profile-ref;
+      description
+        "A reference to a loss measurement TCA profile. If no 
+         profile is referenced, TCA reporting will be disabled 
+         for the session.";
+    }
+  }
+
+  /* Augment CFM profile configuration with delay measurement bins
+   *  profiles.
+   */
+  augment '/vz-oam-ecfm:cfm/vz-oam-ecfm-pm:profiles' {
+    description
+      "Add configuration nodes for profiles for the configuration 
+       of delay measurement bins.";
+
+    container delay-measurement {
+      description
+        "Configuration of profiles for delay measurements.";
+
+      container tca-profiles {
+        if-feature "tca-reporting";
+        description
+          "Configuration of TCA profiles.";
+
+        list tca-profile {
+          key "name";
+          description
+            "A profiles for threshold crossing alert (TCA) 
+             reporting.";
+
+          leaf name {
+            type string;
+            description
+              "A unique name for the profile.";
+          }
+
+          list stateless-tca {
+            if-feature "stateless-tca-reporting";
+            key "metric threshold";
+            description
+              "A stateless TCA configuration. Each configured 
+               'stateless-tca' results in a TCA function within 
+               a measurement session.";
+
+            uses delay-measurement-stateless-tca-profile-parameters;
+          }
+
+          list stateful-tca {
+            if-feature "stateful-tca-reporting";
+            key "metric set-threshold";
+            description
+              "A stateful TCA configuration. Each configured
+               'stateful-tca' results in a TCA function within 
+               a measurement session.";
+
+            uses delay-measurement-stateful-tca-profile-parameters;
+          }
+        }
+      }
+    }
+
+    container delay-measurement-bins {
+      if-feature "delay-measurement-bins";
+      description
+        "Configuration of profiles for delay measurement bins.";
+
+      container tca-profiles {
+        if-feature "tca-reporting";
+        description
+          "Configuration of TCA profiles.";
+
+        list tca-profile {
+          key "name";
+          description
+            "A profiles for threshold crossing alert (TCA) 
+             reporting.";
+
+          leaf name {
+            type string;
+            description
+              "A unique name for the profile.";
+          }
+
+          list stateless-tca {
+            if-feature "stateless-tca-reporting";
+            key "metric bin-number threshold";
+            description
+              "A stateless TCA configuration. Each configure 
+               'stateless-tca' results in a TCA function within 
+               a measurement session.";
+
+            uses 
+              delay-measurement-bin-stateless-tca-profile-parameters;
+          }
+
+          list stateful-tca {
+            if-feature "stateful-tca-reporting";
+            key "metric bin-number set-threshold";
+            description
+              "A stateless TCA configuration. Each configure 
+               'stateless-tca' results in a TCA function within 
+               a measurement session.";
+
+            uses 
+              delay-measurement-bin-stateful-tca-profile-parameters;
+          }
+        }
+      }
+
+      container bins-profiles {
+        if-feature "delay-measurement-bins";
+        description
+          "Configuration of TCA profiles.";
+
+        list bins-profile {
+          must "not(boolean(frame-delay-bins/no-bins) and "
+             + "boolean(inter-frame-delay-variation-bins/no-bins) "
+             + "and boolean(frame-delay-range-bins/no-bins))" {
+            error-message
+              "A least one bin must be configured.";
+            description
+              "A least one bin must be configured.";
+          }
+          key "name";
+          description
+            "A profiles for threshold crossing alert (TCA) 
+             reporting.";
+
+          leaf name {
+            type string;
+            description
+              "A unique name for the profile.";
+          }
+
+          uses bins-config-parameters;
+        }
+      }
+    }
+  }
+
+  /* Augment MEP configuration with ETH-DM specific nodes. */
+  augment "/vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain"
+        + "/vz-oam-ecfm:associations/vz-oam-ecfm:association"
+        + "/vz-oam-ecfm:meps/vz-oam-ecfm:mep" {
+    description
+      "Add configuration nodes for the PM configuration for the
+       Ethernet Delay Measurement (ETH-DM) function at MEPs.";
+
+    container delay-measurement {
+      if-feature "eth-dm";
+      description
+        "Configuration of the ETH-DM function at a MEP.";
+
+      uses delay-measurement-config-parameters;
+
+      container sessions {
+        if-feature "proactive-sessions";
+        description
+          "Configuration of ETH-DM sessions.
+           Only proactive sessions can be configured.";
+
+        list session {
+          key "name";
+          description
+            "Configuration of ETH-DM proactive sessions. ";
+
+          leaf name {
+            type string;
+            description
+              "The name of the proactive ETH-DM session at the local 
+               MEP.";
+          }
+          uses common-proactive-session-config-parameters;
+          uses delay-measurement-session-config-parameters;
+          uses delay-measurement-profiles;
+        }
+      }
+    }
+  }
+
+  /* Augment MEP operational status with ETH-DM specific nodes. */
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps"
+        + "/vz-oam-ecfm:mep" {
+    description
+      "Add operational status of the ETH-DM function at a MEP.";
+
+    container delay-measurement {
+      if-feature "eth-dm";
+      description
+        "Operational status of the ETH-DM function at a MEP.";
+
+      uses delay-measurement-config-parameters;
+
+      container sessions {
+        description
+          "Operational status of ETH-DM sessions.";
+
+        list session {
+          key "name session-type";
+          description
+            "The operational status of a ETH-DM session. 
+             Any existing session will be automatically deleted by 
+             the system, if the local MEP is deleted.
+
+             Note that this list lists the operational status of both 
+             proactive sessions, which are created per configuration 
+             only, and on-demand sessions, which are created by RPC 
+             call only, with the consequence that the session type 
+             is implicit dependent on how the session is created.
+             Since configuration data cannot reference state data, it 
+             would not be possible to validate a configuration to 
+             ensure the a session name used for on-demand sessions 
+             is not configured for use as a proactive session.
+             Therefore, in state data the additional leaf 
+             'session-type' is used together with the 'name' of the 
+             session as the key to the list, with the result that 
+             the value of 'name' needs only to be unique within the 
+             scope of 'session-type', i.e., identical names may be 
+             used for both proactive and on-demand sessions.";
+
+          leaf name {
+            type string;
+            description
+              "The name of the ETH-DM session at the local MEP.";
+          }
+
+          uses delay-measurement-session-status-parameters;
+          uses delay-measurement-profiles;
+        }
+      }
+    }
+  }
+
+  /* Augment MEP statistics with ETH-DM statistics */
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep"
+        + "/vz-oam-ecfm:statistics" {
+    description
+      "Add operational status nodes for ETH-DM statistics.";
+
+    container delay-measurement {
+      if-feature "eth-dm";
+      description
+        "Operational status of ETH-DM statistics.";
+    }
+  }
+
+  rpc create-on-demand-delay-measurement {
+    if-feature "eth-dm";
+    if-feature "on-demand-sessions";
+    description
+      "Create an on-demand ETH-DM session at a given MEP. 
+       This will result in a corresponding entry in the 'session' 
+       list for the given MEP in operational status only.
+       Note that on-demand sessions must be started and stopped 
+       explicitly through invocation of the 
+       'start-on-demand-delay-measurement'  and 
+       'stop-on-demand-delay-measurement' RPCs respectively.";
+    reference
+      "MEF 35.1 clause 10.1.3.";
+
+    input {
+      uses create-on-demand-delay-measurement-input-parameters;
+      uses delay-measurement-profiles;
+    }
+    output {
+      uses create-on-demand-delay-measurement-output-parameters;
+    }
+  }
+
+  rpc start-on-demand-delay-measurement {
+    if-feature "eth-dm";
+    if-feature "on-demand-sessions";
+    description
+      "Start an on-demand ETH-DM session that has been previously 
+       created at the given MEP.
+       If the session is already active, the measurements within the 
+       current measurement interval will be restarted.";
+    reference
+      "MEF 35.1 clause 10.1.5.";
+
+    input {
+      uses start-on-demand-delay-measurement-input-parameters;
+    }
+    output {
+      uses start-on-demand-delay-measurement-output-parameters;
+    }
+  }
+
+  rpc stop-on-demand-delay-measurement {
+    if-feature "eth-dm";
+    if-feature "on-demand-sessions";
+    description
+      "Stop an on-demand ETH-DM session that has been previously 
+       created at the given MEP.
+       If the session is already idle, the measurements the RPC will 
+       have no effect.";
+    reference
+      "MEF 35.1 clause 10.1.5.";
+
+    input {
+      uses stop-on-demand-delay-measurement-input-parameters;
+    }
+    output {
+      uses stop-on-demand-delay-measurement-output-parameters;
+    }
+  }
+
+  rpc delete-on-demand-delay-measurement {
+    if-feature "eth-dm";
+    if-feature "on-demand-sessions";
+    description
+      "Delete an on-demand ETH-DM session that has been previously 
+       created at the given MEP.";
+    reference
+      "MEF 35.1 clause 10.1.4.";
+
+    input {
+      uses delete-on-demand-delay-measurement-input-parameters;
+    }
+    output {
+      uses delete-on-demand-delay-measurement-output-parameters;
+    }
+  }
+
+  rpc reset-delay-measurement-statistics {
+    if-feature "eth-dm";
+    if-feature "reset-delay-measurement-statistics";
+    description
+      "Reset the measurement statistics for a ETH-DM session.";
+    reference
+      "MEF 7.2 clause 7.6.4.4 (reset()).";
+
+    input {
+      uses session-identification-parameters;
+    }
+  }
+}

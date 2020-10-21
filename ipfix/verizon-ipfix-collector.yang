@@ -1,0 +1,467 @@
+submodule verizon-ipfix-collector {
+  belongs-to verizon-ipfix {
+    prefix vz-ipfix;
+  }
+
+  import ietf-inet-types {
+    prefix inet;
+  }
+  
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  include verizon-ipfix-base;
+  include verizon-ipfix-exporter;
+
+  organization
+    "Verizon";
+    
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+     
+  description
+    "This module contains IPFIX exporter and collector YANG model
+     in support of Verizon IPFIX
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+  
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+  /*
+   * Groupings
+   */
+
+  // Collector Configuration Groupings
+  grouping collecting-process-parameters {
+    description
+      "Parameters of a Collecting Process.";
+    list sctp-collector {
+      if-feature sctp-transport;
+      key "name";
+      description
+        "List of SCTP receivers (sockets) on which the
+         Collecting Process receives IPFIX Messages.";
+      leaf name {
+        type name-type;
+        description "Key of this list.";
+      }
+      uses sctp-collector-parameters;
+    }
+    list udp-collector {
+      if-feature udp-transport;
+      key "name";
+      description
+        "List of UDP receivers (sockets) on which the
+         Collecting Process receives IPFIX Messages.";
+      leaf name {
+        type name-type;
+        description "Key of this list.";
+      }
+      uses udp-collector-parameters;
+    }
+    list tcp-collector {
+      if-feature tcp-transport;
+      key "name";
+      description
+        "List of TCP receivers (sockets) on which the
+         Collecting Process receives IPFIX Messages.";
+      leaf name {
+        type name-type;
+        description "Key of this list.";
+      }
+      uses tcp-collector-parameters;
+    }
+    list file-reader {
+      if-feature file-reader;
+      key "name";
+      description
+        "List of File Readers from which the Collecting
+         Process reads IPFIX Messages.";
+      leaf name {
+        type name-type;
+        description "Key of this list.";
+      }
+      uses file-reader-parameters;
+    }
+  }
+
+  grouping common-collector-parameters {
+    description
+      "Parameters of a Collecting Process that are
+       common to all transport protocols.";
+    leaf local-port {
+      type inet:port-number;
+      description
+        "If not configured, the Monitoring Device uses the
+         default port number for IPFIX, which is 4739 without
+         TLS or DTLS and 4740 if TLS or DTLS is activated.";
+    }
+
+    container transport-layer-security {
+      presence
+        "If transportLayerSecurity is present, DTLS is enabled
+         if the transport protocol is SCTP or UDP, and TLS is enabled
+         if the transport protocol is TCP.";
+      description
+        "TLS or DTLS configuration.";
+      uses transport-layer-security-parameters;
+    }
+  }
+
+  grouping sctp-collector-parameters {
+    description
+      "Parameters of a listening SCTP socket at a
+       Collecting Process.";
+    uses common-collector-parameters;
+    choice local-address-method {
+      description
+        "Method to configure the local IP address
+         of the collecting process.  Note that it is
+         expected that other methods be available.  Those
+         method can augment this choice.";
+      case local-address {
+        leaf-list local-ip-address {
+          type inet:ip-address;
+          description
+            "List of local IP addresses on which the
+             Collecting Process listens for IPFIX Messages.  The IP
+             addresses are used as eligible local IP addresses of the
+             multihomed SCTP endpoint.";
+         reference
+            "RFC 4960, Section 6.4.";
+        }
+      }
+    }
+  }
+
+  grouping udp-collector-parameters {
+    description
+      "Parameters of a listening UDP socket at a
+       Collecting Process.";
+    uses common-collector-parameters;
+    choice local-address-method {
+      description
+        "Method to configure the local IP address
+         of the collecting process.  Note that it is
+         expected that other methods be available.  Those
+         method can augment this choice.";
+      case local-address {
+        leaf-list local-ip-address {
+        type inet:ip-address;
+        description
+          "List of local IP addresses on which the Collecting
+           Process listens for IPFIX Messages.";
+        }
+      }
+    }
+    leaf template-life-time {
+      type uint32;
+      units "seconds";
+      default '1800';
+      description
+        "Sets the lifetime of Templates for all UDP
+         Transport Sessions terminating at this UDP socket.
+         Templates that are not received again within the configured
+         lifetime become invalid at the Collecting Process.
+         As specified in RFC 5101, the Template lifetime MUST be at
+         least three times higher than the templateRefreshTimeout
+         parameter value configured on the corresponding Exporting
+         Processes.
+         Note that this parameter corresponds to
+         ipfixTransportSessionTemplateRefreshTimeout in the IPFIX
+         MIB module.";
+      reference
+        "RFC 5101, Section 10.3.7; RFC 6615, Section 8
+         (ipfixTransportSessionTemplateRefreshTimeout).";
+    }
+    leaf options-template-life-time {
+      type uint32;
+      units "seconds";
+      default '1800';
+      description
+        "Sets the lifetime of Options Templates for all
+          UDP Transport Sessions terminating at this UDP socket.
+          Options Templates that are not received again within the
+          configured lifetime become invalid at the Collecting
+          Process.
+          As specified in RFC 5101, the Options Template lifetime MUST
+          be at least three times higher than the
+          optionsTemplateRefreshTimeout parameter value configured on
+          the corresponding Exporting Processes.
+          Note that this parameter corresponds to
+          ipfixTransportSessionOptionsTemplateRefreshTimeout in the
+          IPFIX MIB module.";
+        reference
+          "RFC 5101, Section 10.3.7; RFC 6615, Section 8
+          (ipfixTransportSessionOptionsTemplateRefreshTimeout).";
+    }
+    leaf template-life-packet {
+      type uint32;
+      units "IPFIX Messages";
+      description
+        "If this parameter is configured, Templates
+         defined in a UDP Transport Session become invalid if they
+         are neither included in a sequence of more than this number
+         of IPFIX Messages nor received again within the period of
+         time specified by templateLifeTime.
+         Note that this parameter corresponds to
+         ipfixTransportSessionTemplateRefreshPacket in the IPFIX
+         MIB module.";
+      reference
+        "RFC 5101, Section 10.3.7; RFC 6615, Section 8
+         (ipfixTransportSessionTemplateRefreshPacket).";
+    }
+    leaf options-template-life-packet {
+      type uint32;
+      units "IPFIX Messages";
+      description
+        "If this parameter is configured, Options
+         Templates defined in a UDP Transport Session become
+         invalid if they are neither included in a sequence of more
+         than this number of IPFIX Messages nor received again
+         within the period of time specified by
+         optionsTemplateLifeTime.
+         Note that this parameter corresponds to
+         ipfixTransportSessionOptionsTemplateRefreshPacket in the
+         IPFIX MIB module.";
+      reference
+        "RFC 5101, Section 10.3.7; RFC 6615, Section 8
+         (ipfixTransportSessionOptionsTemplateRefreshPacket).";
+    }
+  }
+
+  grouping tcp-collector-parameters {
+    description
+      "Parameters of a listening TCP socket at a
+       Collecting Process.";
+    uses common-collector-parameters;
+    choice local-address-method {
+      description
+        "Method to configure the local IP address
+         of the collecting process.  Note that it is
+         expected that other methods be available.  Those
+         method can augment this choice.";
+      case local-address {
+        leaf-list local-ip-address {
+          type inet:ip-address;
+          description
+            "List of local IP addresses on which the Collecting
+            Process listens for IPFIX Messages.";
+        }
+      }
+    }
+  }
+
+  grouping file-reader-parameters {
+    description "File Reader parameters.";
+    leaf file {
+      type inet:uri;
+      mandatory true;
+      description
+        "URI specifying the location of the file.";
+    }
+  }
+
+  // Collector State Grouping
+  grouping collecting-process-parameters-state {
+    description
+      "Parameters of a Collecting Process.";
+    list sctp-collector {
+      if-feature sctp-transport;
+      key "name";
+      description
+        "List of SCTP receivers (sockets) on which the
+         Collecting Process receives IPFIX Messages.";
+      leaf name {
+        type name-type;
+        description "Key of this list.";
+      }
+       uses common-collector-parameters-state;
+    }
+    list udp-collector {
+      if-feature udp-transport;
+      key "name";
+      description
+        "List of UDP receivers (sockets) on which the
+         Collecting Process receives IPFIX Messages.";
+      leaf name {
+        type name-type;
+        description "Key of this list.";
+      }
+      uses common-collector-parameters-state;
+    }
+    list tcp-collector {
+      if-feature tcp-transport;
+      key "name";
+      description
+        "List of TCP receivers (sockets) on which the
+         Collecting Process receives IPFIX Messages.";
+      leaf name {
+        type name-type;
+        description "Key of this list.";
+      }
+      uses common-collector-parameters-state;
+    }
+    list file-reader {
+      if-feature file-reader;
+      key "name";
+      description
+        "List of File Readers from which the Collecting
+         Process reads IPFIX Messages.";
+      leaf name {
+        type name-type;
+        description "Key of this list.";
+      }
+      uses file-reader-parameters-state;
+    }
+  }
+
+  grouping common-collector-parameters-state {
+    description
+      "Parameters of a Collecting Process that are
+       common to all transport protocols.";
+    list transport-session {
+    description
+      "This list contains the currently established
+       Transport Sessions terminating at the given socket.";
+    uses transport-session-state-parameters;
+    }
+  }
+
+  grouping file-reader-parameters-state {
+    description "File Reader parameters.";
+    leaf file {
+      type inet:uri;
+      mandatory true;
+      description
+        "URI specifying the location of the file.";
+    }
+    leaf bytes {
+      type yang:counter64;
+      units "octets";
+      description
+        "The number of bytes read by the File Reader.
+         Discontinuities in the value of this counter can occur at
+         re-initialization of the management system, and at other
+         times as indicated by the value of
+         fileReaderDiscontinuityTime.";
+    }
+    leaf messages {
+      type yang:counter64;
+      units "IPFIX Messages";
+      description
+        "The number of IPFIX Messages read by the File
+         Reader.
+         Discontinuities in the value of this counter can occur at
+         re-initialization of the management system, and at other
+         times as indicated by the value of
+         fileReaderDiscontinuityTime.";
+    }
+    leaf records {
+      type yang:counter64;
+      units "Data Records";
+      description
+        "The number of Data Records read by the File
+          Reader.
+          Discontinuities in the value of this counter can occur at
+          re-initialization of the management system, and at other
+          times as indicated by the value of
+          fileReaderDiscontinuityTime.";
+    }
+    leaf templates {
+      type yang:counter32;
+      units "Templates";
+      description
+        "The number of Template Records (excluding
+         Options Template Records) read by the File Reader.
+         Discontinuities in the value of this counter can occur at
+         re-initialization of the management system, and at other
+         times as indicated by the value of
+         fileReaderDiscontinuityTime.";
+    }
+    leaf options-templates {
+        type yang:counter32;
+        units "Options Templates";
+        description
+          "The number of Options Template Records read by
+          the File Reader.
+          Discontinuities in the value of this counter can occur at
+          re-initialization of the management system, and at other
+          times as indicated by the value of
+          fileReaderDiscontinuityTime.";
+      }
+    leaf file-reader-discontinuity-time {
+      type yang:date-and-time;
+      description
+        "Timestamp of the most recent occasion at which
+         one or more File Reader counters suffered a discontinuity.
+         In contrast to discontinuity times in the IPFIX MIB module,
+         the time is absolute and not relative to sysUpTime.";
+    }
+    list template {
+      description
+        "This list contains the Templates and Options
+         Templates that have been read by the File Reader.
+         Withdrawn or invalidated (Options) Template MUST be removed
+         from this list.";
+      uses template-parameters-state;
+    }
+  }
+
+  /*
+   * Data Definitions
+   */
+
+  // IPFIX Collector Configuration Data
+  augment /vz-ipfix:ipfix {
+    description "Augment ipfix container with collector config data.";
+    list collecting-process {
+      if-feature collector;
+      key "name";
+      description
+        "Collecting Process of the Monitoring Device.";
+      leaf name {
+        type name-type;
+        description "Key of this list.";
+      }
+      uses collecting-process-parameters;
+      leaf-list exporting-process {
+        if-feature exporter;
+        type leafref {
+          path "/vz-ipfix:ipfix"
+             + "/vz-ipfix:exporting-process"
+             + "/vz-ipfix:name";
+        }
+        description
+          "Export of received records without any
+           modifications.  Records are processed by all Exporting
+           Processes in the list.";
+      }
+    }
+  }
+
+  // IPFIX Collector State Data
+  augment /vz-ipfix:ipfix-state {
+    description "Augment ipfix container with collector state data.";
+    list collecting-process {
+      if-feature collector;
+      key "name";
+      description
+        "Collecting Process of the Monitoring Device.";
+      leaf name {
+        type leafref {
+          path "/vz-ipfix:ipfix"
+             + "/vz-ipfix:collecting-process"
+             + "/vz-ipfix:name";
+          }
+        description "Key of this list.";
+      }
+      uses collecting-process-parameters-state;
+    }
+  }
+}

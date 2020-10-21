@@ -1,0 +1,134 @@
+module verizon-oam-ethernet-cfm-auto-discovery {
+
+  namespace 
+    "http://verizon.com/ns/verizon-oam-ethernet-cfm-auto-discovery";
+  prefix vz-oam-ecfm-auto-disc;
+  
+  import verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for 
+     the management auto discovery of remote MEPs within a MEG.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  feature remote-mep-auto-discovery {
+    description
+      "Indicates the support of the automatic discover of remote 
+       MEPs within a maintenance association.";
+  }
+  feature clear-auto-discovered-remote-meps-rpc {
+    description
+      "Indicates support for the ' clear-auto-discovered-remote-meps' 
+       RPC.";
+  }
+  
+  grouping auto-discovery-config-parameters {
+    description
+      "Defines the configuration parameters for automatic discovery 
+       of remote MEPs within a maintenance association.";
+       
+    leaf enabled {
+      type boolean;
+      default false;
+      description 
+        "If true, CCMs  received from one or more remote MEPs within 
+         the maintenance association/MEG that are not 
+         configured in the 'mep-list' of the maintenance association/
+         MEG will be 'discovered' and added to the remote MEP 
+         database. However, a continuity check for these auto-
+         discovered remote MEPs will not be performed until the 
+         remote MEP has been configured in the 'mep-list'.";
+    }
+
+  }
+
+  grouping auto-discovery-status-parameters {
+    description
+      "Defines the configuration parameters for automatic discovery 
+      of remote MEPs within a maintenance association.";
+
+    container remote-mep-list {
+      description
+        "A list of all the MEPIDs that belong to this MA. 
+         From this list, a local MEP can determine its peer or 
+         remote MEPs.
+         This list needs to be configured, if auto-discovery of 
+         peer MEPs is not supported by a device or reliance on 
+         auto-discovery is not desired.";
+      
+      leaf-list mep-id {
+        type vz-oam-ecfm:mep-id;
+        description
+          "A MEPID that belongs to this MA. ";
+        reference 
+          "IEEE 802.1ag clause 12.14.6.1.3:g";
+      }
+    }
+      
+  }
+  
+  augment 
+    "/vz-oam-ecfm:cfm" +
+    "/vz-oam-ecfm:domains/vz-oam-ecfm:domain" + 
+    "/vz-oam-ecfm:associations/vz-oam-ecfm:association" {
+    description 
+      "Add configuration data nodes to maintenance associations for 
+       the auto-discovery feature.";
+
+    container auto-discovery {
+      if-feature remote-mep-auto-discovery;
+      description
+        "Configuration of the automatic discovery of remote MEPs.";
+        
+      uses auto-discovery-config-parameters;
+    
+    }
+  }
+  
+  augment 
+    "/vz-oam-ecfm:cfm-state" +
+    "/vz-oam-ecfm:domains/vz-oam-ecfm:domain" + 
+    "/vz-oam-ecfm:associations/vz-oam-ecfm:association" {
+    description 
+      "Add operational status data nodes to maintenance 
+       associations for the auto-discovery feature.";
+
+    container auto-discovery {
+      if-feature remote-mep-auto-discovery;
+      description
+        "Operational status of the automatic discovery of remote 
+         MEPs.";
+        
+      uses auto-discovery-status-parameters;
+    
+    }
+  }
+  
+  rpc clear-auto-discovered-remote-meps {
+    if-feature remote-mep-auto-discovery;
+    if-feature clear-auto-discovered-remote-meps-rpc;
+    description 
+     "Clear the list of auto-discovered remote MEPS.";
+      
+    input {
+      uses vz-oam-ecfm:association-identification-parameters;
+    }
+  }
+  
+}

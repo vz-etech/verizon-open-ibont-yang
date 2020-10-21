@@ -1,0 +1,267 @@
+module verizon-loopbacks {
+  namespace "http://www.verizon.com/ns/verizon-loopbacks";
+  prefix vz-lbk;
+
+  import ietf-interfaces {
+    prefix if;
+  }
+  
+  import verizon-traffic-management {
+    prefix vz-tm;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for
+     managing loopbacks.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+  
+  identity error-tag {
+    description
+      "Base identity for loopback error conditions.";
+  }
+  
+  identity port-loopback-exists-on-evc {
+    base error-tag;
+    description
+      "An attempt to create an EVC loopback has failed since a port
+       loopback is already in place which includes this EVC.";
+  }
+  
+  identity loopback-already-exists {
+    base error-tag;
+    description
+      "An attempt to create a loopback has failed since one already
+       exists in this scope.";
+  }
+  
+  identity loopback-does-not-exist {
+    base error-tag;
+    description
+      "An attempt to delete a loopback has failed as it does not
+       exist.";
+  }
+  identity loopback-non-specific-error {
+    base error-tag;
+    description
+      "An attempt to create a loopback has failed (unspecified 
+       error).";
+  }
+  
+
+  typedef evc-ref {
+    type leafref {
+      path "/vz-tm:evcs/vz-tm:evc/vz-tm:etag";
+    }
+    description
+      "A referece to an EVC. 
+      
+       Editor's note: This really should be defined in 
+                      verizon-traffic-management.";
+  }
+  
+  typedef loopback-type {
+    type enumeration {
+      enum network {
+        description
+          "Loopback data ingressing from the network back towards the
+           network before any packet processing has
+           occurred.";
+      }
+      enum terminal {
+        description
+          "Loopback data ingressing from the network back towards the
+           network after all packet processing has 
+           occurred.";
+      }
+    }
+    description
+      "The point at which the data is looped back.";
+  }
+  
+  typedef loopback-type-none {
+    type enumeration {
+      enum none {
+        description
+          "No loopback present.";
+      }
+    }
+    description
+      "Used to report that no loopback is present.";
+  }
+  
+  typedef loopback-type-port {
+    type enumeration {
+      enum port {
+        description
+          "The loopback associated with this EVC is a port 
+           loopback.";
+      }
+    }
+    description
+      "Used to report that a port loopback is present.";
+  }
+  
+  grouping which-scope {
+    description
+      "Determines the scope of the loopback.";
+
+    choice which-scope {
+      mandatory true;
+      description
+        "Determines which data to be looped back.";
+        
+      case port {
+        leaf port {
+          type if:interface-ref;
+          description
+            "Loopback all EVCs which carry traffic ingressing from
+             this UNI.";
+        }
+      }
+      
+      case evc {
+        leaf evc {
+          type evc-ref;
+          description
+            "Loopback traffic specified by this EVC.";
+        }
+      }
+    }
+  }
+    
+  grouping loopback-config {
+    description
+      "Configuration data used for loopbacks.";
+  
+    leaf mac-swap {
+      type boolean;
+      mandatory true;
+      description
+        "If true, source and destination MAC addresses are swapped
+         on looped back data.";
+    }
+
+    leaf type {
+      type loopback-type;
+      mandatory true;
+      description
+        "The type of loopback being performed.";
+    }
+    
+    uses which-scope;
+  }
+  
+  grouping loopback-error {
+    description
+      "Data nodes used to convey an error condition that may 
+       occur during a loopback operation.";
+    
+    leaf error-tag {
+      type identityref {
+        base error-tag;
+      }
+      must ". != 'vz-lbk:error-tag'" {
+        description
+          "The base identity should not be used as a value for the
+           error tag.";
+      }
+      description
+        "An identity which specifies the error which occured.";
+    }
+    
+    leaf error-message {
+      type string;
+      description
+        "Text description of the error condition which can be used
+         to provide additional information.";
+    }
+  }
+
+  augment "/if:interfaces-state/if:interface" {
+    description
+      "Augment the interface state with data associated with 
+       loopbacks.";
+       
+    container loopback {
+      presence 
+        "The presence of this container indicates that the interface
+         supports loopbacks.";
+      description
+        "State data associated with any port level loopback present on
+         this interface.";
+
+      leaf type {
+        type union {
+          type loopback-type-none;
+          type loopback-type;
+        }
+        description
+          "The type of loopback being performed.";
+      }
+    }
+  }
+    
+  augment "/vz-tm:evcs-state/vz-tm:evc" {
+    description
+      "Augment the EVC state with data associated with 
+       loopbacks.";
+
+    container loopback {
+      description
+        "State data associated with any port or EVC level loopback 
+         present on this EVC.";
+
+      leaf type {
+        type union {
+          type loopback-type-none;
+          type loopback-type-port;
+          type loopback-type;
+        }
+        description
+          "The type of loopback being performed.";
+      }
+    }
+  } 
+  
+  rpc create-loopback {
+    description
+      "Create a loopback using the specified configuration.";
+    
+    input {
+      uses loopback-config;
+    }
+    
+    output {
+      uses loopback-error;
+    }
+  }
+  
+  rpc clear-loopback {
+    description
+      "Clear the specified loopback.";
+    
+    input {
+      uses which-scope;
+    }
+    
+    output {
+      uses loopback-error;
+    }
+  }
+}
+
+

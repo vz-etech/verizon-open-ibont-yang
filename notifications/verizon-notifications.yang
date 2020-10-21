@@ -1,0 +1,544 @@
+module verizon-notifications {
+  namespace "http://www.verizon.com/ns/verizon-notifications";
+  prefix vz-nfc;
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for
+     managing notifications.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+
+  identity notification-identity {
+    description
+      "Base identity for notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id. Only non-abstract identities derived from 
+       'notification-identity' shall be reported.";
+  }
+
+
+  identity event-identity {
+    base notification-identity ;
+    description
+      "Identity for event notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id. Only non-abstract identities derived from 
+       'event-identity' shall be reported.";
+  }
+
+  identity alarm-identity {
+    base notification-identity ;
+    description
+      "Identity for alarm notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id. Only non-abstract identities derived from 
+       'alarm-identity' shall be reported.";
+  }
+
+
+
+  identity environmental-alarm {
+    base alarm-identity ;
+    description
+      "Identity for environmental alarm notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id.";
+  }
+  
+  identity equipment-alarm {
+    base alarm-identity ;
+    description
+      "Identity for equipment alarm notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id.";
+  }
+  
+  identity qos-alarm {
+    base alarm-identity ;
+    description
+      "Identity for qos alarm notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id.";
+  }
+  
+  identity processing-alarm {
+    base alarm-identity ;
+    description
+      "Identity for processing alarm notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id.";
+  }
+  
+  identity communication-alarm {
+    base alarm-identity ;
+    description
+      "Identity for communication alarm notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id.";
+  }
+  
+  identity security-event {
+    base event-identity ;
+    description
+      "Identity for security event notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id.";
+  }
+  identity oam-event {
+    base event-identity ;
+    description
+      "Identity for OAM event notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id.";
+  }
+  
+  identity tm-event {
+    base event-identity ;
+    description
+      "Identity for  traffic management event notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id.";
+  }
+  
+  identity system-event {
+    base event-identity ;
+    description
+      "Identity for system event notifications.
+       
+       This identity is abstract and shall not be reported as the
+       event-id.";
+  }
+
+  typedef resource {
+    type instance-identifier {
+      require-instance false;
+    }
+
+    description
+      "The instance-identifier used to identify a particular instance
+       node in the data tree.";
+  }
+
+  typedef severity {
+    type enumeration {
+      enum "indeterminate" {
+        description
+          "Indicates that the severity level could not be
+           determined. This level SHOULD be avoided.";
+      }
+      enum "minor" {
+        description
+          "The 'minor' severity level indicates the existence of a
+           non-service affecting fault condition and that corrective
+           action should be taken in order to prevent a more serious
+           (for example, service affecting) fault. Such a severity
+           can be reported, for example, when the detected alarm
+           condition is not currently degrading the capacity of the
+           resource.";
+      }
+      enum "warning" {
+        description
+          "The 'warning' severity level indicates the detection of
+           a potential or impending service affecting fault, before
+           any significant effects have been felt. Action should be
+           taken to further diagnose (if necessary) and correct the
+           problem in order to prevent it from becoming a more
+           serious service affecting fault.";
+      }
+      enum "major" {
+        description
+          "The 'major' severity level indicates that a service
+           affecting condition has developed and an urgent
+           corrective action is required. Such a severity can be
+           reported, for example, when there is a severe
+           degradation in the capability of the resource
+           and its full capability must be restored.";
+      }
+      enum "critical" {
+        description
+          "The 'critical' severity level indicates that a service
+           affecting condition has occurred and an immediate
+           corrective action is required. Such a severity can be
+           reported, for example, when a resource becomes totally
+           out of service and its capability must be restored.";
+      }
+    }
+    description
+      "The severity level of the alarm.";
+    reference
+      "ITU Recommendation X.733, 'Information Technology - Open
+       Systems Interconnection - System Management: Alarm Reporting
+       Function', 1992";
+  }
+
+  typedef severity-with-clear {
+    type union {
+      type enumeration {
+        enum "cleared" {
+          description
+            "The alarm is cleared by the instrumentation.";
+        }
+      }
+      type severity;
+    }
+    description
+      "The severity level of the alarm including clear.
+       This is used only in state changes for an alarm.";
+  }
+  
+  typedef hex-characters {
+    type string {
+      pattern '[0-9a-fA-F]*';
+    }
+    description
+      "A string representing hex characters.";
+  }
+  
+  grouping pon-parameters {
+    description
+      "Data nodes which identify the PON to which the originator of
+       the notification belongs.";
+   
+    leaf equipment-type {
+      type enumeration {
+        enum nid {
+          description
+            "NID";
+        }
+      }
+      description
+        "The type of equipment reporting the notification.";
+    }
+    
+    leaf pon-id {
+      type hex-characters {
+        length "1..8";
+      }
+      description
+        "TWDM or PtP WDM channel termination (up to 8 hex 
+         characters)";
+    }
+    
+    leaf pon-system-id {
+      type hex-characters {
+        length "1..6";
+      }
+      description
+        "NG-PON2 system ID (up to 6 hex characters)";
+    }
+  }
+  
+  grouping common-notification-parameters {
+    description
+      "Common data nodes associated with event and alarm 
+       notifications.";
+    
+    leaf sequence-number {
+      type uint32;
+      description
+        "A unique number used to identify a notification.";
+    }
+
+    leaf timestamp {
+      type yang:date-and-time;
+      mandatory true;
+      description
+        "The time the notification was generated.";
+    }
+
+    leaf event-id {
+      type identityref {
+         base notification-identity;
+      }
+      description
+            "The ID associated with notifications.";
+    }
+      
+    leaf resource {
+      type resource;
+      mandatory true;
+      description
+        "The resource which generated the event or alarm 
+         notification.";
+    }
+    
+    leaf description {
+      type string {
+        length "0..1024";
+      }
+      description
+        "An optional node used to convey a human readable text
+         associated with the notification. For alarm notifications,
+         this may provide further details on how to resolve the 
+         condition that generated the alarm.";
+    }
+      
+    leaf additional-info {
+      type string {
+        length "0..128";
+      }
+      description
+        "An optional node used to pass any additional information
+	that may be helpful for the specific notification.";
+    }
+
+    uses pon-parameters;
+  }
+
+  grouping alarm-parameters {
+    description
+      "Parameters for an alarm state change.";
+
+    leaf perceived-severity {
+      type severity-with-clear;
+      mandatory true;
+      description
+        "The severity of the alarm as defined by X.733.  Note
+         that this may not be the original severity since the alarm
+         may have changed severity.";
+      reference
+        "ITU Recommendation X.733, 'Information Technology - Open
+         Systems Interconnection - System Management: Alarm Reporting
+         Function', 1992";
+    }
+    
+    leaf service-affecting {
+      type boolean;
+      description
+        "If true, the alarm is service affecting. If false, it is not
+         service affecting.";
+    }
+
+    leaf probable-cause {
+      type string {
+        length "0..128";
+      }
+      description
+        "This value may be used to provide a probable cause of the
+	alarm condition." ;
+    }
+
+    leaf repair-action {
+      type string {
+        length "0..128";
+      }
+      description
+        "This value may be used to provide a recomendation for the
+	repair action for this alarm.";
+    }
+  }
+
+  container notification-state {
+    config false;
+    description
+      "State data nodes associated with notifications.";
+  
+    container notification-history {
+      description
+        "A log of notifications in the system.";
+
+      leaf number-of-notifications {
+        type yang:gauge32;
+        description
+          "This node returns the total number of entries in the
+           notification history."; 
+      }
+
+      leaf last-changed {
+        type yang:date-and-time;
+        description
+          "A timestamp when the history was last changed. The value 
+           can be used by a manager to initiate an alarm 
+           resynchronization procedure.";
+      }
+
+      list notification {
+        key "sequence-number";
+        description
+          "The list of notifications in chronological order. Each
+           entry is keyed by its sequence number.";
+       
+        uses common-notification-parameters;
+
+        container alarm-data {
+          presence
+            "This container is present if the notification represents
+             an alarm notification.";
+          description
+            "Data nodes specific for an alarm notification.";
+        
+          uses alarm-parameters;    
+        }
+      }
+    }
+  }
+
+  notification event-notification {
+    description
+      "This notification is used to report an event.";
+
+    uses common-notification-parameters ;
+  }
+  
+  notification alarm-notification {
+    description
+      "This notification is used to report a state change for an
+       alarm. The same notification is used for sending a newly
+       raised alarm, a cleared alarm or changing the text and/or
+       severity of an existing alarm.";
+
+    uses common-notification-parameters ;
+    uses alarm-parameters;
+  }
+  
+
+  /* UNI alarms are listed here. The resource for these is the ifName 
+     of the UNI and the deafult severity is MAJOR */
+ 
+    identity loss-of-signal {
+        base communication-alarm;
+        description "Alarm raised for loss of signal";
+    }
+ 
+    identity sfp-removed {
+        base equipment-alarm;
+        description "Alarm raised when SFP is removed";
+    }
+ 
+    identity sfp-failure {
+        base equipment-alarm;
+        description "Alarm raised when SFP has failed";
+    }
+               
+    identity sfp-mismatch {
+        base equipment-alarm;
+        description "Alarm raised when SFP is the wrong type";
+    }
+               
+  /* System alarms and events are listed here. The resource is 
+     the IBONT IP and the deafult severity is MAJOR */
+ 
+ 
+    identity insuffient-physical-memory {
+        base processing-alarm;
+        description "System has insufficeient memory";
+    }
+ 
+    identity system-monitor-failure {
+        base processing-alarm;
+        description "Alarm to raised for system monitor failure";
+    }
+               
+    identity kernel-oops-detected {
+        base processing-alarm;
+        description "Alarm to raised when kernel OOPS detected";
+    }
+               
+               
+    identity system-restarted {
+        base system-event;
+        description "Event raised when system restarts";
+    }
+               
+    identity db-change {
+        base system-event;
+        description "Event raised when a configuration change is 
+          made";
+    }
+               
+    identity copy-to-running-config {
+        base system-event;
+        description "Event raised when the running config is loaded";
+    }
+               
+    identity copy-to-startup-config {
+        base system-event;
+        description "Event raised when the startup-config is changed";
+    }
+               
+ 
+  /* AAA events are listed here. The resource will be the 
+     user name. */
+               
+    identity user-login {
+        base security-event;
+        description "Event raised when a user logs in";
+    }
+               
+    identity user-logout {
+        base security-event;
+        description "Event raised when a user logs out";
+    }
+ 
+    identity user-login-failure{
+        base security-event;
+        description "Event raised when a user fails to authenticate";
+    }              
+ 
+               
+  /* TM alarms are listed here. The resource will be the EVC etag 
+     with severity WARNING. */
+   
+    identity evc-disabled {
+        base processing-alarm;
+        description "Alarm to raised when an EVC is disabled";
+    }
+   
+  /* OAM alarms and events are listed here */
+ 
+    identity loss-measurement-stopped {
+        base processing-alarm;
+        description "Alarm to raised when loss measurement is 
+          stopped";
+    }
+               
+    identity delay-measurement-stopped {
+        base processing-alarm;
+        description "Alarm to raised when loss measurement is 
+          stopped";
+    }
+ 
+ 
+    identity mep-loss-of-continuity {
+        base communication-alarm;
+        description "Alarm to raised when the connectivity to the 
+          remote MEP is lost";
+    }
+ 
+    identity mep-ccm-error {
+        base oam-event;
+        description "Event raised when a MEP CCM error is detected";
+    }
+ 
+}
+ 
+

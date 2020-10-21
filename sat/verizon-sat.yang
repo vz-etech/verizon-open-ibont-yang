@@ -1,0 +1,1715 @@
+module verizon-sat {
+  namespace "http://www.verizon.com/ns/verizon-sat";
+  prefix vz-sat;
+
+  import ietf-interfaces {prefix if;}
+  import ietf-yang-types {prefix yang;}
+  import ietf-inet-types {prefix ietf;}
+  import verizon-traffic-management {prefix evc;}
+
+  include verizon-sat-service-acceptance-criteria;
+
+
+  organization "Verizon";
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+  description
+    "SAT Schema
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+//******************************************************************/
+//      Typedefs
+//******************************************************************/
+  typedef payload-pattern-enum {
+    type enumeration{
+      enum pseudo-random{
+        value "0";
+        description "pseudo random";
+      }
+      enum all-ones{
+        value "1";
+        description "all-ones";
+      }
+      enum all-zeroes{
+        value "2";
+        description "all-zeroes";
+      }
+      enum 8-byte{
+        value "3";
+        description
+          "Eight byte pattern. Default pattern is ASCII encoding
+           01234567.  In future, model may support means for
+           operator to specify the pattern";
+      }
+    }
+    description "payload pattern of test PDU e.g. content of data
+    TLV in FL-PDU defined in MEF 49 October 2014";
+  }
+
+  typedef url-redirect{
+    type union {
+      type string {
+        length "1..256";
+        pattern '((http://|https://|HTTP://|HTTPS://)'+
+          '?(((www\.|WWW\.)?[a-zA-Z0-9]+([-\.]{1}[a-zA-Z0-9]+)'+
+          '*\.[a-zA-Z]{2,5})|((([0-9]|[1-9][0-9]|1[0-9][0-9]|'+
+          '2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]'+
+          '[0-9]|2[0-4][0-9]|25[0-5]){1}))+(:[0-9]{1,5})?(/.*)?)';
+      }
+      type string {
+        pattern '.{0}';
+      }
+    }
+    description "Specify url for redirect hostname/ip:port";
+  }
+  typedef frame-delivery-type {
+    type enumeration {
+      enum unicast {
+        value 0;
+        description "unicast";
+      }
+      enum multicast {
+        value 1;
+        description "multicast";
+      }
+      enum broadcast {
+        value 2;
+        description "broadcast";
+      }
+    }
+    description "frame types for frame delivery tests";
+  }
+  typedef remote-type {
+    type union {
+      type mep-id;
+      type yang:mac-address;
+    }
+    description "The remote MEP can be identified by either
+      a MAC address or a MEP ID (1-8191)";
+  }
+
+  typedef frame-size-pattern-enum{
+    type enumeration{
+      enum fixed{
+        value "0";
+        description "fixed";
+      }
+      enum emix{
+        value "1";
+        description "emix";
+      }
+    }
+    description "Enum identifiying whether frame-loss
+      and delivery test PDUs are fixed length or follow
+      an EMIX distribution";
+  }
+
+  typedef pdu-format-type{
+    type enumeration{
+      enum dmm{
+        description "dmm";
+      }
+      enum dmrv1{
+        description "dmrv1";
+      }
+    }
+    description "FramPDU Format Type";
+  }
+
+  typedef delay-test-pdu-format-type{
+    type enumeration{
+      enum dmm-dmrv0{
+        description "ITU 1731 DMM/DMR v0";
+      }
+      enum dmm-dmrv1{
+        description " ITU 1731 DMM/DMR v1";
+      }
+    }
+    description "PDU used for delay testing";
+  }
+
+  typedef sat-direction-enum{
+    type enumeration{
+      enum one-way{
+        value "0";
+        description "One Way";
+      }
+      enum two-way{
+        value "1";
+        description "Two Way (Round trip test)";
+      }
+    }
+    description "Enum identifying whether SAT is
+      single-ended (two-way) or double-ended (one way)";
+  }
+  typedef frame-size-value {
+    type uint16 {
+      range "64..9600";
+    }
+    description "Frame size in bytes of test frame
+      (64 to 9600)";
+  }
+  typedef emix-pattern-value {
+    type string {
+    pattern   '([a-h]|u){1,8}';
+    }
+    description "string composed of up to 8 EMIX
+      characters (a to h and u)";
+  }
+  typedef emix-frame-size{
+    type string {
+      length "1";
+      pattern
+        '([a-h]|u){1}';
+         }
+    description "Emix frame character (a to h and u)";
+  }
+  typedef sat-frame-type{
+    type bits {
+      bit "unicast" {
+        position 0;
+        description "enable unicast";
+      }
+      bit "mcast" {
+        position 1;
+        description "enable mcast";
+      }
+      bit "bcast" {
+        position 2;
+        description "enable bcast";
+      }
+    }
+    description "independently enables unicast, multicast
+      and broadcast frame-delivery tests";
+  }
+  typedef sat-config-test-duration {
+    type uint16 {
+     range "1..60";
+    }
+    units seconds;
+    default "10";
+    description "Duration of discrete service
+      configuration tests";
+  }
+  typedef sat-performance-test-duration {
+    type uint32 {
+      range "1..43200";
+    }
+    units minutes;
+    default "15";
+    description "Duration of service performance test";
+  }
+
+  typedef sat-test-step {
+    type uint8 {
+      range "1..100";
+    }
+    units %;
+    default "25";
+    description "Percentage of nominal information rate;
+      used for step-load CIR tests";
+  }
+
+  typedef test-flow-type {
+    type enumeration {
+      enum "untagged" {
+        value "0";
+        description "untagged";
+      }
+      enum "priority-tagged" {
+        value "1";
+        description "priority tagged";
+      }
+      enum "tagged" {
+        value "2";
+        description "tagged";
+      }
+    }
+    description "Basic format of frame-loss and -delivery
+      tests employed for a service or CoS within a service ";
+  }
+
+  typedef vlan-id {
+    type uint16{
+      range "1..4094";
+    }
+    description "VlanId (range: 1-4094)";
+  }
+  typedef pcp{
+    type uint8{
+      range "0..7";
+    }
+  description "Priority Code Point (802.1p) (range: 0-7)";
+  }
+
+  typedef dscp-value {
+    type string;
+    description
+      "Valid Diffserv Codepoint value";
+  }
+
+  typedef dscp {
+    type dscp-value;
+    description
+      "DSCP PHB or raw value";
+  }
+
+  typedef enabled-disabled{
+    type enumeration{
+      enum "ENABLED"{
+       value "0";
+       description "Enable";
+      }
+      enum "DISABLED"{
+        value "1";
+        description "Disable";
+      }
+    }
+    description "Desired administrative state of attribute";
+  }
+
+  typedef sat-float-value {
+    type decimal64{
+      fraction-digits 6;
+      range "-999999.999999..999999.999999";
+    }
+    description "SAT Float Values
+      (range: -999999.999999 to 999999.999999)";
+  }
+
+  typedef mep-id {
+    type uint32 {
+      range "1..8191";
+    }
+    description "Maintenance End Point ID
+      (range: 1-8191)";
+  }
+
+  typedef meg-name{
+    type string{
+      pattern "([^'" + '"]{1,45})';
+    }
+    description "String name of the MEG";
+  }
+
+  typedef meg-level {
+    type uint32{
+      range "0..7";
+    }
+    description "MEG level (range: 0-7)";
+  }
+
+  typedef true-false{
+    type boolean;
+    description "Enabled or Disabled";
+  }
+
+  typedef bw-test-type{
+    type enumeration{
+      enum "CIR"{
+        value "0";
+        description "represents simple CIR test";
+      }
+      enum "EIR"{
+        value "1";
+        description "represents EIR test";
+      }
+      enum "POL"{
+        value "2";
+        description "represents POLicing test";
+      }
+      enum "STEPCIR"{
+        value "3";
+        description "represents step-load CIR test";
+      }
+    }
+    description "enum representing four supported
+      types of bw profile tests";
+  }
+
+  typedef sat-test-normative-status{
+    type enumeration{
+      enum "running"{
+        value "0";
+        description "test is running";
+      }
+      enum "finished"{
+        value "1";
+        description "test naturally completed";
+      }
+      enum "pending"{
+        value "2";
+        description "waiting to begin";
+      }
+      enum "aborted"{
+        value "3";
+        description "explicitly aborted";
+      }
+      enum "failed"{
+        value "4";
+        description "failed could not  fully exectute";
+
+      }
+    }
+    description
+      "Enum represent status of SAT tests. Used for overall
+        (Pan-CoS and -EVC) results, per-CoS results,
+        per-CoS-pan-configuration results
+        per-CoS-per-discrete-configuration-test results,
+        per-CoS-per-performance-test results";
+  }
+
+  typedef sat-rpc-error-tag{
+    type enumeration{
+      enum "rpc-no-error"{
+        value "0";
+        description "no error";
+      }
+      enum "rpc-failed-inval"{
+        value "1";
+        description
+          "Semantic problem with configuration or
+           combinations not supported
+           for example bad EVC value,
+           EVC not configured, no CoS Configured";
+      }
+      enum "rpc-failed-duplicate"{
+        value "2";
+        description
+          "Trying to configure same instance of
+           managed entity multiple times
+           for example same EVC placed into
+           two SAT Configuration constructs";
+      }
+      enum "rpc-failed-resource"{
+        value "3";
+        description
+          "Insufficent memory resources or
+           pre-configured resourced to performance
+           test for example: too many CoS's attempted
+           or too many EVCs attempted";
+      }
+      enum "rpc-failed-busy"{
+        value "4";
+        description "Only support N active SATs per
+          interface but attempting to start N+1th";
+      }
+      enum "rpc-failed-capacity"{
+        value "5";
+        description "Rejected due to admission control
+          - total BW exceeds system capacity ";
+      }
+      enum "rpc-failed-EIO"{
+        value "6";
+        description " System/Kernel Error, see kernel logging";
+      }
+      enum "rpc-failed-config"{
+        value "7";
+        description "SAT test has unsufficient or
+          incompatible traffic mgmt or SOAM configuration
+          for example MIP/MEP not configured for given EVC";
+      }
+      enum "rpc-failed-other"{
+        value "8";
+        description "some other reason";
+        }
+    }
+    description "Enum representing whether RPC could
+      be meaningfully executed and if not, why not";
+  }
+//**********************************************************/
+//                    Grouping
+//*********************************************************/
+
+  grouping error-data {
+    description "Error tag and message";
+    leaf error-tag {
+      type sat-rpc-error-tag;
+      mandatory true;
+      description "indicates whether RPC could or
+        could not be meangfully executed and if not, why not";
+    }
+    leaf error-message {
+      type string;
+      description "human readable qualification to error-tag";
+    }
+  }
+
+  grouping sat-results {
+    description "results for SAT test";
+    container system {
+      description "system-scope info";
+      leaf host-name{
+        type ietf:domain-name;
+        description "Active SW Version";
+      }
+      leaf system-version{
+        type string;
+        description "Release Version";
+      }
+    }
+    container overall-sat-results {
+      description "overall status for this SAT test";
+      leaf normative-status{
+        type sat-test-normative-status;
+        description "normative status of this
+          test e.g. still running, finished, etc";
+      }
+      leaf informative-status{
+        type string;
+        description "human readable qualification to
+          normative status";
+      }
+    }
+
+    container interface-attributes{
+      description "interface-related information";
+      leaf interface-name {
+        type if:interface-ref;
+        description "Name of the interface";
+      }
+      leaf oper-speed{
+        type enumeration {
+          enum "10Mb" {description "10 Megabits per second";}
+          enum "100Mb" {description "100 Megabits per second";}
+          enum "1Gb" {description "1 Gigabits per second";}
+          enum "10Gb" {description "10 Gigabits per second";}
+        }
+        description "Interface Ports operational speed";
+      }
+     leaf hardware-type{
+        type string;
+        default "port";
+        description "Port hardware Type";
+      }
+      leaf port-duplexmode{
+        type enumeration {
+          enum "half" {description "Half duplex";}
+          enum "full" {description "Full duplex";}
+        }
+        description "Interface Duplex mode; if its half
+          then things are fully messed up";
+      }
+      leaf mtu{
+        type uint32;
+        description "MTU Size";
+      }
+      leaf interface-mac{
+        type yang:mac-address;
+        description "Interface MAC";
+      }
+    }
+    container test-profile {
+      description "To run a SAT, management invokes
+        create-sat-test RPC a key input to which is name
+        of a test-profile. Each test-profile identifies
+        one or more discrete service configuration
+        tests that are to be executed as well as
+        supplemental data e.g. how long each discrete
+        test is to be run";
+      leaf test-profile-name {
+        type leafref {
+          path "/vz-sat:profile/vz-sat:test-profile"+
+            "/vz-sat:sat-profile-name";
+        }
+        description "name of test profile used for this test";
+      }
+      uses test-profile-grouping;
+      list evc {
+        key "etag";
+          description "ETAG of this EVC";
+        leaf etag {
+          type vlan-id;
+          description "EVC ETAG";
+        }
+        container test-flow-attributes{
+          description "per-EVC-scope characteristics used for
+            testing this EVC";
+          leaf delay-test-pdu-format{
+            type delay-test-pdu-format-type;
+            default "dmm-dmrv1";
+            description "identifies the basic format/type of test PDU
+              used to collect delay-related measurements";
+          }
+          leaf frame-loss-test-pdu-source-ip-addr{
+            type ietf:ipv4-address;
+            description "Source IP address employed for IPv4-based
+              test PDUs used for frame-loss and -delivery tests.
+              Value is auto-selected by the NID ";
+          }
+          leaf frame-loss-test-pdu-dest-ip-addr{
+            type ietf:ipv4-address;
+            description "Unicast destination IP address employed
+              for IPv4-based test PDUs used for frame-loss tests
+              and unicast frame-delivery test.
+              Value is auto-selected by the NID ";
+          }
+          leaf frame-loss-test-pdu-source-mac-addr{
+            type yang:mac-address;
+            description "Source MAC address used for all frame-loss
+              and -delivery test PDUs; If value is not
+              entered in create-sat-test RPC then
+              NID employs UNI MAC address";
+          }
+          leaf frame-loss-test-pdu-unicast-dest-mac-addr{
+            type yang:mac-address;
+            description "Unicast Destination MAC address used for
+              frame-loss test PDUs and unicasted frame-delivery
+              test PDUs.  Must be entered in create-sat-test RPC";
+          }
+          leaf frame-loss-test-pdu-mcast-dest-mac-addr{
+            type yang:mac-address;
+            description "Multicast Destination MAC address
+              employed for multicasted frame-delivery test PDUs.
+              If not entered in create-sat-test RPC then
+              NID auto-selects. If IPv4 PDU needs to be employed
+              NID derives IP ";
+          }
+        }
+        container service-oam {
+          description "SOAM characteristics used for testing 
+             this EVC";
+          leaf meg {
+            type meg-name;
+            description "name of MEG encompassing local and remote MEP
+              used to conduct delay measurements";
+          }
+          leaf level {
+            type meg-level;
+            default "0";
+            description "Integer identifying the Maintenance
+              Domain Level (MD Level, range: 0-7) of the MEG
+              that encompasses local and remote MEP
+              used to conduct delay measurements";
+          }
+          leaf local-mep-id {
+            type mep-id;
+              description "ID of local MEP used to conduct
+                delay measurements";
+          }
+          leaf remote-peer {
+              type remote-type;
+              description "ID of remote MEP used to
+                conduct delay measurements";
+          }
+        }
+        list cos {
+          key cos-type;
+          description "List of entries for each COS identified by 
+            p-bit";
+          leaf cos-type {
+            type uint8{
+              range "0..7";
+            }
+            description "the S-TAG pbit assigned to this CoS. 
+              In practice, each pbit value will usually correspond 
+              1:1 to what MEF would refer to as a COS-NAME";
+          }
+          leaf frame-loss-test-pdu-size{
+            type frame-size-value;
+            default "512";
+            description "size of frame-loss and -delivery test PDU 
+              used for this COS; applicable when test-profile 
+              specifies that all CoSs are to use frames 
+              with fixed sizes";
+          }
+          leaf frame-loss-test-pdu-emix-pattern{
+            type emix-pattern-value;
+                  default "abceg";
+            description 
+              "EMIX distribution pattern (consisting of between
+               1 and 8 characters drawn from EMIX character space)
+               that identifies EMIX distributional size to employ  
+               for frame-loss and -delivery test PDUs for this 
+               CoS applicable when test-profile specifies all CoSs
+               are to use EMIX distribution";
+          }
+          leaf frame-loss-test-pdu-format{
+            type test-flow-type;
+            default "untagged";
+            description "Indicates whether test PDUs used for 
+              frame-loss and -delivery tests employed for this CoS,
+              are tagged, untagged or priority tagged;  Note that 
+              NID auto-selects value based on characteristics
+              of CoS";
+          }
+          leaf frame-loss-test-pdu-cvlan{
+            type vlan-id;
+            description "CE-VID used in frame-loss and -delivery 
+              test PDUs; applicable only if tagged test PDUs are
+              employed for this CoS";
+          }
+          leaf frame-loss-test-pdu-ptag-pcp {
+            type pcp;
+            description "CE-Pbit  used in frame-loss and -delivery;
+              test PDUs; applicable only if tagged test PDUs are 
+              employed for this CoS";
+          }
+          leaf frame-loss-test-pdu-cvlan-pcp {
+            type pcp;
+            description "Pbit  used in frame-loss and -delivery;
+              test PDUs; applicable only if priority-tagged test 
+              PDUs are employed for this CoS";
+          }
+          leaf frame-loss-test-pdu-dscp {
+            type dscp;
+            description "DSCP  used in frame-loss and -delivery
+              test PDUs; applicable only if untagged test PDUs 
+              are employed for this CoS";
+          }
+          container service-acceptance-criteria-profile {
+            description "Service acceptance criteria applied to
+               this CoS";
+            uses service-acceptance-criteria;
+          }
+          container result{
+            description "results for this CoS";
+            leaf normative-status{
+              type sat-test-normative-status;
+              description "normative status of overall testing for 
+                this CoS  e.g. still running, finished, etc";
+            }
+            leaf informative-status{
+              type string;
+              description "human readable qualification to normative 
+                status";
+            }
+            container config-test-result{
+              description "SCT test results for this CoS";
+              leaf normative-status{
+                type sat-test-normative-status;
+                description "normative status of SCT tests for 
+                  this CoS etc";
+              }
+              leaf informative-status{
+                type string;
+                description "human readable qualification to  
+                  normative status";
+              }
+              list frame-delivery-test{
+                key "frame-delivery-test-type";
+                description "Frame Delivery Test List";
+                leaf frame-delivery-test-type {
+                  type frame-delivery-type;
+                  description "type of test - unicast, multicast, 
+                    broadcast";
+                }
+                leaf normative-status{
+                  type sat-test-normative-status;
+                  description "normative status of this FD test for 
+                    this CoS";
+                }
+                leaf informative-status{
+                  type string;
+                  description "human readable qualification to 
+                    normative status";
+                }
+                leaf frames-tx{
+                  type uint32;
+                  units frames;
+                  description "Number of frames sent";
+                }
+                leaf frames-rx-proper-format{
+                  type uint32;
+                  units frames;
+                  description "Frames Recived in proper format";
+                }
+                leaf frames-rx-improper-format{
+                  type uint32;
+                  units frames;
+                  description "Frames received in improper format";
+                }
+                container test-info {
+                  description "meta info about this discrete test";
+                  leaf start-time {
+                    type yang:date-and-time;
+                    description "Start Time";
+                  }
+                  leaf end-time {
+                    type yang:date-and-time;
+                    description "End Time";
+                  }
+                  uses service-acceptance-criteria-results;
+                }
+              }
+              list bw-profile-test{
+                key "bw-profile-test-type bw-profile-rate";
+                description "BW Profile Test List";
+                leaf bw-profile-test-type{
+                  type bw-test-type;
+                  description "type of bw-profile test current 
+                    values include CIR, EIR, POL and STEPCIR"; 
+                }
+                leaf bw-profile-rate {
+                  type sat-float-value;
+                  units "64 kbps";
+                  description "information rate used for 
+                    bw-profile test";
+                }
+                leaf normative-status{
+                  type sat-test-normative-status;
+                  description "normative status of this bw-profile 
+                    test for this cos";
+                }
+                leaf informative-status{
+                  type string;
+                  description "human readable qulaification to 
+                    normative status";
+                }
+                leaf dmm-transmit-period {
+                    type sat-config-test-duration;
+                  description
+                    "dmm transmit period";
+                }
+                leaf transmitted-dmm-pdus {
+                  type uint32;
+                  description
+                     "This node contains the count of the number of
+                      SOAM PDUs sent during this Measurement 
+                      Interval";
+                }
+                leaf received-dmr-pdus {
+                  type uint32;
+                  description
+                     "This node contains the count of the number of 
+                      SOAM PDUs received during this Measurement 
+                      Interval";
+                }
+                leaf tx-rate{
+                  type sat-float-value;
+                  units Mbps;
+                  description "Information transmit rate in Mbps";
+                }
+                leaf frame-transfer-delay-min{
+                  type sat-float-value;
+                  units "microseconds";
+                  description "Frame Transfer Delay, minimum in 
+                    microseconds";
+                }
+                leaf frame-transfer-delay-average{
+                  type sat-float-value;
+                  units "microseconds";
+                  description "Frame Transfer Delay average in
+                   microseconds";
+                }
+                leaf frame-transfer-delay-max{
+                  type sat-float-value;
+                  units "microseconds";
+                  description "Frame Transfer Delay maximum in 
+                    microseconds";
+                }
+                leaf frame-transfer-variation-min{
+                  type sat-float-value;
+                  units "microseconds";
+                  description "Frame Delay Variation minimum in 
+                    microseconds";
+                }
+                leaf frame-transfer-variation-average{
+                  type sat-float-value;
+                  units "microseconds";
+                  description "Frame Delay Variation average in 
+                    microseconds";
+                }
+                leaf frame-transfer-variation-max{
+                  type sat-float-value;
+                  units "microseconds";
+                  description "Frame Delay Variation maximum in 
+                    microseconds";
+                }
+                leaf green-rx-min-rate{
+                  type sat-float-value;
+                  units "mbps";
+                  description "Min Rate of green traffic received by
+                    collector in Mbps";
+                }
+                leaf green-rx-average-rate{
+                  type sat-float-value;
+                  units "mbps";
+                  description "Avergae Rate of green traffic received
+                    by collector in Mbps";
+                }
+                leaf green-rx-max-rate{
+                  type sat-float-value;
+                  units "mbps";
+                  description "Max Rate of green traffic received by
+                    collector in Mbps";
+                }
+                leaf green-frame-loss-count{
+                  type int32;
+                  description "Green Frame Loss Count";
+                }
+                leaf green-frame-loss-ratio{
+                  type sat-float-value;
+                  units "percent";
+                  description "Green Frame Loss Ratio";
+                }
+                leaf yellow-rx-min-rate{
+                  type sat-float-value;
+                  units "mbps";
+                  description "Min Rate of yellow traffic received
+                    by collector in Mbps";
+                }
+                leaf yellow-rx-average-rate{
+                  type sat-float-value;
+                  units "mbps";
+                  description "Average Rate of yellow traffic
+                    received by collector in Mbps";
+                }
+                leaf yellow-rx-max-rate{
+                  type sat-float-value;
+                  units "mbps";
+                  description "Max Rate of yellow traffic
+                    received by collector in Mbps";
+                }
+                leaf yellow-frame-loss-count{
+                  type int32;
+                  description "Yellow Frame Loss Count";
+                }
+                leaf yellow-frame-loss-ratio{
+                  type sat-float-value;
+                  units "percent";
+                  description "Yellow Frame Loss Ratio";
+                }
+                container test-info {
+                  description "meta info about this discrete test";
+                  leaf start-time {
+                    type yang:date-and-time;
+                    description "Start Time";
+                  }
+                  leaf end-time {
+                    type yang:date-and-time;
+                    description "End Time";
+                  }
+                  uses service-acceptance-criteria-results;
+                }
+              }
+            }
+            container performance-result{
+              description "Performance Result Container";
+              leaf normative-status{
+                type sat-test-normative-status;
+                description "normative status of this
+                  SPT test for this CoS";
+              }
+              leaf informative-status{
+                type string;
+                description "human readable qualification to
+                  normative status";
+              }
+              leaf dmm-transmit-period {
+                  type sat-config-test-duration;
+                description
+                  "dmm transmit period";
+              }
+              leaf transmitted-dmm-pdus {
+                  type uint32;
+                description
+                   "This node contains the count of the
+                    number of SOAM PDUs sent during this
+                    Measurement Interval";
+              }
+              leaf received-dmr-pdus {
+                  type uint32;
+                description
+                   "This node contains the count of the
+                    number of SOAM PDUs received during this
+                    Measurement Interval";
+              }
+              leaf tx-rate{
+                type sat-float-value;
+                units "Mbps";
+                description "Information transmit rate in Mbps";
+              }
+              leaf frame-transfer-delay-min{
+                type sat-float-value;
+                units "microseconds";
+                description "Frame Transfer Delay, minimum
+                  in microseconds";
+              }
+              leaf frame-transfer-delay-average{
+                type sat-float-value;
+                units "microseconds";
+                description "Frame Transfer Delay average
+                  in microseconds";
+              }
+              leaf frame-transfer-delay-max{
+                type sat-float-value;
+                units "microseconds";
+                description "Frame Transfer Delay
+                  maximum in microseconds";
+              }
+              leaf frame-delay-variation-min{
+                type sat-float-value;
+                units "microseconds";
+                description "Frame Delay Variation minimum in
+                  microseconds";
+              }
+              leaf frame-delay-variation-average{
+                type sat-float-value;
+                units "microseconds";
+                description "Frame Delay Variation average in
+                  microseconds";
+              }
+              leaf frame-delay-variation-max{
+                type sat-float-value;
+                units "microseconds";
+                description "Frame Delay Variation maximum in
+                  microseconds";
+              }
+              leaf green-rx-min-rate{
+                type sat-float-value;
+                units "mbps";
+                description "Green Received Min Rate";
+              }
+              leaf green-rx-average-rate{
+                type sat-float-value;
+                units "mbps";
+                description "Green Received Average Rate";
+              }
+              leaf green-rx-max-rate{
+                type sat-float-value;
+                units "mbps";
+                description "Green Received Max Rate";
+              }
+              leaf green-frame-loss-count{
+                type int32;
+                description "Green Frame Loss Count";
+              }
+              leaf green-frame-loss-ratio{
+                type sat-float-value;
+                units "percent";
+                description "Green Frame Loss Ratio";
+              }
+              leaf yellow-rx-min-rate{
+                type sat-float-value;
+                units "mbps";
+                description "Yellow Received Min Rate";
+              }
+              leaf yellow-rx-average-rate{
+                type sat-float-value;
+                units "mbps";
+                description "Yellow Received Average Rate";
+              }
+              leaf yellow-rx-max-rate{
+                type sat-float-value;
+                units "mbps";
+                description "Yellow Received Max Rate";
+              }
+              leaf yellow-frame-loss-count{
+                type int32;
+                description "Yellow Frame Loss Count";
+              }
+              leaf yellow-frame-loss-ratio{
+                type sat-float-value;
+                units "percent";
+                description "Yellow Frame Loss Ratio";
+              }
+              container test-info{
+                description "meta info about this discrete test";
+                leaf requested-test-duration{
+                  type uint32;
+                  units "minutes";
+                  description "Performance test duration in minutes";
+                }
+                leaf start-time{
+                  type yang:date-and-time;
+                  description "test-info's start time";
+                }
+                leaf end-time{
+                  type yang:date-and-time;
+                  description "test-info's end time";
+                }
+                uses service-acceptance-criteria-results;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  grouping test-profile-grouping {
+    description "test-profile grouping";
+    leaf frame-delivery-test {
+      type sat-frame-type;
+      default "unicast";
+      description  "Enable or Disable Unicast, Broadcast, Multicast
+        frame-delivery tests";
+    }
+
+    choice frame-delivery-test-completion-method {
+      default frame-delivery-test-num-frames;
+      description
+        "Configures the method which determines how long the test
+         will run.";
+
+      case frame-delivery-test-num-frames {
+        leaf frame-delivery-test-num-frames {
+          type uint16;
+          default 3;
+          description
+            "Number of frames to be sent for connectivity test
+             (1 to 255) (Used for SAT).";
+        }
+      }
+
+      case frame-delivery-test-duration {
+        leaf frame-delivery-test-duration {
+          type sat-config-test-duration;
+          default 10;
+          description
+            "Test Duration.";
+        }
+      }
+    }
+
+    leaf simple-cir {
+      type enabled-disabled;
+      default ENABLED;
+      description "Enable or Disable simple CIR test
+        (Used for SAT)";
+    }
+
+    leaf simple-cir-test-duration {
+      type sat-config-test-duration;
+      default 10;
+      description "Test duration for simple CIR test in secs(1 to 60)
+        (Used for SAT)";
+    }
+
+    leaf step-load-cir {
+      type enabled-disabled;
+      default DISABLED;
+      description "Enable or Disable step load CIR test
+        (Used for SAT)";
+    }
+
+    leaf step-load-cir-test-duration {
+      type sat-config-test-duration;
+      default 10;
+      description "Test duration for step load CIR test in secs
+        (1 to 60) (Used for SAT)";
+    }
+
+    leaf step-load-cir-initial-bandwidth {
+      type sat-test-step;
+      default 25;
+      description "Step load CIR test initial bandwidth percentage
+        of CIR (Used for SAT)";
+    }
+
+    leaf step-load-cir-bandwidth-count {
+      type uint8;
+      description "Number of increments between initial BW and CIR
+        for step-load CIR test";
+    }
+
+    leaf eir-test {
+      type enabled-disabled;
+      default ENABLED;
+      description "Enable or Disable EIR test";
+    }
+
+    leaf eir-test-duration {
+      type sat-config-test-duration;
+      default 10;
+      description "Test duration for EIR test in secs
+        (1 to 60)";
+    }
+
+    leaf traffic-policing-test {
+      type enabled-disabled;
+      default ENABLED;
+      description "Enable or Disable traffic policing test
+        (Used for SAT)";
+    }
+
+    leaf traffic-policing-test-duration {
+      type sat-config-test-duration;
+      default 10;
+      description "Test duration for Traffic Policing  test in secs
+        (1 to 60) (Used for SAT)";
+    }
+    leaf test-direction{
+      type sat-direction-enum;
+      default "two-way";
+      description "Test type(Two way or One way)";
+    }
+    leaf payload-pattern{
+      type payload-pattern-enum;
+      default "pseudo-random";
+      description "Payload pattern to be used in
+        frame-loss and -delivery test PDU; e.g.
+        if FL-PDU as defined in MEF 49 October 2014 is
+        employed then value specified by this parameter controls
+        content of the Data TLV defined in MEF 49 ";
+    }
+    leaf  frame-size-pattern{
+      type frame-size-pattern-enum;
+      default fixed;
+      description "Frame size pattern to be used for test frame";
+    }
+
+    leaf emix-profile{
+      type leafref{
+        path "/vz-sat:profile/vz-sat:emix/vz-sat:emix-profile-name";
+      }
+      default "DEFAULT";
+      description "Reference to EMIX profile";
+    }
+  }
+//**************************************************/
+//          Configuration                          */
+//**************************************************/
+
+  container profile {
+    description "Profile container";
+
+    list test-profile{
+      key sat-profile-name;
+      max-elements 15;
+      description "Service configuration test profile for
+        service activation testing (Max 48 chars)";
+      leaf sat-profile-name{
+        type string;
+        description "Name of SAT Configuration Test profile
+          (Max 48 chars)";
+      }
+      uses test-profile-grouping;
+    }
+    list emix{
+      key "emix-profile-name";
+      description "EMIX Profile";
+      leaf emix-profile-name{
+        type string;
+        description "Name of Emix profile (Max 48 chars)";
+      }
+      container emix-frame-size {
+        description "Container for emix frame size";
+        leaf a {
+          type uint16 {
+            range "1..9600";
+          }
+          default 64;
+            description "64 byte fram size";
+        }
+        leaf b {
+          type uint16 {
+            range "1..9600";
+          }
+          default 128;
+          description "128 byte frame size";
+        }
+        leaf c {
+          type uint16 {
+            range "1..9600";
+          }
+          default 256;
+          description "256 byte frame size";
+        }
+        leaf d {
+          type uint16 {
+            range "1..9600";
+          }
+          default 512;
+          description "512 byte frame size";
+        }
+        leaf e {
+          type uint16 {
+            range "1..9600";
+          }
+          default 1024;
+          description "1024 byte frame size";
+        }
+        leaf f {
+          type uint16 {
+            range "1..9600";
+          }
+          default 2048;
+          description "2048 byte frame size";
+        }
+        leaf g {
+          type uint16 {
+            range "1..9600";
+          }
+          default 4096;
+          description "4096 byte frame size";
+        }
+        leaf h {
+          type uint16 {
+            range "1..9600";
+          }
+          default 8196;
+          description "8196 byte frame size";
+        }
+      }
+
+    }
+    list service-acceptance-criteria-profile {
+      key name;
+      description
+        "A per-cos profile defining the acceptance
+         criteria for the Key Performance Indicators.
+         If all test results are within
+         the acceptance criteria, a test will be
+         considered PASS, otherwise, a test will be
+         considered FAIL.";
+
+      leaf name {
+        type string;
+        description "Service acceptance criteria profile name";
+      }
+
+      uses service-acceptance-criteria;
+    }
+  }
+
+
+  container system {
+    description "System Container";
+    list sat-configuration {
+      key sat-configuration-name;
+        max-elements 1;
+        description "Service Activation Test configuration. Each
+          entry in the List may be referenced by the run-sat
+          RPC in order to start a SAT";
+
+
+    leaf sat-configuration-name {
+      type string;
+      description "Name of SAT Configuration  (Max 48 chars).
+        This is referenced by the start-sat RPC to
+        parameterize the test.";
+    }
+
+    leaf uni{
+      type if:interface-ref;
+      mandatory true;
+      description "Interface name";
+    }
+
+
+    leaf test-profile-name {
+      type leafref {
+      path "/vz-sat:profile/vz-sat:test-profile"+
+        "/vz-sat:sat-profile-name";
+      }
+      description "test profile to use for this confgured SAT";
+    }
+
+    list evc {
+      key service-tag;
+        max-elements 1024;
+        description "service tag";
+        leaf service-tag {
+          type leafref{
+          path "/evc:evcs/evc:evc/evc:etag";
+          }
+          description "Services for a given interface";
+        }
+        container test-flow-attributes{
+          description "per-EVC characteristics";
+          leaf delay-test-pdu-format{
+          type delay-test-pdu-format-type;
+            default "dmm-dmrv1";
+            description "Packet format of delay-test PDUs";
+          }
+          leaf frame-loss-test-pdu-source-mac-addr{
+            type yang:mac-address;
+            description "Destination Unicast MAC address to employ
+            for frame-loss test PDUs and unicast frame-delivery 
+            test PDUs";
+          }
+          leaf frame-loss-test-pdu-unicast-dest-mac-addr{
+            type yang:mac-address;
+            description "Destination Unicast MAC address to employ
+              for frame-loss test PDUs and unicast frame-delivery 
+              test PDUs";
+            }
+          leaf frame-loss-test-pdu-mcast-dest-mac-addr{
+            type yang:mac-address;
+            description "Destination Mcast MAC address to employ for
+              multicasted frame-delivery test PDUs ";
+          }
+          leaf meg {
+            type meg-name;
+              description "name of MEG encompassing local and
+                remote MEP used to conduct delay measurements";
+          }
+          leaf level {
+            type meg-level;
+            default "0";
+            description "Integer identifying the Maintenance l 
+              Domain Level (MD-Level, range: 0-7) of the MEG 
+              that encompasses local and 
+              remote MEP used to conduct delay measurements";
+            // Level is implicit in the MEG
+          }
+          leaf local-mep-id {
+            type mep-id;
+            description "ID of local MEP used to conduct 
+              delay measurements";
+          }
+          leaf remote-peer {
+            type remote-type;
+            description "ID of remote MEP used to conduct 
+              delay measurements";
+          }
+        } // container test-flow-attributes
+        list cos {
+          key cos-type;
+            max-elements 4;
+            description "List of entries for each COS identified 
+              by p-bit";
+            leaf cos-type {
+              type int8 {
+              range "0..7";
+            }
+            description "S-TAG pbit";
+          }
+          leaf frame-loss-test-pdu-size{
+            type frame-size-value;
+            default "512";
+            description "fixed frame-loss and -delivery test 
+              PDU size";
+          }
+          leaf frame-loss-test-pdu-emix-pattern{
+            type emix-pattern-value;
+            default "abceg";
+            description "emix distribute for frame-loss and   
+              delivery test PDUs";
+          }
+          leaf frame-loss-test-pdu-cvlan{
+            type vlan-id;
+            description "CE-VID for tagged frame-loss and -delivery;
+              test PDUs; if absent and NID employs tagged frames
+              for this CoS then  NID auto-selects";
+          }
+          leaf frame-loss-test-pdu-ptag-pcp {
+            type pcp;
+            description "pbit for priority-tagged frame-loss and 
+              delivery test PDUs; if absent and NID employs 
+              priority-tagged frames for this CoS then NID 
+              auto-selects";
+          }
+          leaf frame-loss-test-pdu-cvlan-pcp {
+            type pcp;
+            description "CE-pbit for tagged frame-loss and -delivery
+               test PDU if absent and NID employs tagged frames for
+               for this CoS then NID auto-selects";
+          }
+          leaf frame-loss-test-pdu-dscp {
+            type dscp;
+            description "DSCP for untagged frame-loss and -delivery
+              test PUDs if absent and NID employs untagged frames for
+              this CoS then NID auto-selects";
+          }
+          leaf service-acceptance-criteria-profile {
+            type leafref {
+            path '/vz-sat:profile'+
+                '/vz-sat:service-acceptance-criteria-profile'+
+                '/vz-sat:name';
+              }
+            description "Service acceptance criteria profile that 
+              defines the KPI thresholds for this COS.";
+          }
+        } // cos list
+      } // evc list
+      leaf performance-test{
+        type enabled-disabled;
+        description "Enable Disable performance test";
+      }
+      leaf performance-test-duration{
+        type sat-performance-test-duration;
+        description "Performance test duration time";
+      }
+    }  // sat-configuration
+  } // config system
+
+//*******************************************************************/
+//                               Status Show                        */
+//******************************************************************/
+  container test-interface-status {
+    config false;
+    description
+      "service-activation-test(SAT) status for the test interface";
+    container mac-address {
+      description
+        "shows shows service-activation-test(SAT)";
+      leaf mac-address {
+        type yang:mac-address;
+        description "Service Activation Test";
+      }
+    }
+  }
+
+//*******************************************************************/
+//                RPC's to start and stop SAT Tests
+//******************************************************************/
+
+  rpc get-sat-results {
+    description "Sat Test Results on an Uni Interface";
+    input {
+      leaf uni {
+        type if:interface-ref;
+        mandatory true;
+        description "UNI on which this test was run";
+      }
+      leaf transaction-id{
+        type uint32;
+        mandatory true;
+        description "Transaction ID created as part of the
+          SAT Test Creation";
+      }
+    }
+    output {
+      uses error-data;
+      uses  sat-results;
+    }
+  }
+
+ // This will invoke the SAT using the /config that already exists...
+  rpc run-sat-test {
+    description "Invoke a Service Activation Test (SAT).
+      The returned transaction-id
+      is used to identify the test and associated results.";
+    input {
+      leaf sat-configuration-name {
+        type leafref {
+        path '/vz-sat:system/vz-sat:sat-configuration'+
+            '/vz-sat:sat-configuration-name';
+      }
+      mandatory true;
+      description "The name of a pre-existing SAT Configuration";
+    }
+  }
+    output {
+      uses error-data;
+        leaf transaction-id {
+        type uint32;
+        mandatory true;
+        description "Transaction Id";
+       }
+    }
+  }
+
+  rpc create-sat-test {
+    description "Running Service Activation Test (SAT)";
+    input {
+      leaf uni{
+        type if:interface-ref;
+        mandatory true;
+        description "Interface name";
+      }
+      leaf test-profile-name {
+        type leafref {
+          path '/vz-sat:profile/vz-sat:test-profile'+
+             '/vz-sat:sat-profile-name';
+      }
+      description "test profile used for this test";
+    }
+    list evc {
+      key service-tag;
+        max-elements 1024;
+        description "service-tag";
+        leaf service-tag {
+          type leafref{
+            path "/evc:evcs/evc:evc/evc:etag";
+        }
+        description "Services for a given interface";
+      }
+      container test-flow-attributes{
+        description "Test Flow Attributes";
+          leaf delay-test-pdu-format{
+            type delay-test-pdu-format-type;
+            default "dmm-dmrv1";
+            description "Packet format of delay-test PDUs";
+          }
+          leaf frame-loss-test-pdu-source-mac-addr{
+            type yang:mac-address;
+            description "Destination Unicast MAC address
+              to employ for frame-loss test PDUs
+              and unicast frame-delivery test PDUs";
+          }
+          leaf frame-loss-test-pdu-unicast-dest-mac-addr{
+            type yang:mac-address;
+            description "Destination Unicast MAC address to
+              employ for frame-loss test PDUs and unicast
+              frame-delivery test PDUs";
+          }
+          leaf frame-loss-test-pdu-mcast-dest-mac-addr{
+            type yang:mac-address;
+            description "Destination Mcast MAC address
+              to employ for multicasted frame-delivery
+              test PDUs ";
+          }
+          leaf meg {
+            type meg-name;
+            description "name of MEG encompassing local and
+              remote MEP used to conduct delay measurements";
+          }
+          leaf level {
+            type meg-level;
+            default "0";
+            description "Integer identifying the Maintenance
+              Domain Level (MD Level, range: 0-7)
+              of the MEG that encompasses local and remote MEP
+              used to conduct delay measurements";
+          }
+          leaf local-mep-id {
+            type mep-id;
+            description "ID of local MEP used to conduct
+              delay measurements";
+          }
+          leaf remote-peer {
+            type remote-type;
+            description "ID of remote MEP used to conduct
+              delay measurements";
+          }
+        }
+        list cos {
+          key cos-type;
+          max-elements 4;
+          description "List of entries for each COS identified
+            by p-bit";
+          leaf cos-type {
+            type int8 {
+              range "0..7";
+            }
+            description "S-TAG (E-TAG) pbit";
+          }
+          leaf frame-loss-test-pdu-size{
+            type frame-size-value;
+            default "512";
+            description "fixed frame-loss and -delivery test
+              PDU size";
+          }
+          leaf frame-loss-test-pdu-emix-pattern{
+            type emix-pattern-value;
+            default "abceg";
+            description "emix distribute for frame-loss
+              and -delivery test PDUs";
+          }
+          leaf frame-loss-test-pdu-cvlan{
+            type vlan-id;
+            description "CE-VID for tagged frame-loss and
+              -delivery test PDUs; if absent and NID employs
+              tagged frames for this CoS then  NID auto-selects";
+          }
+          leaf frame-loss-test-pdu-ptag-pcp {
+            type pcp;
+            description "pbit for priority-tagged frame-loss
+              and -delivery test PDUs; if absent and NID
+              employs priority-tagged frames for this
+              CoS then NID auto-selects";
+          }
+          leaf frame-loss-test-pdu-cvlan-pcp {
+            type pcp;
+            description "CE-pbit for tagged frame-loss and -delivery
+              test PDUs; if absent and NID employs tagged frames
+              for this CoS then NID auto-selected";
+          }
+          leaf frame-loss-test-pdu-dscp {
+            type dscp;
+            description "DSCP for untagged frame-loss and -delivery
+              test PDUs; if absent and NID employs untagged frames
+              for this CoS then NID auto-selects";
+          }
+          leaf service-acceptance-criteria-profile {
+            type leafref {
+              path "/vz-sat:profile"+
+                "/vz-sat:service-acceptance-criteria-profile"+
+                "/vz-sat:name";
+            }
+            description "Service acceptance criteria profile that
+              defines  the KPI thresholds for this COS.";
+          }
+        }
+      }
+      leaf performance-test{
+        type enabled-disabled;
+        description "Enable Disable performance test";
+      }
+      leaf performance-test-duration{
+        type sat-performance-test-duration;
+        description "Performance test duration time";
+      }
+    }
+    output {
+      uses error-data;
+      leaf transaction-id {
+        type uint32;
+        mandatory true;
+                    description "Transaction Id";
+      }
+    }
+  }
+  rpc abort-sat-test {
+    description "Abort Running Service Activation Test (SAT);
+      whether NID persists partial/incomplete results of purposefully
+      aborted SAT is at discretion of vendor";
+    input {
+      leaf uni{
+        type if:interface-ref;
+        mandatory true;
+        description "Interface name";
+      }
+      leaf transaction-id {
+        type uint32;
+        mandatory true;
+        description "Transaction ID";
+      }
+    }
+    output {
+      uses error-data;
+    }
+  }
+
+  rpc get-available-sat-results {
+    description "Get Available SAT results";
+    input {
+      leaf uni{
+        type if:interface-ref;
+        description "Interface name";
+      }
+      leaf transaction-id {
+        type uint32;
+        description "Transaction ID";
+      }
+    }
+    output {
+      uses error-data;
+      list report {
+        key transaction-id;
+        description "List of SAT results";
+        leaf transaction-id{
+          type uint32;
+          description "transaction id of the test";
+        }
+        leaf sat-test-date{
+          type yang:date-and-time;
+          description "When create-sat-test rpc that triggered
+            test was invoked";
+        }
+        leaf normative-status{
+          type sat-test-normative-status;
+          description "overall normative status of this test
+            e.g. still running, finished, etc";
+        }
+        leaf informative-status{
+          type string;
+          description "human readable qualification to
+            normative status";
+        }
+      }
+    }
+  }
+}

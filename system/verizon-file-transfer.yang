@@ -1,0 +1,338 @@
+module verizon-file-transfer {
+  namespace "http://www.verizon.com/ns/verizon-file-transfer";
+  prefix vz-ft;
+
+  import ietf-system {
+    prefix sys;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+  import iana-crypt-hash {
+    prefix ianach;
+  }
+
+  organization "Verizon";
+  
+  contact 
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description "Verizon File Transfer YANG model
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+
+/* typedefs */
+  typedef percent {
+    type uint8 {
+      range "0 .. 100";
+    }
+    description "Percentage";
+  }
+  
+/* groupings */
+
+  grouping remote-server-parameters {
+    description "Remote File Server parameters.";
+    leaf remote-server {
+      type inet:uri;
+      mandatory true;
+      description
+        "Remote Server URI in the form 
+        '(http|https|ftp|tftp|scp|sftp)
+        +://(ip-or-hostname):/(directory)'.";
+    }
+    leaf file-upload-type {
+      type enumeration {
+        enum syslog {
+        description 
+          "Syslog refers to the data stored as part of the
+           device's general logging function.";
+        }
+        enum security-log {
+          description 
+            "Security-log type refers to the data stored as
+             part of the device's security logging function.
+             At minimum, this log file should report all managed
+             access request (allowed/denied), protocols used to 
+             request data and include all configuration changes";
+        }
+        enum bulk-pm {
+          description 
+            "Bulk-PM refers to all historical PMs stored on the device
+             (e.g., binned PM)";
+        }
+        enum alarm{
+          description 
+            "Alarm refers to all past (raised and cleared) and active 
+             alarms.  This include all recorded events and threshold 
+             crossing alerts.";
+        }
+        enum other{
+          description 
+            "Other in concert with a specified filename will upload 
+             access specific vendor bundle file 
+             (e.g., vendor specified debug)."; 
+        }
+      }
+     mandatory true;
+     description 
+       "Type of Bundled File types.  When particular file type is
+        selected, the device will bundle together file types (no 
+        apriori knowledge of file directory, number of files, or 
+        file extensions is needed).  For example, syslog will bundle 
+        vendor syslog files for troubleshooting purposes.";
+    }
+    leaf file-name {
+      when "../file-upload-type = 'other'";
+      type string;
+      description 
+        "Vendor specific file bundle (when file-upload-type
+         is of the type Other)";
+    }
+  }
+  grouping operator-upload-types {
+    description 
+      "File Upload types parameters available to
+      operators (non-debug specific)";
+    leaf remote-server {
+      type inet:uri;
+      mandatory true;
+      description
+        "Remote Server URI in the form 
+        '(http|https|ftp|tftp|scp|sftp)
+        +://(ip-or-hostname):/(directory)'.";
+    }
+    leaf file-upload-type {
+      type enumeration {
+        enum syslog {
+        description 
+          "Syslog refers to the data stored as part of the
+           device's general logging function.";
+        }
+        enum security-log {
+          description 
+            "Security-log type refers to the data stored as
+             part of the device's security logging function.
+             At minimum, this log file should report all managed
+             access request (allowed/denied), protocols used to 
+             request data and include all configuration changes";
+        }
+        enum bulk-pm {
+          description 
+            "Bulk-PM refers to all historical PMs stored on the device
+             (e.g., binned PM)";
+        }
+        enum alarm{
+          description 
+            "Alarm refers to all past (raised and cleared) and active 
+             alarms.  This include all recorded events and threshold 
+             crossing alerts.";
+        }
+       }
+     mandatory true;
+     description 
+       "Type of file to transfer.";
+      }
+    }
+ 
+  grouping vendor-upload-type {
+    description 
+      "Vendor debug upload parameters";
+    leaf remote-server {
+      type inet:uri;
+      mandatory true;
+      description
+        "Remote Server URI in the form 
+        '(http|https|ftp|tftp|scp|sftp)
+        +://(ip-or-hostname):/(directory)'.";
+    }
+    leaf file-name {
+      type string;
+      mandatory true;
+      description 
+        "Vendor debug file to upload";
+    }
+  }  
+    /* augments */
+  augment "/sys:system-state" {
+    description 
+      "Augment the IETF System Model to include
+       file transfer status";
+       
+    container file-transfers {
+      description 
+        "Container for file transfer status information";
+       list file-transfer {
+         key index;
+         max-elements 5;
+         description "File transfer status list";
+        leaf index {
+          type uint32;
+          description 
+            "Index of file transferred.";
+        }
+        uses remote-server-parameters;
+
+        leaf status {
+          type enumeration {
+            enum in-progress {
+              description "File transfer in progress";
+            }
+            enum transfer-failed {
+              description "File transfer failed";
+            }
+            enum authentication-failed {
+              description "user verification used with file
+              transfer failed";
+            }
+            enum done {
+              description "File transfer complete";
+            }
+          }
+          mandatory true;
+          description "Transfer status";
+        }
+        leaf status-msg {
+          type string;
+          description "Additional system messages.";
+        }
+        leaf progress {
+         when "../status = 'done' or ../status = 'in-progress'";
+            type percent;
+          mandatory true;
+          description "Percentage Completion.  Applies to 
+          in-progress or done statuses.";
+          }
+        leaf files-remaining {
+          type uint8;
+          mandatory true;
+          description 
+            "The number of files remaining to be transferred.
+             This includes the file that is currently being 
+             transfered.";
+          }
+        }
+      }
+    }
+  rpc file-transfer {
+    description "RPC to initiate file transfer";
+    input {
+      leaf action {
+        type enumeration {
+          enum file-upload {
+            description
+              "Specify the upload action. The server sends
+               the file type identified by the file-type
+               to the URI identified by the remote-server.";
+          }
+        }
+        mandatory true;
+        description "File Transfer actions";
+      }
+      uses operator-upload-types;
+      choice credentials-type {
+        description "Credentials type used with file transfer.";
+        case simple-credentials {
+          container simple-credentials {
+            description "Simple credentials container.";
+            leaf username {
+              type string;
+              mandatory true;
+              description
+                "The username to use at the destination.";
+            }
+            leaf password {
+              type ianach:crypt-hash;
+              mandatory true;
+              description "Password associated with the username";
+            }
+          }
+        }
+      }
+    }
+    output {
+      leaf index {
+        type uint32;
+        mandatory true;
+        description
+          " The server MUST uniquely assign an index
+           when successfully starting the transfer process
+           to identify the file transfer process.";
+      }
+      leaf error-msg {
+        type string;
+        description
+          "Optional error message.  Can be used to convey
+           error information when file transfer actions
+           can not take place";
+      }
+    }
+  }
+  rpc vendor-file-transfer {
+    description 
+    "RPC to initiate file transfer for vendor files.";
+    input {
+      leaf action {
+        type enumeration {
+          enum file-upload {
+            description
+              "Specify the upload action. The server sends
+               the file type identified by the file-type
+               to the URI identified by the remote-server.";
+          }
+        }
+        mandatory true;
+        description "File Transfer actions";
+      }
+      uses vendor-upload-type;
+      choice credentials-type {
+        description "Credentials type used with file transfer.";
+        case simple-credentials {
+          container simple-credentials {
+            description "Simple credentials container.";
+            leaf username {
+              type string;
+              mandatory true;
+              description
+                "The username to use at the destination.";
+            }
+            leaf password {
+              type ianach:crypt-hash;
+              mandatory true;
+              description "Password associated with the username";
+            }
+          }
+        }
+      }
+    }
+    output {
+      leaf index {
+        type uint32;
+        mandatory true;
+        description
+          " When the server receives the RPC request of
+          'transfer', if the transferring process starts
+           successfully, the server MUST assign an index
+           to that process and reply it to the client as
+           an output parameter.
+          ";
+      }
+      leaf error-msg {
+        type string;
+        description
+          "Optional error message.  Can be used to convey
+           error information when file transfer actions
+           can not take place";
+      }
+    }
+  }
+   }
+  

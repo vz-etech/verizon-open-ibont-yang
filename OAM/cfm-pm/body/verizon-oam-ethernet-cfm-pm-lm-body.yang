@@ -1,0 +1,1173 @@
+submodule verizon-oam-ethernet-cfm-pm-lm-body {
+  belongs-to verizon-oam-ethernet-cfm-pm {
+    prefix vz-oam-ecfm-pm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  import verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  include verizon-oam-ethernet-cfm-pm-types;
+  include verizon-oam-ethernet-cfm-pm-tca;
+
+  organization
+    "Verizon";
+
+  contact
+     "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG data types and grouping
+     definitions that extend the functionality of Connectivity Fault
+     Management (CFM) as specified in IEEE 802.1ag with additional
+     functionality to support the Ethernet Frame Loss Measurement 
+     (ETH-LM) function of Ethernet Service Layer OAM Performance 
+     Monitoring as specified by ITU-T Y.1731 clause 8.1, MEF 35.1 
+     and the management information models specified in MEF 7.2 
+     clause 7.6.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference
+      "ITU-T Y.1731-2015 clause 8.1; MEF 35.1; MEF 7.2 clause 7.6.";
+  }
+
+  feature eth-lm {
+    description
+      "Indicates support for the Ethernet Loss Measurement (ETH-LM) 
+       function acc. to ITU-T Y.1731 clause 8.1.";
+  }
+  feature eth-slm {
+    description
+      "Indicates support for the Ethernet Synthetic Loss Measurement 
+       (ETH-SLM) acc. to ITU-T Y.1731 clause 8.4.";
+  }
+  feature lm-single-ended-responder-enable-disable {
+    description
+      "Indicates support for the explicit enabling and disabling of 
+       the LM Single-ended Responder.";
+  }
+  feature slm-single-ended-responder-enable-disable {
+    description
+      "Indicates support for the explicit enabling and disabling of 
+       the SLM Single-ended Responder.";
+  }
+  feature availability-measurement-interval {
+    description
+      "Indicates support for a separate configuration of 
+       availability measurement interval.";
+  }
+
+  typedef loss-measurement-metric {
+    type enumeration {
+      /* performance metrics. */
+      enum "forward-frame-loss-ratio" {
+        description
+          "Frame Loss Ratio (FLR) in the forward direction calculated 
+           by a MEP from the last received OAM PDU. ";
+        reference
+          "MEF 7.2 clause 7.6.2.2 (forwardFlr).";
+      }
+      enum "backward-frame-loss-ratio" {
+        description
+          "Frame Loss Ratio (FLR) in the backward direction 
+           calculated by a MEP from the last received OAM PDU. ";
+        reference
+          "MEF 7.2 clause 7.6.2.2 (backwardFlr).";
+      }
+      enum "forward-transmitted-frames" {
+        description
+          "The number of frames transmitted in the forward direction 
+           by a MEP.
+           For a PM Session of types LMM or CCM, this includes 
+           Ethernet Service Frames and OAM PDUs that are in a higher 
+           MEG level only.
+           For a PM Session of type SLM, this includes the count of 
+           OAM ETH-SLM frames only.";
+        reference
+          "MEF 7.2 clause 7.6.4.2 (forwardTransmittedFrames).";
+      }
+      enum "forward-received-frames" {
+        description
+          "The number of frames received in the forward direction by 
+           a MEP.
+           For a PM Session of types LMM or CCM, this includes 
+           Ethernet Service Frames and OAM PDUs that are in a higher 
+           MEG level only.
+           For a PM Session of type SLM, this includes the count of 
+           OAM ETH-SLM frames only.";
+        reference
+          "MEF 7.2 clause 7.6.4.2 (forwardReceivedFrames).";
+      }
+      enum "forward-min-frame-loss-ratio" {
+        description
+          "The minimum one-way frame loss ratio in the forward 
+           direction calculated by a MEP for a given measurement 
+           interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.2 (forwardMinFlr).";
+      }
+      enum "forward-max-frame-loss-ratio" {
+        description
+          "The maximum one-way frame loss ratio in the forward 
+           direction calculated by a MEP for a given measurement 
+           interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.2 (forwardMaxFlr).";
+      }
+      enum "forward-avg-frame-loss-ratio" {
+        description
+          "The average one-way frame loss ratio in the forward 
+           direction calculated by a MEP for a given measurement 
+           interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.2 (forwardAveFlr).";
+      }
+      enum "backward-transmitted-frames" {
+        description
+          "The number of frames transmitted in the backward direction 
+           by a MEP.
+           For a PM Session of types LMM or CCM, this includes 
+           Ethernet Service Frames and OAM PDUs that are in a higher 
+           MEG level only.
+           For a PM Session of type SLM, this includes the count of 
+           OAM ETH-SLM frames only.";
+        reference
+          "MEF 7.2 clause 7.6.4.2 (backwardTransmittedFrames).";
+      }
+      enum "backward-received-frames" {
+        description
+          "The number of frames received in the backward direction by 
+           a MEP.
+           For a PM Session of types LMM or CCM, this includes 
+           Ethernet Service Frames and OAM PDUs that are in a higher 
+           MEG level only.
+           For a PM Session of type SLM, this includes the count of 
+           OAM ETH-SLM frames only.";
+        reference
+          "MEF 7.2 clause 7.6.4.2 (backwardReceivedFrames).";
+      }
+      enum "backward-min-frame-loss-ratio" {
+        description
+          "The minimum one-way frame loss ratio in the backward 
+           direction calculated by a MEP for a given measurement 
+           interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.2 (backwardMinFlr).";
+      }
+      enum "backward-max-frame-loss-ratio" {
+        description
+          "The maximum one-way frame loss ratio in the backward 
+           direction calculated by a MEP for a given measurement 
+           interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.2 (backwardMaxFlr).";
+      }
+      enum "backward-avg-frame-loss-ratio" {
+        description
+          "The average one-way frame loss ratio in the backward 
+           direction calculated by a MEP for a given measurement 
+           interval. ";
+        reference
+          "MEF 7.2 clause 7.6.4.2 (backwardAveFlr).";
+      }
+      /* availability metrics. */
+      enum "forward-status" {
+        description
+          "The availability status (the outcome of the last 
+           availability indicator) in the forward direction based 
+           upon the last received OAM PDU.";
+        reference
+          "MEF 7.2 clause 7.6.2.2 (availForwardStatus).";
+      }
+      enum "backward-status" {
+        description
+          "The availability status (the outcome of the last 
+           availability indicator) in the backward direction based 
+           upon the last received OAM PDU.";
+        reference
+          "MEF 7.2 clause 7.6.2.2 (availBackwardStatus).";
+      }
+      enum "forward-last-transition-date-and-time" {
+        description
+          "The time and date of the last transition between available 
+           and unavailable in the forward direction.";
+        reference
+          "MEF 7.2 clause 7.6.2.2 (availForwardLastTransitionTime).";
+      }
+      enum "backward-last-transition-date-and-time" {
+        description
+          "The time and date of the last transition between available 
+           and unavailable in the backward direction.";
+        reference
+          "MEF 7.2 clause 7.6.2.2 (availBackwardLastTransitionTime).";
+      }
+      enum "forward-high-loss-intervals" {
+        description
+          "The number of high loss intervals (HLI) over time in the 
+           forward direction. ";
+        reference
+          "MEF 7.2 clause 7.6.4.3 (forwardHighLoss).";
+      }
+      enum "backward-high-loss-intervals" {
+        description
+          "The number of high loss intervals (HLI) over time in the 
+           backward direction.";
+        reference
+          "MEF 7.2 clause 7.6.4.3 (backwardHighLoss).";
+      }
+      enum "forward-consecutive-high-loss-intervals" {
+        description
+          "The number of consecutive high loss intervals (CHLI) over 
+           time in the forward direction.";
+        reference
+          "MEF 7.2 clause 7.6.4.3 (forwardConsecutiveHighLoss).";
+      }
+      enum "backward-consecutive-high-loss-intervals" {
+        description
+          "The number of consecutive high loss intervals (CHLI) over 
+           time in the backward direction.";
+        reference
+          "MEF 7.2 clause 7.6.4.3 (backwardConsecutiveHighLoss).";
+      }
+      enum "forward-available-indicators" {
+        description
+          "The number of availability indicators during a small time 
+           interval evaluated as available (low frame loss) in the 
+           forward direction by a MEP during a given measurement 
+           interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.3 (forwardAvailable).";
+      }
+      enum "backward-available-indicators" {
+        description
+          "The number of availability indicators during a small time 
+           interval evaluated as available (low frame loss) in the 
+           backward direction by a MEP during a given measurement 
+           interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.3 (backwardAvailable).";
+      }
+      enum "forward-unavailable-indicators" {
+        description
+          "The number of availability indicators during a small time 
+           interval evaluated as unavailable (high frame loss) in the 
+           forward direction by a MEP during a given measurement 
+           interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.3 (forwardUnavailable).";
+      }
+      enum "backward-unavailable-indicators" {
+        description
+          "The number of availability indicators during a small time 
+           interval evaluated as unavailable (high frame loss) in the 
+           backward direction by a MEP during a given measurement 
+           interval.";
+        reference
+          "MEF 7.2 clause 7.6.4.3 (backwardUnavailable).";
+      }
+    }
+    description
+      "Defines loss measurement availability metrics.";
+  }
+
+  typedef loss-measurement-metric-with-tca {
+    type loss-measurement-metric;
+    description
+      "Defines loss measurement metrics that support threshold 
+       crossing alerts (TCA).";
+  }
+
+  typedef availability-status {
+    type enumeration {
+      enum "available" {
+        description
+          "Indicates that a session is available.";
+      }
+      enum "unavailable" {
+        description
+          "Indicates that a session is unavailable.";
+      }
+      enum "unknown" {
+        description
+          "Indicates that availability is unknown. The reason may be 
+           that insufficient time has passed to make an availability
+           calculation, the time has been excluded because of a
+           maintenance interval, or because availability measurement 
+           is not enabled.";
+      }
+    }
+    description
+      "Defines the availability of a measurement session.";
+    reference
+      "MEF 7.2 clause I.2 (SoamTcAvailabilityType).";
+  }
+
+  typedef lm-measurement-type {
+    type enumeration {
+      enum "lmm" {
+        description
+          "LMM OAM PDU generated and received LMR responses
+           tracked.
+           This OAM PDU results in single-ended ETH-LM.";
+      }
+      enum "slm" {
+        description
+          "SLM OAM PDU generated and received SLR PDUs tracked.
+           This OAM PDU results in single-ended ETH-SLM.";
+      }
+      enum "ccm" {
+        description
+          "CCM OAM PDU generated and received CCM PDUs tracked.
+           This OAM PDU results in dual-ended ETH-LM.";
+      }
+    }
+    description
+      "Specifies what type of Loss Measurement is to be performed.";
+
+    reference
+      "ITU-T Y.1731 clause 8.1.2.";
+  }
+
+  grouping loss-measurement-stateless-tca-profile-parameters {
+    description
+      "Defines the parameters for stateless threshold crossing alert 
+       (TCA) reporting profiles for loss measurements.";
+
+    leaf metric {
+      type loss-measurement-metric-with-tca;
+      description
+        "The PM metric for which a TCA function is to be created.";
+    }
+    uses common-stateless-tca-profile-parameters;
+  }
+
+  grouping loss-measurement-stateful-tca-profile-parameters {
+    description
+      "Defines the parameters for stateful threshold crossing alert 
+       (TCA) reporting profiles for loss measurements.";
+
+    leaf metric {
+      type loss-measurement-metric-with-tca;
+      description
+        "The PM metric for which a TCA function is to be created.";
+    }
+    uses common-stateful-tca-profile-parameters;
+  }
+
+  grouping latest-loss-measurements {
+    description
+      "Defines the latest measurements as calculated from the last 
+       received OAM PDU.";
+    reference
+      "MEF 7.2 clause 7.6.2.2 (EthOamLmLastReceivedResults).";
+
+    leaf forward-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the Frame Loss Ratio (FLR) in the forward direction 
+         calculated by this MEP from the last received OAM PDU. The
+         FLR value is a ratio that is expressed as a percent with a 
+         value of 0 (ratio 0.00) through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.2.2 (forwardFlr).";
+    }
+
+    leaf backward-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the Frame Loss Ratio (FLR) in the backward 
+         direction calculated by this MEP from the last received OAM 
+         PDU. The FLR value is a ratio that is expressed as a percent 
+         with a value of 0 (ratio 0.00) through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.2.2 (backwardFlr).";
+    }
+  }
+
+  grouping loss-measurement-performance-dataset {
+    description
+      "Defines the dataset containing the results for performance
+       measurements during a measurement interval.";
+    reference
+      "MEF 7.2 clause 7.6.4.2 (EthOamLmStatsPerfDataSet).";
+
+    leaf forward-transmitted-frames {
+      type yang:counter32;
+      description
+        "Contains the number of frames transmitted in the forward 
+         direction by this MEP.
+         For a PM Session of types LMM or CCM, this includes 
+         Ethernet Service Frames and OAM PDUs that are in a higher 
+         MEG level only.
+         For a PM Session of type SLM, this includes the count of 
+         OAM ETH-SLM frames only.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (forwardTransmittedFrames).";
+    }
+
+    leaf forward-received-frames {
+      type yang:counter32;
+      description
+        "Contains the number of frames received in the forward 
+         direction by this MEP.
+         For a PM Session of types LMM or CCM, this includes 
+         Ethernet Service Frames and OAM PDUs that are in a higher 
+         MEG level only.
+         For a PM Session of type SLM, this includes the count of 
+         OAM ETH-SLM frames only.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (forwardReceivedFrames).";
+    }
+
+    leaf forward-min-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the minimum one-way frame loss ratio in the 
+         forward direction calculated by this MEP for this 
+         measurement interval. The FLR value is a ratio that is 
+         expressed as a percent with a value of 0 (ratio 0.00) 
+         through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (forwardMinFlr).";
+    }
+
+    leaf forward-max-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the maximum one-way frame loss ratio in the 
+         forward direction calculated by this MEP for this 
+         measurement interval. The FLR value is a ratio that is 
+         expressed as a percent with a value of 0 (ratio 0.00) 
+         through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (forwardMaxFlr).";
+    }
+
+    leaf forward-avg-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the average one-way frame loss ratio in the 
+         forward direction calculated by this MEP for this 
+         measurement interval. The FLR value is a ratio that is 
+         expressed as a percent with a value of 0 (ratio 0.00) 
+         through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (forwardAveFlr).";
+    }
+
+    leaf backward-transmitted-frames {
+      type yang:counter32;
+      description
+        "Contains the number of frames transmitted in the backward 
+         direction by this MEP.
+         For a PM Session of types LMM or CCM, this includes 
+         Ethernet Service Frames and OAM PDUs that are in a higher 
+         MEG level only.
+         For a PM Session of type SLM, this includes the count of 
+         OAM ETH-SLM frames only.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (backwardTransmittedFrames).";
+    }
+
+    leaf backward-received-frames {
+      type yang:counter32;
+      description
+        "Contains the number of frames received in the backward 
+         direction by this MEP.
+         For a PM Session of types LMM or CCM, this includes 
+         Ethernet Service Frames and OAM PDUs that are in a higher 
+         MEG level only.
+         For a PM Session of type SLM, this includes the count of 
+         OAM ETH-SLM frames only.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (backwardReceivedFrames).";
+    }
+
+    leaf backward-min-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the minimum one-way frame loss ratio in the 
+         backward direction calculated by this MEP for this 
+         measurement interval. The FLR value is a ratio that is 
+         expressed as a percent with a value of 0 (ratio 0.00) 
+         through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (backwardMinFlr).";
+    }
+
+    leaf backward-max-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the maximum one-way frame loss ratio in the 
+         backward direction calculated by this MEP for this 
+         measurement interval. The FLR value is a ratio that is 
+         expressed as a percent with a value of 0 (ratio 0.00) 
+         through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (backwardMaxFlr).";
+    }
+
+    leaf backward-avg-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the average one-way frame loss ratio in the 
+         backward direction calculated by this MEP for this 
+         measurement interval. The FLR value is a ratio that is 
+         expressed as a percent with a value of 0 (ratio 0.00) 
+         through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (backwardAveFlr).";
+    }
+
+    leaf out-oam-pdus {
+      type yang:counter32;
+      description
+        "Contains the count of the number of OAM PDUs sent during 
+         this measurement interval.
+         This applies when type is LMM, SLM or CCM. It indicates the 
+         number of LMM, CCM, or SLM OAM frames transmitted.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (soamPdusSent).";
+    }
+
+    leaf in-oam-pdus {
+      type yang:counter32;
+      description
+        "Contains the count of the number of OAM PDUs received during 
+         this measurement interval.
+         This applies when type is LMM, SLM or CCM. It indicates the 
+         number of LMM, CCM, or SLM OAM frames transmitted.";
+      reference
+        "MEF 7.2 clause 7.6.4.2 (soamPdusReceived).";
+    }
+  }
+
+  grouping latest-availability-measurements {
+    description
+      "Defines the latest availability measurements as calculated 
+       from the last received OAM PDU.";
+    reference
+      "MEF 7.2 clause 7.6.2.2 (EthOamLmLastReceivedResults).";
+
+    leaf forward-status {
+      type availability-status;
+      description
+        "Indicates the availability status (the outcome of the last 
+         availability indicator) in the forward direction based upon 
+         the last received OAM PDU.";
+      reference
+        "MEF 7.2 clause 7.6.2.2 (availForwardStatus).";
+    }
+    leaf backward-status {
+      type availability-status;
+      description
+        "Indicates the availability status (the outcome of the last 
+         availability indicator) in the backward direction based upon 
+         the last received OAM PDU.";
+      reference
+        "MEF 7.2 clause 7.6.2.2 (availBackwardStatus).";
+    }
+    leaf forward-last-transition-date-and-time {
+      type yang:date-and-time;
+      description
+        "Indicates the date and time of the last transition between 
+         available and unavailable in the forward direction.
+         If there have been no transitions since the Loss Measurement 
+         session was started, this leaf will be empty.";
+      reference
+        "MEF 7.2 clause 7.6.2.2 (availForwardLastTransitionTime).";
+    }
+    leaf backward-last-transition-date-and-time {
+      type yang:date-and-time;
+      description
+        "Indicates the date and time of the last transition between 
+         available and unavailable in the backward direction.
+         If there have been no transitions since the Loss Measurement 
+         session was started, this leaf will be empty.";
+      reference
+        "MEF 7.2 clause 7.6.2.2 (availBackwardLastTransitionTime).";
+    }
+  }
+
+  grouping loss-measurement-availability-dataset {
+    description
+      "Defines the dataset containing the results for availability
+       measurements during a measurement interval.";
+    reference
+      "MEF 7.2 clause 7.6.4.3 (EthOamLmAvailStatsPerfDataSet).";
+
+    leaf forward-high-loss-intervals {
+      type yang:counter32;
+      description
+        "The number of high loss intervals (HLI) over time in the 
+         forward direction. 
+         The value starts at 0 and increments for every HLI that 
+         occurs. This parameter is equivalent to 'L Sub T' found in 
+         MEF 10.2.1.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (forwardHighLoss).";
+    }
+    leaf backward-high-loss-intervals {
+      type yang:counter32;
+      description
+        "Contains the number of high loss intervals (HLI) over time 
+         in the backward direction.
+         The value starts at 0 and increments for every HLI that 
+         occurs. This parameter is equivalent to 'L Sub T' found in 
+         MEF 10.2.1.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (backwardHighLoss).";
+    }
+    leaf forward-consecutive-high-loss-intervals {
+      type yang:counter32;
+      description
+        "Contains the number of consecutive high loss intervals 
+         (CHLI) over time in the forward direction.
+         The value starts at 0 and increments for every HLI that 
+         occurs that is determined to fall within a CHLI. This 
+         parameter is equivalent to 'B Sub T' found in MEF 10.2.1.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (forwardConsecutiveHighLoss).";
+    }
+    leaf backward-consecutive-high-loss-intervals {
+      type yang:counter32;
+      description
+        "Contains the number of consecutive high loss intervals 
+         (CHLI) over time in the backward direction.
+         The value starts at 0 and increments for every HLI that 
+         occurs that is determined to fall within a CHLI. This 
+         parameter is equivalent to 'B Sub T' found in MEF 10.2.1.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (backwardConsecutiveHighLoss).";
+    }
+    leaf forward-available-indicators {
+      type uint32;
+      description
+        "Contains the number of availability indicators during a 
+         small time interval evaluated as available (low frame loss) 
+         in the forward direction by this MEP during this measurement 
+         interval.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (forwardAvailable).";
+    }
+    leaf backward-available-indicators {
+      type uint32;
+      description
+        "Contains the number of availability indicators during a 
+         small time interval evaluated as available (low frame loss) 
+         in the backward direction by this MEP during this 
+         measurement interval.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (backwardAvailable).";
+    }
+    leaf forward-unavailable-indicators {
+      type uint32;
+      description
+        "Contains the number of availability indicators during a 
+         small time interval evaluated as unavailable (high frame 
+         loss) in the forward direction by this MEP during this 
+         measurement interval.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (forwardUnavailable).";
+    }
+    leaf backward-unavailable-indicators {
+      type uint32;
+      description
+        "Contains the number of availability indicators during a 
+         small time interval evaluated as unavailable (high frame 
+         loss) in the backward direction by this MEP during this 
+         measurement interval.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (backwardUnavailable).";
+    }
+    leaf forward-min-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the minimum one-way availability frame loss ratio 
+         (FLR) in the forward direction, from among the set of 
+         availability FLR values calculated by the MEP in this 
+         measurement interval. There is one availability FLR value 
+         for each 'delta_t' time period within the measurement 
+         interval, as specified in MEF 10.2.1.
+         The FLR value is a ratio that is expressed as a percent 
+         with a value of 0 (ratio 0.00) through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (forwardMinFlr).";
+    }
+    leaf forward-max-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the maximum one-way availability frame loss ratio 
+         (FLR) in the forward direction, from among the set of 
+         availability FLR values calculated by the MEP in this 
+         measurement interval. There is one availability FLR value 
+         for each 'delta_t' time period within the measurement 
+         interval, as specified in MEF 10.2.1.
+         The FLR value is a ratio that is expressed as a percent 
+         with a value of 0 (ratio 0.00) through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (forwardMaxFlr).";
+    }
+    leaf forward-avg-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the average one-way availability frame loss ratio 
+         (FLR) in the forward direction, from among the set of 
+         availability FLR values calculated by the MEP in this 
+         measurement interval. There is one availability FLR value 
+         for each 'delta_t' time period within the measurement 
+         interval, as specified in MEF 10.2.1.
+         The FLR value is a ratio that is expressed as a percent 
+         with a value of 0 (ratio 0.00) through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (forwardAveFlr).";
+    }
+    leaf backward-min-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the minimum one-way availability frame loss ratio 
+         (FLR) in the backward direction, from among the set of 
+         availability FLR values calculated by the MEP in this 
+         measurement interval. There is one availability FLR value 
+         for each 'delta_t' time period within the measurement 
+         interval, as specified in MEF 10.2.1.
+         The FLR value is a ratio that is expressed as a percent 
+         with a value of 0 (ratio 0.00) through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (backwardMinFlr).";
+    }
+    leaf backward-max-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the maximum one-way availability frame loss ratio 
+         (FLR) in the backward direction, from among the set of 
+         availability FLR values calculated by the MEP in this 
+         measurement interval. There is one availability FLR value 
+         for each 'delta_t' time period within the measurement 
+         interval, as specified in MEF 10.2.1.
+         The FLR value is a ratio that is expressed as a percent 
+         with a value of 0 (ratio 0.00) through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (backwardMaxFlr).";
+    }
+    leaf backward-avg-frame-loss-ratio {
+      type frame-loss-ratio;
+      description
+        "Contains the average one-way availability frame loss ratio 
+         (FLR) in the backward direction, from among the set of 
+         availability FLR values calculated by the MEP in this 
+         measurement interval. There is one availability FLR value 
+         for each 'delta_t' time period within the measurement 
+         interval, as specified in MEF 10.2.1.
+         The FLR value is a ratio that is expressed as a percent 
+         with a value of 0 (ratio 0.00) through 100000 (ratio 1.00).
+         Units are in milli-percent, where 1 indicates 0.001 
+         percent.";
+      reference
+        "MEF 7.2 clause 7.6.4.3 (backwardAveFlr).";
+    }
+  }
+
+  grouping loss-measurement-config-parameters {
+    description
+      "Configuration parameters for the ETH-LM and ETH-SLM of a MEP.";
+
+    leaf lm-single-ended-responder-enabled {
+      if-feature "lm-single-ended-responder-enable-disable";
+      type boolean;
+      default "false";
+      description
+        "Specifies whether the Loss Measurement (LM) Single-ended 
+         Responder is enabled ('true') or disabled ('false') at the 
+         MEP.
+
+         If enabled, LMR messages will be sent in reply to an LMM 
+         message received by the MEP.
+         If disabled, no LMR message will be sent in response to an
+         LMM message received by the MEP and the LMM message will be 
+         discarded.
+
+         A MEP can be both a single-ended responder and controller 
+         simultaneously.";
+      reference
+        "ITU-T Y.1731 clause 8.1.2.2.";
+    }
+
+    leaf slm-single-ended-responder-enabled {
+      if-feature "eth-slm";
+      if-feature "slm-single-ended-responder-enable-disable";
+      type boolean;
+      default "true";
+      description
+        "Specifies whether the Synthetic Loss Measurement (SLM) 
+         single-ended Responder is enabled ('true') or disabled 
+         'false' at the MEP.
+
+         If enabled, SLR messages will be sent in reply to an SLM 
+         message received by the MEP.
+         If disabled, no SLR message will be sent in response to an
+         SLM message received by the MEP and the SLM message will be 
+         discarded.
+
+         A MEP can be both a single-ended responder and controller 
+         simultaneously.";
+      reference
+        "ITU-T Y.1731 clause 8.4.1.2.";
+    }
+  }
+
+  grouping availability-measurement-config-parameters {
+    description
+      "Defines the specific configuration parameters for 
+       availability measurements.";
+    reference
+      "MEF 7.2 clause 7.6.2.1 (EthOamLmCfg).";
+
+    leaf measurement-interval {
+      if-feature "availability-measurement-interval";
+      type uint32 {
+        range "1..525600";
+      }
+      units "minutes";
+      default "15";
+      description
+        "This object specifies the measurement interval for 
+         availability measurements in minutes for this session.
+         If the separate specification of the measurement interval 
+         for availability measurements is not supported, the 
+         measurement interval defined for performance measurements 
+         will be used.";
+      reference
+        "MEF 7.2 clause 7.6.2.1 (availabilityMeasurementInterval).";
+    }
+
+    leaf number-of-consecutive-pdus {
+      type uint32 {
+        range "1..100000";
+      }
+      default "10";
+      description
+        "Specifies the number of consecutive loss measurement PDUs 
+         to be used in evaluating the availability/unavailability 
+         status of an availability indicator per MEF 10.2.1. 
+         Loss Measurement PDUs (LMMs, CCMs or SLMs) are sent 
+         regularly with a period defined by the 'message-interval'. 
+         Therefore, this leaf, when multiplied by 'message-interval', 
+         is equivalent to the availability parameter of 'delta_t' as 
+         specified by MEF 10.2.1.
+         If 'measurement-type' is 'lmm' or 'ccm', this leaf defines 
+         the number of LMM or CCM PDUs transmitted during each 
+         'delta_t' period. The availability frame loss ratio for a 
+         given 'delta_t' can be calculated based on the counters in 
+         the last LMM/R or CCM during this 'delta_t' and the last 
+         LMM/R or CCM in the previous 'delta_t'.
+         If the 'measurement-type' is 'slm', this leaf defines the 
+         number of SLM PDUs transmitted during each 'delta_t' period. 
+         The availability frame loss ratio for a given 'delta_t' is 
+         calculated based on the number of those SLM PDUs that are 
+         lost.";
+      reference
+        "MEF 7.2 clause 7.6.2.1 
+         (availabilityNumConsecutiveMeasPdus).";
+    }
+
+    leaf availability-threshold {
+      type frame-loss-ratio;
+      default "50000";
+      description
+        "Specifies the availability threshold to be used in 
+         evaluating the availability/unavailability status of an 
+         availability indicator per MEF 10.2.1. 
+         This parameter is equivalent to the Availability parameter 
+         of 'C' as specified by MEF 10.2.1.";
+      reference
+        "MEF 7.2 clause 7.6.2.1 (availabilityThreshold).";
+    }
+
+    leaf number-of-consecutive-intervals {
+      type uint32 {
+        range "1..1000";
+      }
+      default "10";
+      description
+        "Specifies the number of consecutive availability indicators 
+         to be used to determine a change in the availability status 
+         as indicated by MEF 10.2.1. This parameter is equivalent to 
+         the Availability parameter of 'n' as specified by 
+         MEF 10.2.1.";
+      reference
+        "MEF 7.2 clause 7.6.2.1 
+         (availabilityNumConsecutiveIntervals).";
+    }
+
+    leaf number-of-consecutive-high-loss-intervals {
+      type uint32 {
+        range "1..1000";
+      }
+      default "5";
+      description
+        "Specifies the number of consecutive availability indicators 
+         to be used for assessing consecutive high loss intervals 
+         (CHLI). This parameter is equivalent to the Resilency 
+         parameter of 'p' as specified by MEF 10.2.1.
+         The value of 'number-of-consecutive-availability-indicators'
+         must be strictly less than 'number-of-consecutive-
+         intervals'.";
+      reference
+        "MEF 7.2 clause 7.6.2.1 
+         (availabilityNumConsecutiveHighFlr).";
+    }
+  }
+
+  grouping loss-measurement-session-config-parameters {
+    description
+      "Configuration parameters for a loss measurement session.";
+    reference
+      "MEF 7.2 clause 7.6.2.1 (EthOamLmCfg).";
+
+    leaf measurement-type {
+      type lm-measurement-type;
+      default "slm";
+      description
+        "This object specifies what type of loss measurement is
+         to be performed.";
+      reference
+        "ITU-T Y.1731 clause 8.1.2;
+         MEF 7.2 clause 7.6.2.1 (type).";
+    }
+
+    leaf measurement-interval {
+      type uint32 {
+        range "1..525600";
+      }
+      units "minutes";
+      default "15";
+      description
+        "Specifies the measurement interval in minutes for this 
+         session.";
+      reference
+        "MEF 7.2 clause 7.6.1.1 (measurementInterval).";
+    }
+
+    leaf-list enabled-measurement {
+      if-feature "metric-selection";
+      type loss-measurement-metric;
+      description
+        "A loss measurement metric that is enabled for collection.";
+      reference
+        "MEF 7.2 clause 7.6.1.1 (measurementEnabled).";
+    }
+
+    uses common-session-config-parameters {
+      refine "measurement-interval-alignment/"
+           + "which-measurement-interval-alignment/enabled/offset" {
+        must "(../../repetition-interval != 'none' and "
+           + "(60 mod ../../repetition-interval = 0)) or "
+           + "(../../repetition-interval != 'none' and "
+           + "(60 mod ../../measurement-interval = 0))" {
+          error-message
+            "Measurement interval alignment cannot be set, 
+             because the 'repetition-interval' is not a factor 
+             of an hour (60 minutes) or, if no 'repetition-
+             interval' is configured, the 'measurement-
+             interval' is not a factor of an hour.";
+          description
+            "Ensure that the repetition-interval is a factor 
+             of an hour or, if no repetition-interval is 
+             configured, the 'measurement-interval' is a 
+             factor of an hour.";
+        }
+      }
+      refine "repetition-interval" {
+        must ".='none' or .>= ../measurement-interval" {
+          error-message
+            "If a repetition interval is specified, it must be 
+             greater than or equal to the measurement interval.";
+          description
+            "If a repetition interval is specified, it must be 
+             greater than or equal to the measurement interval.";
+        }
+      }
+    }
+
+    container availability-measurements {
+      description
+        "Configuration for the availability measurements to be 
+         made by the session.";
+      uses availability-measurement-config-parameters;
+    }
+
+    container pattern-tlv {
+      when "../measurement-type='slm'" {
+        description
+          "A 'pattern-tlv' is only applicable for the SLM 
+           type of measurements.";
+      }
+      if-feature "eth-slm";
+      description
+        "Specifies which type of pattern TLV is to be included in 
+         the SLM, if any.";
+
+      uses pattern-tlv;
+    }
+  }
+
+  grouping loss-measurement-session-status-parameters {
+    description
+      "Status parameters for a loss measurement session.";
+
+    uses common-session-status-parameters;
+    uses loss-measurement-session-config-parameters;
+
+    container measurement-statistics {
+      description
+        "Performance measurements made during the loss measurement 
+         session.";
+
+      uses latest-loss-measurements;
+
+      container current {
+        description
+          "The performance measurements applicable to the current 
+           measurement interval.";
+        uses common-current-performance-dataset-parameters;
+        uses loss-measurement-performance-dataset;
+      }
+
+      container history {
+        description
+          "Historical performance measurements.";
+        list history {
+          key "interval-number";
+          description
+            "Measurement results for an historical measurement 
+             period.";
+          uses common-history-performance-dataset-parameters;
+          uses loss-measurement-performance-dataset;
+        }
+      }
+    }
+    container availability-statistics {
+      description
+        "Availability measurements made during the loss measurement
+         session.";
+
+      uses latest-availability-measurements;
+
+      container current {
+        description
+          "The availability measurements applicable to the current 
+           measurement interval";
+        uses common-current-performance-dataset-parameters;
+        uses loss-measurement-availability-dataset;
+      }
+      container history {
+        description
+          "Historical availability measurements.";
+        list history {
+          key "interval-number";
+          description
+            "Measurement results for an historical measurement 
+             period.";
+          uses common-history-performance-dataset-parameters;
+          uses loss-measurement-availability-dataset;
+        }
+      }
+    }
+  }
+
+  grouping create-on-demand-loss-measurement-input-parameters {
+    description
+      "Input parameters for the create-on-demand-loss-measurement 
+       RPC.";
+    uses session-identification-parameters;
+    uses loss-measurement-session-config-parameters;
+  }
+
+  grouping create-on-demand-loss-measurement-output-parameters {
+    description
+      "Output parameters for the create-on-demand-loss-measurement 
+       RPC.";
+    uses vz-oam-ecfm:rpc-common-output-parameters;
+  }
+
+  grouping start-on-demand-loss-measurement-input-parameters {
+    description
+      "Input parameters for the start-on-demand-loss-measurement 
+       RPC.";
+    uses session-identification-parameters;
+  }
+
+  grouping start-on-demand-loss-measurement-output-parameters {
+    description
+      "Output parameters for the start-on-demand-loss-measurement 
+       RPC.";
+    uses measurements-restarted;
+    uses vz-oam-ecfm:rpc-common-output-parameters;
+  }
+
+  grouping stop-on-demand-loss-measurement-input-parameters {
+    description
+      "Input parameters for the stop-on-demand-loss-measurement 
+       RPC.";
+
+    uses session-identification-parameters;
+  }
+
+  grouping stop-on-demand-loss-measurement-output-parameters {
+    description
+      "Output parameters for the stop-on-demand-loss-measurement 
+       RPC.";
+    uses vz-oam-ecfm:rpc-common-output-parameters;
+  }
+
+  grouping delete-on-demand-loss-measurement-input-parameters {
+    description
+      "Input parameters for the delete-on-demand-loss-measurement 
+       RPC.";
+
+    uses session-identification-parameters;
+  }
+
+  grouping delete-on-demand-loss-measurement-output-parameters {
+    description
+      "Output parameters for the delete-on-demand-loss-measurement 
+       RPC.";
+    uses vz-oam-ecfm:rpc-common-output-parameters;
+  }
+}

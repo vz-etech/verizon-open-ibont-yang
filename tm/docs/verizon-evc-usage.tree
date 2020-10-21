@@ -1,0 +1,70 @@
+
+module: verizon-evc-usage
+  augment /tm:evcs-state/tm:evc:
+    +--ro evc-current-usage-data
+    |  +--ro ingress-green-frame-count?        yang:counter64
+    |  +--ro ingress-yellow-frame-count?       yang:counter64
+    |  +--ro ingress-red-frame-count?          yang:counter64
+    |  +--ro ingress-green-octets?             yang:counter64
+    |  +--ro ingress-yellow-octets?            yang:counter64
+    |  +--ro ingress-red-octets?               yang:counter64
+    |  +--ro ingress-green-frame-discards?     yang:counter64
+    |  +--ro ingress-yellow-frame-discards?    yang:counter64
+    |  +--ro ingress-green-octets-discards?    yang:counter64
+    |  +--ro ingress-yellow-octets-discards?   yang:counter64
+    |  +--ro egress-green-frame-count?         yang:counter64
+    |  +--ro egress-yellow-frame-count?        yang:counter64
+    |  +--ro egress-green-octets?              yang:counter64
+    |  +--ro egress-yellow-octets?             yang:counter64
+    |  +--ro cos* [cos-type]
+    |     +--ro cos-type                          pcp-value
+    |     +--ro ingress-green-frame-count?        yang:counter64
+    |     +--ro ingress-yellow-frame-count?       yang:counter64
+    |     +--ro ingress-red-frame-count?          yang:counter64
+    |     +--ro ingress-green-octets?             yang:counter64
+    |     +--ro ingress-yellow-octets?            yang:counter64
+    |     +--ro ingress-red-octets?               yang:counter64
+    |     +--ro ingress-green-frame-discards?     yang:counter64
+    |     +--ro ingress-yellow-frame-discards?    yang:counter64
+    |     +--ro ingress-green-octets-discards?    yang:counter64
+    |     +--ro ingress-yellow-octets-discards?   yang:counter64
+    |     +--ro egress-green-frame-count?         yang:counter64
+    |     +--ro egress-yellow-frame-count?        yang:counter64
+    |     +--ro egress-green-octets?              yang:counter64
+    |     +--ro egress-yellow-octets?             yang:counter64
+    +--ro evc-history-usage-data
+       +--ro evc-history* [interval-number]
+          +--ro interval-number                   uint32
+          +--ro end-date-and-time?                yang:date-and-time
+          +--ro elapsed-time?                     uint32
+          +--ro is-suspect?                       boolean
+          +--ro ingress-green-frame-count?        yang:counter64
+          +--ro ingress-yellow-frame-count?       yang:counter64
+          +--ro ingress-red-frame-count?          yang:counter64
+          +--ro ingress-green-octets?             yang:counter64
+          +--ro ingress-yellow-octets?            yang:counter64
+          +--ro ingress-red-octets?               yang:counter64
+          +--ro ingress-green-frame-discards?     yang:counter64
+          +--ro ingress-yellow-frame-discards?    yang:counter64
+          +--ro ingress-green-octets-discards?    yang:counter64
+          +--ro ingress-yellow-octets-discards?   yang:counter64
+          +--ro egress-green-frame-count?         yang:counter64
+          +--ro egress-yellow-frame-count?        yang:counter64
+          +--ro egress-green-octets?              yang:counter64
+          +--ro egress-yellow-octets?             yang:counter64
+          +--ro cos* [cos-type]
+             +--ro cos-type                          pcp-value
+             +--ro ingress-green-frame-count?        yang:counter64
+             +--ro ingress-yellow-frame-count?       yang:counter64
+             +--ro ingress-red-frame-count?          yang:counter64
+             +--ro ingress-green-octets?             yang:counter64
+             +--ro ingress-yellow-octets?            yang:counter64
+             +--ro ingress-red-octets?               yang:counter64
+             +--ro ingress-green-frame-discards?     yang:counter64
+             +--ro ingress-yellow-frame-discards?    yang:counter64
+             +--ro ingress-green-octets-discards?    yang:counter64
+             +--ro ingress-yellow-octets-discards?   yang:counter64
+             +--ro egress-green-frame-count?         yang:counter64
+             +--ro egress-yellow-frame-count?        yang:counter64
+             +--ro egress-green-octets?              yang:counter64
+             +--ro egress-yellow-octets?             yang:counter64

@@ -1,0 +1,63 @@
+module verizon-system {
+  namespace "http://www.verizon.com/ns/verizon-system";
+  prefix vz-sys;
+
+  import ietf-system {
+    prefix sys;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+  
+  description
+    "This module contains a collection of YANG definitions for
+     managing augmentations of the IETF system management YANG 
+     model.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  augment "/sys:system-state/sys:platform" {
+    description
+      "Augment the system platform state data with Verizon specific
+       data nodes.";
+    
+    leaf schema-version {
+      type string {
+        pattern '(([0-9]|[1-9][0-9])\.){2}([0-9]|[1-9][0-9])';
+      }
+      description
+        "The schema version of the NETCONF interface currently in 
+         use.";
+    }
+  }
+  
+  augment "/sys:system" {
+    description
+      "Augment system level configuration with Verizon specific data
+       nodes.";
+    
+    leaf name {
+      type string {
+        pattern '[0-9A-Z /\.]{0,30}';
+      }
+      description
+        "An administratively-assigned name for the managed system.";
+      reference
+        "RFC 3418: Management Information Base (MIB) for the
+                   Simple Network Management Protocol (SNMP)
+                   SNMPv2-MIB.sysName";
+    }
+  }
+}  
+ 
+

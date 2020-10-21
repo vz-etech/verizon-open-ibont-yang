@@ -1,0 +1,12 @@
+
+module: verizon-ethernet
+  augment /if:interfaces/if:interface:
+    +--rw ethernet
+       +--rw duplex?          if-eth-duplex
+       +--rw flow-control?    if-eth-flow-ctl
+       +--rw mtu?             if-mtu
+       +--rw speed?           if-eth-cfg-speed
+       +--rw storm-control
+          +--rw broadcast?         storm-pps
+          +--rw multicast?         storm-pps
+          +--rw unknown-unicast?   storm-pps

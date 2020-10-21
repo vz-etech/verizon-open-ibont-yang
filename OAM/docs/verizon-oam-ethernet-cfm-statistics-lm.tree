@@ -1,0 +1,21 @@
+
+submodule: verizon-oam-ethernet-cfm-statistics-lm (belongs-to verizon-oam-ethernet-cfm-statistics)
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:statistics/vz-oam-ecfm-pm:loss-measurement:
+    +--ro out-lmm?   yang:counter64
+    +--ro in-lmm?    yang:counter64
+    +--ro out-lmr?   yang:counter64
+    +--ro in-lmr?    yang:counter64
+    +--ro out-slm?   yang:counter64
+    +--ro in-slm?    yang:counter64
+    +--ro out-slr?   yang:counter64
+    +--ro in-slr?    yang:counter64
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm-pm:loss-measurement:
+    +--ro statistics
+       +--ro out-lmm?   yang:counter64
+       +--ro in-lmm?    yang:counter64
+       +--ro out-lmr?   yang:counter64
+       +--ro in-lmr?    yang:counter64
+       +--ro out-slm?   yang:counter64
+       +--ro in-slm?    yang:counter64
+       +--ro out-slr?   yang:counter64
+       +--ro in-slr?    yang:counter64

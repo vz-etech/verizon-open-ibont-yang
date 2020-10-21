@@ -1,0 +1,91 @@
+module verizon-oam-ethernet-cfm-pm-dv {
+
+  namespace 
+    "http://verizon.com/ns/verizon-oam-ethernet-cfm-pm-dv";
+  prefix vz-oam-ecfm-dv;
+  
+  import verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  import verizon-oam-ethernet-cfm-pm {
+    prefix vz-oam-ecfm-pm;
+  }
+ 
+  organization 
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+ 
+  description
+    "This module contains a collection of YANG deviations from  
+     'vz-oam-ethernet-cfm-pm'.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  deviation 
+    "/vz-oam-ecfm:cfm/vz-oam-ecfm:domains" +
+    "/vz-oam-ecfm:domain/vz-oam-ecfm:associations" +
+    "/vz-oam-ecfm:association/vz-oam-ecfm:meps" +
+    "/vz-oam-ecfm:mep/vz-oam-ecfm-pm:loss-measurement" +
+    "/vz-oam-ecfm-pm:sessions/vz-oam-ecfm-pm:session" {
+    description 
+      "Add deviations to proactive LM sessions in configuration data 
+       to add unique statements to restrict the configuration of 
+       multiple sessions with identical remote MEP and Class of 
+       Service (priority'.";
+    deviate add {
+      unique 
+        "vz-oam-ecfm-pm:vlan/" +
+        "vz-oam-ecfm-pm:priority " +
+        "vz-oam-ecfm-pm:destination-address/" +
+        "vz-oam-ecfm-pm:destination-address-type/" +
+        "vz-oam-ecfm-pm:mep-id/" +
+        "vz-oam-ecfm-pm:mep-id";
+      unique 
+        "vz-oam-ecfm-pm:vlan/" +
+        "vz-oam-ecfm-pm:priority " +
+        "vz-oam-ecfm-pm:destination-address/" +
+        "vz-oam-ecfm-pm:destination-address-type/" +
+        "vz-oam-ecfm-pm:mac-address/" +
+        "vz-oam-ecfm-pm:mac-address";
+    }
+  }
+
+  deviation 
+    "/vz-oam-ecfm:cfm/vz-oam-ecfm:domains" +
+    "/vz-oam-ecfm:domain/vz-oam-ecfm:associations" +
+    "/vz-oam-ecfm:association/vz-oam-ecfm:meps" +
+    "/vz-oam-ecfm:mep/vz-oam-ecfm-pm:delay-measurement" +
+    "/vz-oam-ecfm-pm:sessions/vz-oam-ecfm-pm:session" {
+    description 
+      "Add deviations to proactive LM sessions in configuration data 
+       to add unique statements to restrict the configuration of 
+       multiple sessions with identical remote MEP and Class of 
+       Service (priority'.";
+    deviate add {
+      unique 
+        "vz-oam-ecfm-pm:vlan/" +
+        "vz-oam-ecfm-pm:priority " +
+        "vz-oam-ecfm-pm:destination-address/" +
+        "vz-oam-ecfm-pm:destination-address-type/" +
+        "vz-oam-ecfm-pm:mep-id/" +
+        "vz-oam-ecfm-pm:mep-id";
+      unique 
+        "vz-oam-ecfm-pm:vlan/" +
+        "vz-oam-ecfm-pm:priority " +
+        "vz-oam-ecfm-pm:destination-address/" +
+        "vz-oam-ecfm-pm:destination-address-type/" +
+        "vz-oam-ecfm-pm:mac-address/" +
+        "vz-oam-ecfm-pm:mac-address";
+    }
+  }
+ 
+}

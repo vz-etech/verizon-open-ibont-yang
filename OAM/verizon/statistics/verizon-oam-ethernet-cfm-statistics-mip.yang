@@ -1,0 +1,64 @@
+submodule verizon-oam-ethernet-cfm-statistics-mip {
+  belongs-to verizon-oam-ethernet-cfm-statistics {
+    prefix vz-oam-ecfm-stats;
+  }
+
+  import verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  
+  include verizon-oam-ethernet-cfm-statistics-mip-body;
+
+  organization 
+    "Verizon";
+
+  contact
+     "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+ 
+  description 
+    "This module contains a collection of YANG definitions to support 
+     Maintenance Domain Intermediate Points (MIP) statistics that are 
+     not defined as part of the standards IEEE 802.1ag, ITU-T Y.1731 
+     of MEF 7.2.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+
+  augment 
+    "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains" +
+    "/vz-oam-ecfm:domain/vz-oam-ecfm:associations" +
+    "/vz-oam-ecfm:association" +
+    "/vz-oam-ecfm:mips/vz-oam-ecfm:mip" {
+    description
+      "";
+    
+    container statistics {
+      description
+        "Statistical counters for the MIP.";
+
+      container up-mhf {
+        description
+          "Statistical counters for the up MIP Half Function (MHF).";
+        
+        uses mhf-statistics-parameters;
+      }
+      
+      container down-mhf {
+        description
+          "Statistical counters for the down MIP Half Function 
+           (MHF).";
+          
+        uses mhf-statistics-parameters;
+      }
+    }
+    
+  }
+  
+}

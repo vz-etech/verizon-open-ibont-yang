@@ -1,0 +1,195 @@
+submodule verizon-oam-ethernet-cfm-md-body {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+  import ietf-inet-types {
+    prefix inet;
+  }
+
+
+  include verizon-oam-ethernet-cfm-types;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection YANG data types and grouping 
+     definitions for the management of Ethernet Service Layer OAM 
+     Maintenance Domains (MD) as specified in 
+     IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  typedef md-level {
+    type uint8 {
+      range "0..7";
+    }
+    description
+      "The maintenance domain level.  Higher numbers correspond to
+       higher Maintenance Domains, those with the greatest physical
+       reach, with the highest values for customers' CFM PDUs.
+       Lower numbers correspond to lower Maintenance Domains, those
+       with more limited physical reach, with the lowest values for
+       CFM PDUs protecting single bridges or physical links.";
+    reference
+      "IEEE 802.1ag clauses 3.27 and 18.3";
+  }
+
+  grouping maintenance-domain-name {
+    description
+      "Parameters used to determine the name of the string given
+       a name format.";
+    reference
+      "IEEE 802.1ag clause 3.24.";
+
+    choice which-md-name-format {
+      default "no-name";
+      description
+        "The choice to select the name of the maintenance domain 
+         based on the required format.";
+      reference
+        "IEEE 802.1ag clause 12.14.1.2.2:a.";
+
+      case no-name {
+        leaf no-name {
+          type empty;
+          description
+            "No maintenance domain name is present.";
+          reference
+            "IEEE 802.1ag Table 21-19 (Value 1).";
+        }
+      }
+      case domain-name {
+        leaf domain-name {
+          type inet:domain-name;
+          description
+            "This is a string the terminal substring of which is an 
+             RFC1035 DNS Name and the remainder of which is a text 
+             string, following the syntax of a DNS Name, denoting the 
+             identity of a particular Maintenance Domain.";
+          // Editors note: a more restrictive type and/or pattern 
+          // needs to be defined for this leaf.
+          reference
+            "IEEE 802.1ag Table 21-19 (Value 2).";
+        }
+      }
+
+      case mac-address-and-uint16 {
+        container mac-address-and-uint16 {
+          description
+            "The maintenance domain name is a MAC address and 
+             2-octet integer.";
+          reference
+            "IEEE 802.1ag Table 21-19 (Value 3).";
+          leaf mac-address {
+            type yang:mac-address;
+            description
+              "The MAC address part of the maintenance domain name.";
+          }
+          leaf uint16 {
+            type uint16;
+            description
+              "A 2 octet integer part of the maintenance domain 
+               name.";
+          }
+        }
+      }
+
+      case character-string {
+        leaf character-string {
+          type string;
+          description
+            "The name of the domain expressed as a character
+             string.
+             This is an IETF RFC 2579 DisplayString, with the 
+             exception that character codes 0-31 (decimal) are not 
+             used.";
+          // Editors note: a more restrictive type and/or pattern 
+          // needs to be defined for this leaf.
+          reference
+            "IEEE 802.1ag Table 21-19 (Value 4).";
+        }
+      }
+    }
+  }
+
+  grouping maintenance-domain-config-parameters {
+    description
+      "Defines configuration parameters of a Maintenance 
+       Domain (MD).";
+
+    container md-name {
+      description
+        "The maintenance domain name, which is the identifier, 
+         unique over the domain for which CFM is to protect against 
+         accidental concatenation of service instances, of a 
+         particular Maintenance Domain.";
+      reference
+        "IEEE 802.1ag clauses 3.27 and 18.3";
+
+      uses maintenance-domain-name {
+        refine "which-md-name-format" {
+          default "no-name";
+        }
+      }
+    }
+
+    leaf level {
+      type md-level;
+      default "0";
+      description
+        "The level associated with this maintenance domain.";
+      reference
+        "IEEE 802.1ag clauses 12.14.1.2.2:b and 12.14.5.1.3:b";
+    }
+
+    container sender-id-tlv {
+      description
+        "Configures the fields to to be included in the 
+         Sender ID TLV transmitted by MPs configured in this 
+         Maintenance Domain.";
+      reference
+        "IEEE 802.1ag clauses 12.14.5.1.3:d and 21.5.3";
+
+      leaf chassis-id {
+        type boolean;
+        default "false";
+        description
+          "If 'true', the Chassis ID Length, Chassis ID Subtype and 
+           Chassis ID fields of the Sender ID TLV are to be sent.
+           If 'false', the Chassis ID Length is to be transmitted 
+           with a 0 value, and the Chassis ID Subtype and Chassis ID 
+           fields are not to be sent;";
+        reference
+          "IEEE 802.1ag clauses 21.5.3.1, 21.5.3.2 and 21.5.3.3";
+      }
+
+      leaf management-address {
+        type boolean;
+        default "false";
+        description
+          "If true, the Management Address Length and Management 
+           Address of the Sender ID TLV are to be sent.
+           if false, the Management Address Length or Management
+           Address fields are not to be sent.";
+        reference
+          "IEEE 802.1ag clauses 21.5.3.4, 21.5.3.5, 21.5.3.6 and 
+           21.5.3.7";
+      }
+    }
+  }
+}

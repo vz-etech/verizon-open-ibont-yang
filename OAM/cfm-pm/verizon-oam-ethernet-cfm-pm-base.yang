@@ -1,0 +1,52 @@
+submodule verizon-oam-ethernet-cfm-pm-base {
+  belongs-to verizon-oam-ethernet-cfm-pm {
+    prefix vz-oam-ecfm-pm;
+  }
+
+  import verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for
+     the management of Ethernet Service Layer OAM Performance
+     Monitoring as specified by ITU-T Y.1731 clause 8, MEF 35.1 and 
+     the management information models specified in MEF 7.2 clause 
+     7.6 and augments those specified in the YANG module 
+     'bbf-oam-ethernet-cfm', which implements support for 
+     Connectivity Fault Management (CFM) as specified in 
+     IEEE 802.1ag..
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference
+      "ITU-T Y.1731-2015 clause 8; MEF 35.1, MEF 7.2 clause 7.6.";
+  }
+
+  augment "/vz-oam-ecfm:cfm" {
+    description
+      "Add configuration nodes for the Performance Monitoring 
+       profiles.
+
+       Editors note:
+       If profiles are also required for FM at some point in the 
+       future, then some other means to provide a common 'profile' 
+       container in the top-level 'cfm' container may be needed.";
+
+    container profiles {
+      description
+        "Configuration of profiles for Ethernet Service Layer OAM
+         Performance Monitoring.";
+    }
+  }
+}

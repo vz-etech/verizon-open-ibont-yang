@@ -1,0 +1,145 @@
+submodule verizon-oam-ethernet-cfm-pm-tca {
+  belongs-to verizon-oam-ethernet-cfm-pm {
+    prefix vz-oam-ecfm-pm;
+  }
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for
+     the management of threshold crossing alert reporting as part of 
+     Ethernet Service Layer OAM Performance Monitoring as specified 
+     by ITU-T Y.1731 clause 8 and MEF 35.1 clause 10.5.
+
+     Stateless TCA reporting treats each measurement interval 
+     separately. When using stateless TCA reporting, each TCA 
+     Function has a single configured threshold. As soon as the 
+     threshold is reached or crossed in a measurement interval for 
+     a given performance metric, a TCA is generated.
+
+     When using stateful TCA reporting, each TCA Function has two 
+     configured thresholds: a SET threshold and a CLEAR threshold. 
+     These may be the same, or the CLEAR threshold may be lower than 
+     the SET threshold. The TCA Function also has an internal state, 
+     which may be 'set' or 'clear'.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference
+      "MEF 35.1 clause 10.5.";
+  }
+
+
+  feature tca-reporting {
+    description
+      "Indicates that the device supports TCA reporting for PM 
+       metrics.";
+  }
+  feature stateless-tca-reporting {
+    description
+      "Indicates that the device supports stateless TCA reporting for 
+       PM metrics.";
+  }
+  feature stateful-tca-reporting {
+    description
+      "Indicates that the device supports stateful TCA reporting for 
+       PM metrics.";
+  }
+  feature clear-threshold {
+    description
+      "Indicates that the device supports clear thresholds for 
+       stateful TCA reporting.";
+  }
+
+  grouping common-stateless-tca-profile-parameters {
+    description
+      "Defines the common parameters for stateless threshold 
+       crossing alert (TCA) reporting profiles.";
+
+    leaf threshold {
+      type uint32;
+      mandatory true;
+      description
+        "Defines a threshold associated with a specific PM metric. 
+         As soon as the threshold is reached or crossed in a 
+         measurement interval for rhe given performance metric, a 
+         TCA is to be generated.";
+    }
+
+    leaf name {
+      type string;
+      description
+        "An optional name for the TCA function that will result 
+         from this entry.";
+    }
+  }
+
+  grouping common-stateful-tca-profile-parameters {
+    description
+      "Defines the common parameters for stateful threshold 
+       crossing alert (TCA) reporting profiles.";
+
+    leaf set-threshold {
+      type uint32;
+      mandatory true;
+      description
+        "Defines the SET threshold for a stateful TCA function. 
+         A SET TCA is generated in the first measurement interval as 
+         soon as 'set-threshold' is reached or exceeded. The TCA 
+         function is then considered to be in a 'set' state, and no 
+         further SET TCAs are generated in this state. In each 
+         subsequent measurement interval, in which the 'clear-
+         threshold' is reached or exceeded, no TCA is generated.
+         At the end of the first measurement interval, in which  
+         'clear-threshold' is not reached or exceeded, a CLEAR TCA is 
+         generated, and the TCA function returns to the 'clear' 
+         state. Thus, each SET TCA is followed by a single CLEAR 
+         TCA.";
+    }
+
+    leaf clear-threshold {
+      if-feature "clear-threshold";
+      type uint32;
+      must "not(boolean(.)) or .<=../set-threshold" {
+        error-message
+          "The 'clear-threshold' must be less than or equal to 
+           the 'set-threshold'.";
+        description
+          "Ensure that either the 'clear-threshold' is omitted, in 
+           which case it defaults to the 'set-threshold' or if 
+           configured that that 'clear-threshold' is less than or 
+           equal to the 'set-threshold'.";
+      }
+      description
+        "Defines the CLEAR threshold for a stateful TCA function. 
+         A SET TCA is generated in the first measurement interval as 
+         soon as 'set-threshold' is reached or exceeded. The TCA 
+         function is then considered to be in a 'set' state, and no 
+         further SET TCAs are generated in this state. In each 
+         subsequent measurement interval, in which the 'clear-
+         threshold' is reached or exceeded, no TCA is generated.
+         At the end of the first measurement interval, in which  
+         'clear-threshold' is not reached or exceeded, a CLEAR TCA is 
+         generated, and the TCA function returns to the 'clear' 
+         state. Thus, each SET TCA is followed by a single CLEAR 
+         TCA.
+         If 'clear-threshold' is not provided or supported, the 
+         TCA function assumes 'clear-threshold'='set-threshold'.";
+    }
+
+    leaf name {
+      type string;
+      description
+        "An optional name for the TCA function that will result 
+         from this entry.";
+    }
+  }
+}

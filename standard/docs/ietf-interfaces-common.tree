@@ -1,0 +1,24 @@
+module: ietf-interfaces-common
+augment /if:interfaces/if:interface:
+   +--rw bandwidth?   uint64 {bandwidth}?
+augment /if:interfaces/if:interface:
+   +--rw carrier-delay {carrier-delay}?
+      +--rw down?   uint32
+      +--rw up?     uint32
+augment /if:interfaces/if:interface:
+   +--rw dampening! {dampening}?
+      +--rw half-life?           uint32
+      +--rw reuse?               uint32
+      +--rw suppress?            uint32
+      +--rw max-suppress-time?   uint32
+augment /if:interfaces/if:interface:
+   +--rw encapsulation
+      +--rw (encaps-type)?
+augment /if:interfaces/if:interface:
+   +--rw loopback?   identityref {loopback}?
+augment /if:interfaces/if:interface:
+   +--rw l2-mtu?   uint16 {configurable-l2-mtu}?
+augment /if:interfaces/if:interface:
+   +--rw parent-interface    if:interface-ref {sub-interfaces}?
+augment /if:interfaces/if:interface:
+   +--rw transport-layer?   enumeration {transport-layer}?

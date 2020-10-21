@@ -1,0 +1,74 @@
+submodule verizon-oam-ethernet-cfm-mip-body {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  include verizon-oam-ethernet-cfm-types;
+  include verizon-oam-ethernet-cfm-mp-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection YANG data types and grouping 
+     definitions for the management of Maintenance Domain 
+     Intermediate Points (MIP) within Connectivity Fault Management 
+     (CFM) as specified in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  grouping mip-config-parameters {
+    description
+      "Configuration parameters associated with a MIP.";
+
+    leaf mip-id {
+      type string;
+      description
+        "The MIP Identifier unique to this its maintenance 
+         association.
+         Note that the MIP ID has no relevance to the to the 
+         operation of CFM.";
+    }
+    uses mp-config-parameters {
+      refine "enabled" {
+        description
+          "If true, indicates the MIP is enabled and can function
+           normally.  If false, the MIP is to cease functioning.";
+      }
+    }
+  }
+
+  grouping mip-status-parameters {
+    description
+      "Status parameters associated with a MIP.";
+
+    leaf mip-id {
+      type string;
+      description
+        "The MIP Identifier unique to this its maintenance 
+         association.
+         Note that the MIP ID has no relevance to the to the 
+         operation of CFM.";
+    }
+    uses mp-status-parameters {
+      refine "oper-status" {
+        description
+          "The operational status of the MIP";
+      }
+      refine "mac-address" {
+        description
+          "The MAC address associated with the MIP.";
+      }
+    }
+  }
+}

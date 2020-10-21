@@ -1,0 +1,58 @@
+module: ietf-hardware
+    +--ro hardware-state
+    |  +--ro last-change?   yang:date-and-time
+    |  +--ro component* [name]
+    |     +--ro name              string
+    |     +--ro class             identityref
+    |     +--ro physical-index?   int32 {entity-mib}?
+    |     +--ro description?      string
+    |     +--ro contained-in*     -> ../../component/name
+    |     +--ro contains-child*   -> ../../component/name
+    |     +--ro parent-rel-pos?   int32
+    |     +--ro hardware-rev?     string
+    |     +--ro firmware-rev?     string
+    |     +--ro software-rev?     string
+    |     +--ro serial-num?       string
+    |     +--ro mfg-name?         string
+    |     +--ro model-name?       string
+    |     +--ro alias?            string
+    |     +--ro asset-id?         string
+    |     +--ro is-fru?           boolean
+    |     +--ro mfg-date?         yang:date-and-time
+    |     +--ro uri*              inet:uri
+    |     +--ro uuid?             yang:uuid
+    |     +--ro state {entity-state}?
+    |     |  +--ro state-last-changed?   yang:date-and-time
+    |     |  +--ro admin-state?          admin-state
+    |     |  +--ro oper-state?           oper-state
+    |     |  +--ro usage-state?          usage-state
+    |     |  +--ro alarm-status?         alarm-status
+    |     |  +--ro standby-status?       standby-status
+    |     +--ro sensor-data {entity-sensor}?
+    |        +--ro data-type?              sensor-data-type
+    |        +--ro data-scale?             sensor-data-scale
+    |        +--ro precision?              sensor-precision
+    |        +--ro value?                  sensor-value
+    |        +--ro oper-status?            sensor-status
+    |        +--ro sensor-units-display?   string
+    |        +--ro value-timestamp?        yang:date-and-time
+    |        +--ro value-update-rate?      uint32
+    +--rw hardware {hardware-config}?
+       +--rw component* [name]
+          +--rw name           string
+          +--rw serial-num?    string
+          +--rw alias?         string
+          +--rw asset-id?      string
+          +--rw uri*           inet:uri
+          +--rw admin-state?   admin-state {entity-state}?
+
+  notifications:
+    +---n harwdare-state-change
+    +---n hardware-state-oper-enabled {entity-state}?
+    |  +--ro name?           -> /hardware-state/component/name
+    |  +--ro admin-state?    -> /hardware-state/component/state/admin-state
+    |  +--ro alarm-status?   -> /hardware-state/component/state/alarm-status
+    +---n hardware-state-oper-disabled {entity-state}?
+       +--ro name?           -> /hardware-state/component/name
+       +--ro admin-state?    -> /hardware-state/component/state/admin-state
+       +--ro alarm-status?   -> /hardware-state/component/state/alarm-status

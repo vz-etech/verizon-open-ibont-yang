@@ -1,0 +1,60 @@
+module verizon-oam-ethernet-cfm {
+
+  namespace "http://www.verizon.com/ns/bbf-oam-ethernet-cfm";
+  prefix vz-oam-ecfm;
+
+  /* Common */
+  include verizon-oam-ethernet-cfm-types;
+  include verizon-oam-ethernet-cfm-base;
+
+  /* maintenance domains */
+  include verizon-oam-ethernet-cfm-md;
+  include verizon-oam-ethernet-cfm-md-body;
+
+  /* maintenance associations */
+  include verizon-oam-ethernet-cfm-ma;
+  include verizon-oam-ethernet-cfm-ma-body;
+
+  /* maintenance points */
+  include verizon-oam-ethernet-cfm-mp-body;
+
+  /* maintenance association end points */
+  include verizon-oam-ethernet-cfm-mep;
+  include verizon-oam-ethernet-cfm-mep-body;
+
+  /* maintenance domain intermediate points */
+  include verizon-oam-ethernet-cfm-mip;
+  include verizon-oam-ethernet-cfm-mip-body;
+
+  /* continuity check protocol */
+  include verizon-oam-ethernet-cfm-cc;
+  include verizon-oam-ethernet-cfm-cc-body;
+
+  /* loopback protocol */
+  include verizon-oam-ethernet-cfm-lb;
+  include verizon-oam-ethernet-cfm-lb-body;
+
+  /* linktrace protocol */
+  include verizon-oam-ethernet-cfm-lt;
+  include verizon-oam-ethernet-cfm-lt-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for the 
+     management of Connectivity Fault Management (CFM) as specified 
+     in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+}

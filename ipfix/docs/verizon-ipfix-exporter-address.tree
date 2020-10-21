@@ -1,0 +1,8 @@
+
+module: verizon-ipfix-exporter-address
+  augment /vz-ipfix:ipfix/vz-ipfix:exporting-process/vz-ipfix:destination/vz-ipfix:destination-parameters/vz-ipfix:udp-exporter/vz-ipfix:udp-exporter/vz-ipfix:destination-method:
+    +--:(dhcp-acquired-address)
+       +--rw dhcp-acquired-address?   empty
+  augment /vz-ipfix:ipfix/vz-ipfix:exporting-process/vz-ipfix:destination/vz-ipfix:destination-parameters/vz-ipfix:tcp-exporter/vz-ipfix:tcp-exporter/vz-ipfix:destination-method:
+    +--:(dhcp-acquired-address)
+       +--rw dhcp-acquired-address?   empty

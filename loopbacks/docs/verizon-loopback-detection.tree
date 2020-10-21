@@ -1,0 +1,18 @@
+
+module: verizon-loopback-detection
+  augment /vz-tm:evcs/vz-tm:evc:
+    +--rw loopback-detection!
+       +--rw cvlan                          union
+       +--rw direction                      enumeration
+       +--rw packet-rate                    uint8
+       +--rw loopback-detected-threshold    uint8
+       +--rw loopback-cleared-threshold     uint8
+       +--rw detection-action               enumeration
+       +--rw block-duration?                union
+       +--rw enabled                        boolean
+  augment /vz-tm:evcs-state/vz-tm:evc:
+    +--ro loopback-detection!
+       +--ro enabled                 boolean
+       +--ro error                   bits
+       +--ro detection-state         union
+       +--ro block-time-remaining?   uint8

@@ -1,0 +1,20 @@
+module: verizon-hardware
+  +--ro hardware-state
+     +--ro last-change?   yang:date-and-time
+     +--ro component* [name]
+        +--ro name              string
+        +--ro class             identityref
+        +--ro description?      string
+        +--ro parent?           -> ../../component/name
+        +--ro parent-rel-pos?   int32
+        +--ro contains-child*   -> ../../component/name
+        +--ro hardware-rev?     string
+        +--ro firmware-rev?     string
+        +--ro software-rev?     string
+        +--ro serial-num?       string
+        +--ro mfg-name?         string
+        +--ro model-name?       string
+        +--ro alias?            string
+        +--ro asset-id?         string
+        +--ro is-fru?           boolean
+        +--ro mfg-date?         yang:date-and-time

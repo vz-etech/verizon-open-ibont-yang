@@ -1,0 +1,15 @@
+
+module: verizon-oam-ethernet-cfm-auto-discovery
+  augment /vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association:
+    +--rw auto-discovery {remote-mep-auto-discovery}?
+       +--rw enabled?   boolean
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association:
+    +--ro auto-discovery {remote-mep-auto-discovery}?
+       +--ro remote-mep-list
+          +--ro mep-id*   vz-oam-ecfm:mep-id
+
+  rpcs:
+    +---x clear-auto-discovered-remote-meps {remote-mep-auto-discovery,clear-auto-discovered-remote-meps-rpc}?
+       +---w input
+          +---w domain-admin-name         admin-name
+          +---w association-admin-name    admin-name

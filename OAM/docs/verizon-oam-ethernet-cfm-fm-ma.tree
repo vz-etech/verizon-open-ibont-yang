@@ -1,0 +1,15 @@
+
+submodule: verizon-oam-ethernet-cfm-fm-ma (belongs-to verizon-oam-ethernet-cfm-fm)
+  augment /vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association:
+    +--rw y1731-compliant?   boolean {ecfm-y1731-fm}?
+    +--rw level?             uint8 {ecfm-y1731-fm}?
+  augment /vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:short-ma-name/vz-oam-ecfm:which-short-ma-name-format:
+    +--:(icc-based)
+    |  +--rw icc-based
+    |     +--rw icc?   string
+    |     +--rw umc?   string
+    +--:(cc-and-icc-based)
+       +--rw cc-and-icc-based
+          +--rw cc?    string
+          +--rw icc?   string
+          +--rw umc?   string

@@ -1,0 +1,72 @@
+submodule verizon-oam-ethernet-cfm-mp-body {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  include verizon-oam-ethernet-cfm-types;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection YANG data types and grouping 
+     definitions for the management of maintenance points (MP) 
+     within Connectivity Fault Management (CFM) as specified in 
+     IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  grouping mp-config-parameters {
+    description
+      "Common configuration parameters associated with Maintenance
+       Points (MEP and MIP).";
+
+    leaf enabled {
+      type boolean;
+      default "false";
+      description
+        "If true, indicates the MP is enabled and can function
+         normally.  If false, the MP is to cease functioning.";
+    }
+  }
+
+  grouping mp-status-parameters {
+    description
+      "Common status parameters associated with Maintenance
+       Points (MEP and MIP).";
+
+    leaf oper-status {
+      type enumeration {
+        enum "up" {
+          description
+            "The MP is operational.";
+        }
+        enum "down" {
+          description
+            "The MP is disabled or non-operational";
+        }
+      }
+      description
+        "The operational status of the MP";
+    }
+    leaf mac-address {
+      type yang:mac-address;
+      description
+        "The MAC address associated with the MP.";
+    }
+  }
+}

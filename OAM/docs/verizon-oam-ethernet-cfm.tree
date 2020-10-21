@@ -1,0 +1,406 @@
+module: verizon-oam-ethernet-cfm
+  +--rw cfm
+  |  +--rw domains
+  |     +--rw domain* [admin-name]
+  |        +--rw admin-name       admin-name
+  |        +--rw md-name
+  |        |  +--rw (which-md-name-format)?
+  |        |     +--:(no-name)
+  |        |     |  +--rw no-name?                  empty
+  |        |     +--:(domain-name)
+  |        |     |  +--rw domain-name?              inet:domain-name
+  |        |     +--:(mac-address-and-uint16)
+  |        |     |  +--rw mac-address-and-uint16
+  |        |     |     +--rw mac-address?   yang:mac-address
+  |        |     |     +--rw uint16?        uint16
+  |        |     +--:(character-string)
+  |        |        +--rw character-string?         string
+  |        +--rw level?           md-level
+  |        +--rw sender-id-tlv
+  |        |  +--rw chassis-id?           boolean
+  |        |  +--rw management-address?   boolean
+  |        +--rw associations
+  |           +--rw association* [admin-name]
+  |              +--rw admin-name       admin-name
+  |              +--rw short-ma-name
+  |              |  +--rw (which-short-ma-name-format)
+  |              |     +--:(primary-vid)
+  |              |     |  +--rw primary-vid?        empty
+  |              |     +--:(character-string)
+  |              |     |  +--rw character-string?   string
+  |              |     +--:(uint16)
+  |              |     |  +--rw uint16?             uint16
+  |              |     +--:(rfc2685-vpn-id)
+  |              |        +--rw rfc2685-vpn-id
+  |              |           +--rw vpn-oui?     uint32
+  |              |           +--rw vpn-index?   uint32
+  |              +--rw mep-list
+  |              |  +--rw mep-id*   mep-id
+  |              +--rw meps
+  |              |  +--rw mep* [mep-id]
+  |              |     +--rw mep-id              mep-id
+  |              |     +--rw enabled?            boolean
+  |              |     +--rw direction           enumeration
+  |              |     +--rw ccm-ltm-priority    frame-priority
+  |              |     +--rw continuity-check {dot1ag-cc}?
+  |              |        +--rw enabled?              boolean
+  |              |        +--rw fault-notification {dot1ag-cc-fault-notification}?
+  |              |           +--rw lowest-priority-defect?   continuity-check-defects
+  |              |           +--rw alarm-time?               centiseconds
+  |              |           +--rw alarm-reset-time?         centiseconds
+  |              +--rw mips {ecfm-mips}?
+  |              |  +--rw mip* [mip-id]
+  |              |     +--rw mip-id     string
+  |              |     +--rw enabled?   boolean
+  |              +--rw ccm-interval?    ccm-interval {dot1ag-cc}?
+  +--ro cfm-state
+     +--ro domains
+        +--ro domain* [admin-name]
+           +--ro admin-name      admin-name
+           +--ro associations
+              +--ro association* [admin-name]
+                 +--ro admin-name    admin-name
+                 +--ro meps
+                 |  +--ro mep* [mep-id]
+                 |     +--ro mep-id              mep-id
+                 |     +--ro oper-status?        enumeration
+                 |     +--ro mac-address?        yang:mac-address
+                 |     +--ro statistics
+                 |     |  +--ro continuity-check {dot1ag-cc}?
+                 |     |  |  +--ro out-ccm?                  yang:counter64
+                 |     |  |  +--ro in-ccm-out-of-sequence?   yang:counter64
+                 |     |  +--ro loopback {dot1ag-lb}?
+                 |     |  |  +--ro in-lbr?                yang:counter64
+                 |     |  |  +--ro in-lbr-out-of-order?   yang:counter64
+                 |     |  |  +--ro in-lbr-bad-mdsu?       yang:counter64
+                 |     |  |  +--ro out-lbr?               yang:counter64
+                 |     |  |  +--ro in-lbm?                yang:counter64
+                 |     |  |  +--ro out-lbm?               yang:counter64
+                 |     |  +--ro linktrace {dot1ag-lt}?
+                 |     |     +--ro in-ltr-unexpected?   yang:counter64
+                 |     +--ro continuity-check {dot1ag-cc}?
+                 |     |  +--ro fault-notification {dot1ag-cc-fault-notification}?
+                 |     |  |  +--ro status?                    fault-notification-status
+                 |     |  |  +--ro highest-priority-defect?   continuity-check-defects
+                 |     |  |  +--ro defect*                    continuity-check-defects
+                 |     |  |  +--ro last-error-ccm?            string
+                 |     |  |  +--ro last-cross-connect-ccm?    string
+                 |     |  +--ro remote-mep-database
+                 |     |  |  +--ro remote-mep* [remote-mep-id]
+                 |     |  |     +--ro remote-mep-id                mep-id
+                 |     |  |     +--ro remote-mep-state?            remote-mep-state
+                 |     |  |     +--ro remote-mep-failed-ok-time?   yang:date-and-time
+                 |     |  |     +--ro mac-address?                 yang:mac-address
+                 |     |  |     +--ro rdi?                         boolean
+                 |     |  |     +--ro port-status-tlv!
+                 |     |  |     |  +--ro port-status?   port-status
+                 |     |  |     +--ro interface-status-tlv!
+                 |     |  |     |  +--ro interface-status?   interface-status
+                 |     |  |     +--ro sender-id-tlv!
+                 |     |  |        +--ro chassis-id
+                 |     |  |        |  +--ro (chassis-id-subtype)?
+                 |     |  |        |     +--:(chassis-component)
+                 |     |  |        |     |  +--ro chassis-component?   string
+                 |     |  |        |     +--:(interface-alias)
+                 |     |  |        |     |  +--ro interface-alias?     string
+                 |     |  |        |     +--:(port-component)
+                 |     |  |        |     |  +--ro port-component?      string
+                 |     |  |        |     +--:(mac-address-type)
+                 |     |  |        |     |  +--ro mac-address-type?    yang:mac-address
+                 |     |  |        |     +--:(network-address)
+                 |     |  |        |     |  +--ro network-address?     string
+                 |     |  |        |     +--:(interface-name)
+                 |     |  |        |     |  +--ro interface-name?      string
+                 |     |  |        |     +--:(local)
+                 |     |  |        |        +--ro local?               string
+                 |     |  |        +--ro management-address
+                 |     |  |           +--ro (management-address-domain)?
+                 |     |  |              +--:(udp-ipv4)
+                 |     |  |              |  +--ro udp-ipv4-address?     inet:ipv4-address
+                 |     |  |              |  +--ro udp-ipv4-port?        inet:port-number
+                 |     |  |              +--:(udp-ipv6)
+                 |     |  |              |  +--ro udp-ipv6-address?     inet:ipv6-address
+                 |     |  |              |  +--ro udp-ipv6-port?        inet:port-number
+                 |     |  |              +--:(udp-ipv4z)
+                 |     |  |              |  +--ro udp-ipv4z-address?    inet:ipv4-address
+                 |     |  |              |  +--ro udp-ipv4z-index?      uint32
+                 |     |  |              |  +--ro udp-ipv4z-port?       inet:port-number
+                 |     |  |              +--:(udp-ipv6z)
+                 |     |  |              |  +--ro udp-ipv6z-address?    inet:ipv6-address
+                 |     |  |              |  +--ro udp-ipv6z-index?      uint32
+                 |     |  |              |  +--ro udp-ipv6z-port?       inet:port-number
+                 |     |  |              +--:(tcp-ipv4)
+                 |     |  |              |  +--ro tcp-ipv4-address?     inet:ipv4-address
+                 |     |  |              |  +--ro tcp-ipv4-port?        inet:port-number
+                 |     |  |              +--:(tcp-ipv6)
+                 |     |  |              |  +--ro tcp-ipv6-address?     inet:ipv6-address
+                 |     |  |              |  +--ro tcp-ipv6-port?        inet:port-number
+                 |     |  |              +--:(tcp-ipv4z)
+                 |     |  |              |  +--ro tcp-ipv4z-address?    inet:ipv4-address
+                 |     |  |              |  +--ro tcp-ipv4z-index?      uint32
+                 |     |  |              |  +--ro tcp-ipv4z-port?       inet:port-number
+                 |     |  |              +--:(tcp-ipv6z)
+                 |     |  |              |  +--ro tcp-ipv6z-address?    inet:ipv6-address
+                 |     |  |              |  +--ro tcp-ipv6z-index?      uint32
+                 |     |  |              |  +--ro tcp-ipv6z-port?       inet:port-number
+                 |     |  |              +--:(sctp-ipv4)
+                 |     |  |              |  +--ro sctp-ipv4-address?    inet:ipv4-address
+                 |     |  |              |  +--ro sctp-ipv4-port?       inet:port-number
+                 |     |  |              +--:(sctp-ipv6)
+                 |     |  |              |  +--ro sctp-ipv6-address?    inet:ipv6-address
+                 |     |  |              |  +--ro sctp-ipv6-port?       inet:port-number
+                 |     |  |              +--:(sctp-ipv4z)
+                 |     |  |              |  +--ro sctp-iv4z-address?    inet:ipv4-address
+                 |     |  |              |  +--ro sctp-ipv4z-index?     uint32
+                 |     |  |              |  +--ro sctp-ipv4z-port?      inet:port-number
+                 |     |  |              +--:(sctp-ipv6z)
+                 |     |  |              |  +--ro sctp-ipv6z-address?   inet:ipv6-address
+                 |     |  |              |  +--ro sctp-ipv6z-index?     uint32
+                 |     |  |              |  +--ro sctp-ipv6z-port?      inet:port-number
+                 |     |  |              +--:(local)
+                 |     |  |              |  +--ro local-address?        string
+                 |     |  |              +--:(udp-dns)
+                 |     |  |              |  +--ro udp-dns-address?      string
+                 |     |  |              +--:(tcp-dns)
+                 |     |  |              |  +--ro tcp-dns-address?      string
+                 |     |  |              +--:(sctp-dns)
+                 |     |  |                 +--ro sctp-dns-address?     string
+                 |     |  +--ro statistics
+                 |     |     +--ro out-ccm?                  yang:counter64
+                 |     |     +--ro in-ccm-out-of-sequence?   yang:counter64
+                 |     +--ro loopback {dot1ag-lb}?
+                 |     |  +--ro next-transaction-id?   uint32
+                 |     |  +--ro transmit-session
+                 |     |  |  +--ro status?                enumeration
+                 |     |  |  +--ro transaction-id?        uint32
+                 |     |  |  +--ro destination-address
+                 |     |  |  |  +--ro (destination-address-type)?
+                 |     |  |  |     +--:(mep-id)
+                 |     |  |  |     |  +--ro mep-id?        mep-id
+                 |     |  |  |     +--:(mac-address)
+                 |     |  |  |        +--ro mac-address?   string
+                 |     |  |  +--ro number-of-messages?    uint32
+                 |     |  |  +--ro vlan
+                 |     |  |  |  +--ro priority?        frame-priority
+                 |     |  |  |  +--ro drop-eligible?   boolean
+                 |     |  |  +--ro pattern-tlv
+                 |     |  |     +--ro (tlv-option)?
+                 |     |  |        +--:(no-tlv)
+                 |     |  |        |  +--ro no-tlv?     empty
+                 |     |  |        +--:(data-tlv)
+                 |     |  |           +--ro data-tlv?   string
+                 |     |  +--ro statistics
+                 |     |     +--ro in-lbr?                yang:counter64
+                 |     |     +--ro in-lbr-out-of-order?   yang:counter64
+                 |     |     +--ro in-lbr-bad-mdsu?       yang:counter64
+                 |     |     +--ro out-lbr?               yang:counter64
+                 |     |     +--ro in-lbm?                yang:counter64
+                 |     |     +--ro out-lbm?               yang:counter64
+                 |     +--ro linktrace {dot1ag-lt}?
+                 |        +--ro transmit-sessions
+                 |        |  +--ro next-transaction-id?   uint32
+                 |        |  +--ro status?                enumeration
+                 |        |  +--ro transmit-session* [transaction-id]
+                 |        |     +--ro transaction-id           uint32
+                 |        |     +--ro target-address
+                 |        |     |  +--ro (target-address-type)?
+                 |        |     |     +--:(mep-id)
+                 |        |     |     |  +--ro mep-id?        mep-id
+                 |        |     |     +--:(mac-address)
+                 |        |     |        +--ro mac-address?   string
+                 |        |     +--ro ttl?                     uint8
+                 |        |     +--ro ltm-flags
+                 |        |     |  +--ro use-fdb-only?   boolean
+                 |        |     +--ro egress-identifier-tlv! {dot1ag-ltm-egress-identifier-tlv}?
+                 |        |     |  +--ro egress-identifier?   egress-identifier
+                 |        |     +--ro linktrace-replies
+                 |        |        +--ro linktrace-reply* [receive-order]
+                 |        |           +--ro receive-order            uint16
+                 |        |           +--ro reply-ttl?               uint8
+                 |        |           +--ro forwarded?               boolean
+                 |        |           +--ro terminal-mep?            boolean
+                 |        |           +--ro relay-action?            enumeration
+                 |        |           +--ro sender-id-tlv!
+                 |        |           |  +--ro chassis-id
+                 |        |           |  |  +--ro (chassis-id-subtype)?
+                 |        |           |  |     +--:(chassis-component)
+                 |        |           |  |     |  +--ro chassis-component?   string
+                 |        |           |  |     +--:(interface-alias)
+                 |        |           |  |     |  +--ro interface-alias?     string
+                 |        |           |  |     +--:(port-component)
+                 |        |           |  |     |  +--ro port-component?      string
+                 |        |           |  |     +--:(mac-address-type)
+                 |        |           |  |     |  +--ro mac-address-type?    yang:mac-address
+                 |        |           |  |     +--:(network-address)
+                 |        |           |  |     |  +--ro network-address?     string
+                 |        |           |  |     +--:(interface-name)
+                 |        |           |  |     |  +--ro interface-name?      string
+                 |        |           |  |     +--:(local)
+                 |        |           |  |        +--ro local?               string
+                 |        |           |  +--ro management-address
+                 |        |           |     +--ro (management-address-domain)?
+                 |        |           |        +--:(udp-ipv4)
+                 |        |           |        |  +--ro udp-ipv4-address?     inet:ipv4-address
+                 |        |           |        |  +--ro udp-ipv4-port?        inet:port-number
+                 |        |           |        +--:(udp-ipv6)
+                 |        |           |        |  +--ro udp-ipv6-address?     inet:ipv6-address
+                 |        |           |        |  +--ro udp-ipv6-port?        inet:port-number
+                 |        |           |        +--:(udp-ipv4z)
+                 |        |           |        |  +--ro udp-ipv4z-address?    inet:ipv4-address
+                 |        |           |        |  +--ro udp-ipv4z-index?      uint32
+                 |        |           |        |  +--ro udp-ipv4z-port?       inet:port-number
+                 |        |           |        +--:(udp-ipv6z)
+                 |        |           |        |  +--ro udp-ipv6z-address?    inet:ipv6-address
+                 |        |           |        |  +--ro udp-ipv6z-index?      uint32
+                 |        |           |        |  +--ro udp-ipv6z-port?       inet:port-number
+                 |        |           |        +--:(tcp-ipv4)
+                 |        |           |        |  +--ro tcp-ipv4-address?     inet:ipv4-address
+                 |        |           |        |  +--ro tcp-ipv4-port?        inet:port-number
+                 |        |           |        +--:(tcp-ipv6)
+                 |        |           |        |  +--ro tcp-ipv6-address?     inet:ipv6-address
+                 |        |           |        |  +--ro tcp-ipv6-port?        inet:port-number
+                 |        |           |        +--:(tcp-ipv4z)
+                 |        |           |        |  +--ro tcp-ipv4z-address?    inet:ipv4-address
+                 |        |           |        |  +--ro tcp-ipv4z-index?      uint32
+                 |        |           |        |  +--ro tcp-ipv4z-port?       inet:port-number
+                 |        |           |        +--:(tcp-ipv6z)
+                 |        |           |        |  +--ro tcp-ipv6z-address?    inet:ipv6-address
+                 |        |           |        |  +--ro tcp-ipv6z-index?      uint32
+                 |        |           |        |  +--ro tcp-ipv6z-port?       inet:port-number
+                 |        |           |        +--:(sctp-ipv4)
+                 |        |           |        |  +--ro sctp-ipv4-address?    inet:ipv4-address
+                 |        |           |        |  +--ro sctp-ipv4-port?       inet:port-number
+                 |        |           |        +--:(sctp-ipv6)
+                 |        |           |        |  +--ro sctp-ipv6-address?    inet:ipv6-address
+                 |        |           |        |  +--ro sctp-ipv6-port?       inet:port-number
+                 |        |           |        +--:(sctp-ipv4z)
+                 |        |           |        |  +--ro sctp-iv4z-address?    inet:ipv4-address
+                 |        |           |        |  +--ro sctp-ipv4z-index?     uint32
+                 |        |           |        |  +--ro sctp-ipv4z-port?      inet:port-number
+                 |        |           |        +--:(sctp-ipv6z)
+                 |        |           |        |  +--ro sctp-ipv6z-address?   inet:ipv6-address
+                 |        |           |        |  +--ro sctp-ipv6z-index?     uint32
+                 |        |           |        |  +--ro sctp-ipv6z-port?      inet:port-number
+                 |        |           |        +--:(local)
+                 |        |           |        |  +--ro local-address?        string
+                 |        |           |        +--:(udp-dns)
+                 |        |           |        |  +--ro udp-dns-address?      string
+                 |        |           |        +--:(tcp-dns)
+                 |        |           |        |  +--ro tcp-dns-address?      string
+                 |        |           |        +--:(sctp-dns)
+                 |        |           |           +--ro sctp-dns-address?     string
+                 |        |           +--ro egress-identifier-tlv! {dot1ag-ltr-egress-identifier-tlv}?
+                 |        |           |  +--ro last-egress-identifier?   egress-identifier
+                 |        |           |  +--ro next-egress-identifier?   egress-identifier
+                 |        |           +--ro reply-ingress-tlv! {dot1ag-reply-ingress-tlv}?
+                 |        |           |  +--ro ingress-action?        enumeration
+                 |        |           |  +--ro ingress-mac-address?   yang:mac-address
+                 |        |           |  +--ro ingress-port-id
+                 |        |           |     +--ro (port-id-subtype)?
+                 |        |           |        +--:(interface-alias)
+                 |        |           |        |  +--ro interface-alias?    string
+                 |        |           |        +--:(port-component)
+                 |        |           |        |  +--ro port-component?     string
+                 |        |           |        +--:(mac-address)
+                 |        |           |        |  +--ro mac-address?        yang:mac-address
+                 |        |           |        +--:(network-address)
+                 |        |           |        |  +--ro network-address?    inet:ip-address
+                 |        |           |        +--:(interface-name)
+                 |        |           |        |  +--ro interface-name?     string
+                 |        |           |        +--:(agent-circuit-id)
+                 |        |           |        |  +--ro agent-circuit-id?   string
+                 |        |           |        +--:(locally-assigned)
+                 |        |           |           +--ro locally-assigned?   string
+                 |        |           +--ro reply-egress-tlv! {dot1ag-reply-egress-tlv}?
+                 |        |              +--ro egress-action?        enumeration
+                 |        |              +--ro egress-mac-address?   yang:mac-address
+                 |        |              +--ro egress-port-id
+                 |        |                 +--ro (port-id-subtype)?
+                 |        |                    +--:(interface-alias)
+                 |        |                    |  +--ro interface-alias?    string
+                 |        |                    +--:(port-component)
+                 |        |                    |  +--ro port-component?     string
+                 |        |                    +--:(mac-address)
+                 |        |                    |  +--ro mac-address?        yang:mac-address
+                 |        |                    +--:(network-address)
+                 |        |                    |  +--ro network-address?    inet:ip-address
+                 |        |                    +--:(interface-name)
+                 |        |                    |  +--ro interface-name?     string
+                 |        |                    +--:(agent-circuit-id)
+                 |        |                    |  +--ro agent-circuit-id?   string
+                 |        |                    +--:(locally-assigned)
+                 |        |                       +--ro locally-assigned?   string
+                 |        +--ro statistics
+                 |           +--ro in-ltr-unexpected?   yang:counter64
+                 +--ro mips {ecfm-mips}?
+                    +--ro mip* [mip-id]
+                       +--ro mip-id         string
+                       +--ro oper-status?   enumeration
+                       +--ro mac-address?   yang:mac-address
+
+  rpcs:
+    +---x transmit-loopback {dot1ag-lb}?
+    |  +---w input
+    |  |  +---w domain-admin-name         admin-name
+    |  |  +---w association-admin-name    admin-name
+    |  |  +---w mep-id                    mep-id
+    |  |  +---w destination-address
+    |  |  |  +---w (destination-address-type)?
+    |  |  |     +--:(mep-id)
+    |  |  |     |  +---w mep-id?        mep-id
+    |  |  |     +--:(mac-address)
+    |  |  |     |  +---w mac-address?   string
+    |  |  |     +--:(multicast)
+    |  |  |        +---w multicast?     empty
+    |  |  +---w number-of-messages?       uint32
+    |  |  +---w vlan
+    |  |  |  +---w priority?        frame-priority
+    |  |  |  +---w drop-eligible?   boolean
+    |  |  +---w pattern-tlv
+    |  |  |  +---w (tlv-option)?
+    |  |  |  |  +--:(no-tlv)
+    |  |  |  |  |  +---w no-tlv?                empty
+    |  |  |  |  +--:(data-tlv)
+    |  |  |  |  |  +---w data-tlv?              uint32
+    |  |  |  |  +--:(all-zeroes-data-tlv)
+    |  |  |  |  |  +---w all-zeroes-data-tlv?   empty
+    |  |  |  |  +--:(all-ones-data-tlv)
+    |  |  |  |  |  +---w all-ones-data-tlv?     empty
+    |  |  |  |  +--:(test-tlv)
+    |  |  |  |     +---w test-tlv?              test-tlv-pattern
+    |  |  |  +---w frame-size?                  uint16
+    |  |  +---w message-interval?         uint16
+    |  |  +---w message-timeout?          uint16
+    |  +--ro output
+    |     +--ro result?           transmit-loopback-result
+    |     +--ro transaction-id?   uint32
+    |     +--ro error-tag         identityref
+    |     +--ro error-message?    string
+    +---x abort-loopback {dot1ag-lb}?
+    |  +---w input
+    |     +---w domain-admin-name         admin-name
+    |     +---w association-admin-name    admin-name
+    |     +---w mep-id                    mep-id
+    +---x transmit-linktrace {dot1ag-lt}?
+       +---w input
+       |  +---w domain-admin-name         admin-name
+       |  +---w association-admin-name    admin-name
+       |  +---w mep-id                    mep-id
+       |  +---w target-address
+       |  |  +---w (target-address-type)
+       |  |     +--:(mep-id)
+       |  |     |  +---w mep-id?        mep-id
+       |  |     +--:(mac-address)
+       |  |        +---w mac-address?   string
+       |  +---w ttl?                      uint8
+       |  +---w ltm-flags
+       |  |  +---w use-fdb-only?   boolean
+       |  +---w egress-identifier-tlv! {dot1ag-ltm-egress-identifier-tlv}?
+       |     +---w egress-identifier?   egress-identifier
+       +--ro output
+          +--ro result?                  transmit-linktrace-result
+          +--ro transaction-id?          uint32
+          +--ro egress-identifier-tlv! {dot1ag-ltm-egress-identifier-tlv}?
+          |  +--ro egress-identifier?   egress-identifier
+          +--ro error-tag                identityref
+          +--ro error-message?           string

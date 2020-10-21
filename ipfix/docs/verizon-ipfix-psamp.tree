@@ -1,0 +1,162 @@
+
+module: verizon-ipfix-psamp
+  augment /vz-ipfix:ipfix:
+    +--rw psamp
+       +--rw observation-point* [name] {meter}?
+       |  +--rw name                     vz-ipfix:name-type
+       |  +--rw observation-domain-id    uint32
+       |  +--rw interface-ref*           if:interface-ref
+       |  +--rw ent-physical-name*       string
+       |  +--rw direction?               direction
+       |  +--rw selection-process*       -> /vz-ipfix:ipfix/psamp/selection-process/name
+       +--rw selection-process* [name] {meter}?
+       |  +--rw name        vz-ipfix:name-type
+       |  +--rw selector* [name]
+       |  |  +--rw name                        vz-ipfix:name-type
+       |  |  +--rw (method)
+       |  |     +--:(select-all)
+       |  |     |  +--rw select-all?           empty
+       |  |     +--:(samp-count-based)
+       |  |     |  +--rw samp-count-based {psamp-samp-count-based}?
+       |  |     |     +--rw packet-interval    uint32
+       |  |     |     +--rw packet-space       uint32
+       |  |     +--:(samp-time-based)
+       |  |     |  +--rw samp-time-based {psamp-samp-time-based}?
+       |  |     |     +--rw time-interval    uint32
+       |  |     |     +--rw time-space       uint32
+       |  |     +--:(samp-rand-out-of-n)
+       |  |     |  +--rw samp-rand-out-of-n {psamp-samp-rand-out-of-n}?
+       |  |     |     +--rw size          uint32
+       |  |     |     +--rw population    uint32
+       |  |     +--:(samp-uni-prob)
+       |  |     |  +--rw samp-uni-prob {psamp-samp-uni-prob}?
+       |  |     |     +--rw probability    decimal64
+       |  |     +--:(filter-match)
+       |  |     |  +--rw filter-match {psamp-filter-match}?
+       |  |     |     +--rw (name-or-id)
+       |  |     |     |  +--:(ie-name)
+       |  |     |     |  |  +--rw ie-name?          vz-ipfix:ie-name-type
+       |  |     |     |  +--:(ie-id)
+       |  |     |     |     +--rw ie-id?            vz-ipfix:ie-id-type
+       |  |     |     +--rw ie-enterprise-number?   uint32
+       |  |     |     +--rw value                   string
+       |  |     +--:(filter-hash)
+       |  |        +--rw filter-hash {psamp-filter-hash}?
+       |  |           +--rw hash-function?       identityref
+       |  |           +--rw initializer-value?   uint64
+       |  |           +--rw ip-payload-offset?   uint64
+       |  |           +--rw ip-payload-size?     uint64
+       |  |           +--rw digest-output?       boolean
+       |  |           +--rw selected-range* [name]
+       |  |              +--rw name    vz-ipfix:name-type
+       |  |              +--rw min?    uint64
+       |  |              +--rw max?    uint64
+       |  +--rw cache?      -> /vz-ipfix:ipfix/psamp/cache/name
+       +--rw cache* [name] {meter}?
+          +--rw name                     vz-ipfix:name-type
+          +--rw (cache-type)
+          |  +--:(immediate-cache)
+          |  |  +--rw immediate-cache {immediate-cache}?
+          |  |     +--rw cache-layout
+          |  |        +--rw cache-field* [name]
+          |  |           +--rw name                    vz-ipfix:name-type
+          |  |           +--rw (name-or-id)
+          |  |           |  +--:(ie-name)
+          |  |           |  |  +--rw ie-name?          vz-ipfix:ie-name-type
+          |  |           |  +--:(ie-id)
+          |  |           |     +--rw ie-id?            vz-ipfix:ie-id-type
+          |  |           +--rw ie-length?              uint16
+          |  |           +--rw ie-enterprise-number?   uint32
+          |  |           +--rw is-flow-key?            empty
+          |  +--:(timeout-cache)
+          |  |  +--rw timeout-cache {timeout-cache}?
+          |  |     +--rw max-flows?         uint32
+          |  |     +--rw active-timeout?    uint32
+          |  |     +--rw idle-timeout?      uint32
+          |  |     +--rw export-interval?   uint32
+          |  |     +--rw cache-layout
+          |  |        +--rw cache-field* [name]
+          |  |           +--rw name                    vz-ipfix:name-type
+          |  |           +--rw (name-or-id)
+          |  |           |  +--:(ie-name)
+          |  |           |  |  +--rw ie-name?          vz-ipfix:ie-name-type
+          |  |           |  +--:(ie-id)
+          |  |           |     +--rw ie-id?            vz-ipfix:ie-id-type
+          |  |           +--rw ie-length?              uint16
+          |  |           +--rw ie-enterprise-number?   uint32
+          |  |           +--rw is-flow-key?            empty
+          |  +--:(natural-cache)
+          |  |  +--rw natural-cache {natural-cache}?
+          |  |     +--rw max-flows?         uint32
+          |  |     +--rw active-timeout?    uint32
+          |  |     +--rw idle-timeout?      uint32
+          |  |     +--rw export-interval?   uint32
+          |  |     +--rw cache-layout
+          |  |        +--rw cache-field* [name]
+          |  |           +--rw name                    vz-ipfix:name-type
+          |  |           +--rw (name-or-id)
+          |  |           |  +--:(ie-name)
+          |  |           |  |  +--rw ie-name?          vz-ipfix:ie-name-type
+          |  |           |  +--:(ie-id)
+          |  |           |     +--rw ie-id?            vz-ipfix:ie-id-type
+          |  |           +--rw ie-length?              uint16
+          |  |           +--rw ie-enterprise-number?   uint32
+          |  |           +--rw is-flow-key?            empty
+          |  +--:(permanent-cache)
+          |     +--rw permanent-cache {permanent-cache}?
+          |        +--rw max-flows?         uint32
+          |        +--rw active-timeout?    uint32
+          |        +--rw idle-timeout?      uint32
+          |        +--rw export-interval?   uint32
+          |        +--rw cache-layout
+          |           +--rw cache-field* [name]
+          |              +--rw name                    vz-ipfix:name-type
+          |              +--rw (name-or-id)
+          |              |  +--:(ie-name)
+          |              |  |  +--rw ie-name?          vz-ipfix:ie-name-type
+          |              |  +--:(ie-id)
+          |              |     +--rw ie-id?            vz-ipfix:ie-id-type
+          |              +--rw ie-length?              uint16
+          |              +--rw ie-enterprise-number?   uint32
+          |              +--rw is-flow-key?            empty
+          +--rw exporting-process*       -> /vz-ipfix:ipfix/exporting-process/name {vz-ipfix:exporter}?
+  augment /vz-ipfix:ipfix-state:
+    +--ro psamp-state
+       +--ro observation-point* [name] {meter}?
+       |  +--ro name                    vz-ipfix:name-type
+       |  +--ro observation-point-id?   uint32
+       +--ro selection-process* [name] {meter}?
+       |  +--ro name                  vz-ipfix:name-type
+       |  +--ro selector* [name]
+       |  |  +--ro name                           vz-ipfix:name-type
+       |  |  +--ro (method)
+       |  |  |  +--:(select-all)
+       |  |  |  |  +--ro select-all?              empty
+       |  |  |  +--:(filter-hash)
+       |  |  |     +--ro filter-hash {psamp-filter-hash}?
+       |  |  |        +--ro output-range-min?   uint64
+       |  |  |        +--ro output-range-max?   uint64
+       |  |  +--ro packets-observed?              yang:counter64
+       |  |  +--ro packets-dropped?               yang:counter64
+       |  |  +--ro selector-discontinuity-time?   yang:date-and-time
+       |  +--ro selection-sequence* []
+       |     +--ro observation-domain-id?   uint32
+       |     +--ro selection-sequence-id?   uint64
+       +--ro cache* [name] {meter}?
+          +--ro name                        vz-ipfix:name-type
+          +--ro metering-process-id?        uint32
+          +--ro data-records?               yang:counter64
+          +--ro cache-discontinuity-time?   yang:date-and-time
+          +--ro (cache-type)
+             +--:(timeout-cache)
+             |  +--ro timeout-cache {timeout-cache}?
+             |     +--ro active-flows?           yang:gauge32
+             |     +--ro unused-cache-entries?   yang:gauge32
+             +--:(natural-cache)
+             |  +--ro natural-cache {natural-cache}?
+             |     +--ro active-flows?           yang:gauge32
+             |     +--ro unused-cache-entries?   yang:gauge32
+             +--:(permanent-cache)
+                +--ro permanent-cache {permanent-cache}?
+                   +--ro active-flows?           yang:gauge32
+                   +--ro unused-cache-entries?   yang:gauge32

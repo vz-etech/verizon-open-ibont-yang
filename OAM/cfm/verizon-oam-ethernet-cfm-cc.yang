@@ -1,0 +1,131 @@
+submodule verizon-oam-ethernet-cfm-cc {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  include verizon-oam-ethernet-cfm-types;
+  include verizon-oam-ethernet-cfm-base;
+  include verizon-oam-ethernet-cfm-md;
+  include verizon-oam-ethernet-cfm-ma;
+  include verizon-oam-ethernet-cfm-mep;
+  include verizon-oam-ethernet-cfm-cc-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for the 
+     management of the Continuity Check (CC) protocol of a MEP as 
+     specified in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+
+  /* Augment a MA with continuity check protocol configuration */
+
+  augment "/vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain"
+        + "/vz-oam-ecfm:associations/vz-oam-ecfm:association" {
+    description
+      "Add configuration nodes for connectivity check protocol 
+       to maintenance associations.";
+    uses maintenance-association-cc-parameters;
+  }
+
+
+  /* Augment a MEP with continuity check protocol configuration */
+
+  augment "/vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain"
+        + "/vz-oam-ecfm:associations/vz-oam-ecfm:association"
+        + "/vz-oam-ecfm:meps/vz-oam-ecfm:mep" {
+    description
+      "Add configuration nodes for the connectivity check protocol 
+       at maintenance end points.";
+
+    container continuity-check {
+      if-feature "dot1ag-cc";
+      description
+        "Configuration of the continuity check protocol.";
+
+      uses continuity-check-config-parameters;
+
+      container fault-notification {
+        if-feature "dot1ag-cc-fault-notification";
+        description
+          "Fault notification data nodes.";
+        uses fault-notification-config-parameters;
+      }
+    }
+  }
+
+
+  /* Augment a MEP with continuity check protocol 
+     operational status */
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps"
+        + "/vz-oam-ecfm:mep" {
+    description
+      "Add operational status nodes for the connectivity check 
+       protocol at maintenance end points.";
+
+    container continuity-check {
+      if-feature "dot1ag-cc";
+      description
+        "Operational status of the continuity check protocol.";
+
+      uses continuity-check-status-parameters;
+
+      container statistics {
+        description
+          "Statistical counters for the continuity check protocol.
+
+           Editor's note: 
+           Currently two solutions for implementing statistics 
+           within this model are included as the discussion of 
+           which solution to choose is ongoing:
+           1 - collect all statistics for a MEP at the MEP level; 
+           2 - collect statistics per CFM protocol.
+               (this solution).";
+
+        uses continuity-check-statistics-parameters;
+      }
+    }
+  }
+
+
+  /* Augment MEP statistics with continuity check protocol 
+     statistics */
+  augment "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains"
+        + "/vz-oam-ecfm:domain/vz-oam-ecfm:associations"
+        + "/vz-oam-ecfm:association/vz-oam-ecfm:meps/"
+        + "vz-oam-ecfm:mep/vz-oam-ecfm:statistics" {
+    description
+      "Add operational status nodes for the continuity check 
+       protocol statistics at a MEP.";
+
+    container continuity-check {
+      if-feature "dot1ag-cc";
+      description
+        "Operational statistics of the continuity check protocol.
+
+           Editor's note: 
+           Currently two solutions for implementing statistics 
+           within this model are included as the discussion of 
+           which solution to choose is ongoing:
+           1 - collect all statistics for a MEP at the MEP level
+               (this solution); 
+           2 - collect statistics per CFM protocol.";
+
+      uses continuity-check-statistics-parameters;
+    }
+  }
+}

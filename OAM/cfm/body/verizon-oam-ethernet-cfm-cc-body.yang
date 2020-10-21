@@ -1,0 +1,486 @@
+submodule verizon-oam-ethernet-cfm-cc-body {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+
+  import ietf-yang-types {
+    prefix yang;
+  }
+
+  include verizon-oam-ethernet-cfm-types;
+  include verizon-oam-ethernet-cfm-mep-body;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection YANG data types and grouping 
+     definitions for the management of the Continuity Check (CC) 
+     protocol of a MEP as specified in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+
+  /* Features */
+
+  feature dot1ag-cc {
+    description
+      "Indicates support for the Continuity Check protocol acc. to
+       IEEE 802.1ag CFM at a MEP.";
+  }
+
+  feature dot1ag-cc-fault-notification {
+    description
+      "Indicates support for the the MEP Fault Notification 
+       Generator.";
+    reference
+      "IEEE 802.1ag clauses 20.33, 20.34 and 20.35.";
+  }
+
+
+  /* Typedefs */
+
+  typedef ccm-interval {
+    type enumeration {
+      enum "3.3ms" {
+        description
+          "CCMs are sent every 3 1/3 milliseconds (300Hz).";
+      }
+      enum "10ms" {
+        description
+          "CCMs are sent every 10 milliseconds.";
+      }
+      enum "100ms" {
+        description
+          "CCMs are sent every 100 milliseconds.";
+      }
+      enum "1s" {
+        description
+          "CCMs are sent every 1 second.";
+      }
+      enum "10s" {
+        description
+          "CCMs are sent every 10 seconds.";
+      }
+      enum "1min" {
+        description
+          "CCMs are sent every minute.";
+      }
+      enum "10min" {
+        description
+          "CCMs are sent every 10 minutes.";
+      }
+    }
+    description
+      "Defines the valid intervals at which CCMs may
+       be sent by a MEP. ";
+    reference
+      "IEEE 802.1ag clause 20.8.1 and Table 21-16";
+  }
+
+  typedef continuity-check-defects {
+    type enumeration {
+      enum "none" {
+        description
+          "No defects since FNG_RESET.";
+      }
+      enum "rdi" {
+        description
+          "At least one remote MEP reported the RDI bit in its 
+           last CCM";
+      }
+      enum "mac-status-error" {
+        description
+          "Either some remote MEP is reporting its Interface 
+           Status TLV as not isUp, or all remote MEPs are reporting 
+           a Port Status TLV that contains some value other than 
+           psUp.";
+      }
+      enum "remote-ccm" {
+        description
+          "The MEP is not receiving valid CCMs from at least one 
+           of the remote MEPs.";
+      }
+      enum "error-ccm" {
+        description
+          "The MEP has received at least one invalid CCM whose 
+           CCM Interval has not yet timed out.";
+      }
+      enum "cross-connect-ccm" {
+        description
+          "The MEP has received at least one CCM from either 
+           another MAID or a lower MD Level whose CCM Interval 
+           has not yet timed out.";
+      }
+    }
+    description
+      "Defines the defects that a MEP can detect and report.  ";
+    reference
+      "IEEE 802.1ag clauses 12.14.7.1.3:o, 12.14.7.1.3:p, 
+       12.14.7.1.3:q,12.14.7.1.3:r, and 12.14.7.1.3:s, 20.1.2";
+  }
+
+  typedef fault-notification-status {
+    type enumeration {
+      enum "reset" {
+        description
+          "No defect has been present since the
+           reset timer expired, or since the state
+           machine was last reset.";
+      }
+      enum "defect" {
+        description
+          "A defect is present, but not for a
+           long enough time to be reported
+           (the alarm timer has not expired).";
+      }
+      enum "report-defect" {
+        description
+          "A momentary state during which the
+           defect is reported by sending a
+           notification, if that action is
+           enabled.";
+      }
+      enum "defect-reported" {
+        description
+          "A defect is present, and some defect
+           has been reported.";
+      }
+      enum "defect-clearing" {
+        description
+          "No defect is present, but the
+           reset timer has not yet expired.";
+      }
+    }
+    description
+      "Defines the states of the MEP Fault Notification
+       Generator State Machine.";
+    reference
+      "IEEE 802.1ag clauses 12.14.7.1.3:f and 20.35";
+  }
+
+  typedef remote-mep-state {
+    type enumeration {
+      enum "idle" {
+        description
+          "The momentary state during reset.";
+      }
+      enum "start" {
+        description
+          "The timer counter for timing out CCMs at the remote MEP
+           has not expired since the state machine was reset, and
+           no valid CCM has yet been received.";
+      }
+      enum "failed" {
+        description
+          "The timer counter for timing out CCMs at the remote MEP
+           has expired, both since the state machine was reset, and
+           since a valid CCM was received.";
+      }
+      enum "ok" {
+        description
+          "The timer counter for timing out CCMs at the remote MEP
+           has not expired, since a valid CCM was received.";
+      }
+    }
+    description
+      "Operational state of a remote MEP state machine, which
+       monitors the reception of valid CCMs from a remote MEP
+       with a specific MEPID. ";
+    reference
+      "IEEE 802.1ag clauses 12.14.7.6.3:b, 20.20";
+  }
+
+  /* Groupings */
+
+  grouping maintenance-association-cc-parameters {
+    description
+      "Parameters used to configure continuity check at the
+       at the maintenance association level.";
+
+    leaf ccm-interval {
+      if-feature "dot1ag-cc";
+      type ccm-interval;
+      default "1s";
+      description
+        "Indicates the interval at which CCMs are to be sent
+         by a MEP.";
+      reference
+        "IEEE 802.1ag clause 20.8.1";
+    }
+  }
+
+  grouping fault-notification-config-parameters {
+    description
+      "Configuration parameters for fault notification of a MEP.";
+
+    leaf lowest-priority-defect {
+      type continuity-check-defects;
+      default "mac-status-error";
+      description
+        "Specifies the lowest priority defect that is allowed 
+         to generate fault alarm.
+         Fault Alarm defects and priorities are defined in 
+         Table 20-1 of IEEE 802ag.";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.1.3:k, 20.9.5 and Table 20-1";
+    }
+
+    leaf alarm-time {
+      type centiseconds {
+        range "250..1000" {
+          description
+            "2.5 to 10 seconds";
+        }
+      }
+      default "250";
+      description
+        "The time that defects MUST be present before a 
+         Fault Alarm is issued (fngAlarmTime. 20.33.3) 
+         (default 2.5s).";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.1.3:l and 20.33.3";
+    }
+
+    leaf alarm-reset-time {
+      type centiseconds {
+        range "250..1000";
+      }
+      default "1000";
+      description
+        "The time that defects MUST be absent before resetting a 
+         Fault Alarm (fngResetTime, 20.33.4) (default 10s).";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.1.3:m and 20.33.4";
+    }
+  }
+
+  grouping fault-notification-status-parameters {
+    description
+      "Operational status parameters for fault notification 
+       of a MEP.";
+
+    leaf status {
+      type fault-notification-status;
+      description
+        "Current state of the MEP Fault Notification Generator
+         State Machine.";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.1.3:f and 20.35";
+    }
+    leaf highest-priority-defect {
+      type continuity-check-defects;
+      description
+        "The highest priority defect that has been present since 
+         the MEPs Fault Notification Generator State Machine was last 
+         in the FNG_RESET state.";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.1.3:n, 20.33.9 and Table 21-1";
+    }
+    leaf-list defect {
+      type continuity-check-defects;
+      must ".!='none'" {
+        description
+          "The enum 'none' must not be used in this leaf-list as an 
+           empty leaf-list implies that no defect is present.";
+      }
+      description
+        "A MEP can detect and report a number of defects, and 
+         multiple defects can be present at the same time. ";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.1.3:o, 12.14.7.1.3:p, 
+         12.14.7.1.3:q,12.14.7.1.3:r, and 12.14.7.1.3:s, 20.1.2";
+    }
+    leaf last-error-ccm {
+      type string {
+        length "0 | 1..3044";
+      }
+      description
+        "The last-received CCM that triggered a error-ccm fault.";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.1.3:t and 20.21.2";
+    }
+    leaf last-cross-connect-ccm {
+      type string {
+        length "0 | 1..3044";
+      }
+      description
+        "The last-received CCM that triggered a cross-connect-ccm 
+         fault.";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.1.3:t and 20.21.2";
+    }
+  }
+
+  grouping remote-mep-parameters {
+    description
+      "Basic status parameters associated with an
+       entry in the remote MEP database of a MEP.";
+
+    leaf remote-mep-id {
+      type mep-id;
+      description
+        "The MEP Identifier of the remote MEP.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.6.2:b";
+    }
+    leaf remote-mep-state {
+      type remote-mep-state;
+      description
+        "The operational state of the remote MEP IFF State
+         machines.";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.6.3:b and 20.22";
+    }
+    leaf remote-mep-failed-ok-time {
+      type yang:date-and-time;
+      description
+        "The time at which the IFF Remote MEP state machine
+         last entered either the failed or ok state.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.6.3:c";
+    }
+    leaf mac-address {
+      type yang:mac-address;
+      description
+        "The MAC address of the remote MEP.";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.6.3:d and 20.19.7";
+    }
+    leaf rdi {
+      type boolean;
+      description
+        "State of the RDI bit in the last received CCM (true for
+         RDI=1), or false if none has been received";
+      reference
+        "IEEE 802.1ag clauses 12.14.7.6.3:e and 20.19.2";
+    }
+
+    container port-status-tlv {
+      presence "A Port Status TLV has been received in the CCM.";
+      description
+        "This container provides the contents of the Port Status TLV, 
+         if received in the CCM.";
+      reference
+        "IEEE 802.1ag clause 21.5.4.";
+
+      leaf port-status {
+        type port-status;
+        description
+          "Indicates the ability of the Bridge Port on which the 
+           transmitting remote MEP resides to pass ordinary data, 
+           regardless of the status of the MAC. from the 
+           last CCM received from that remote MEP.";
+        reference
+          "IEEE 802.1ag clause 12.14.7.6.3:f";
+      }
+    }
+
+    container interface-status-tlv {
+      presence "A Interface Status TLV has been received in the CCM.";
+      description
+        "This container provides the contents of the Interface 
+         Status TLV, if received in the CCM.";
+      reference
+        "IEEE 802.1ag clause 21.5.5.";
+
+      leaf interface-status {
+        type interface-status;
+        description
+          "Indicates the status of the interface on which the 
+           remote MEP transmitting the CCM is configured from the 
+           last CCM received from that remote MEP";
+        reference
+          "IEEE 802.1ag clause 12.14.7.6.3:g";
+      }
+    }
+
+    container sender-id-tlv {
+      presence "A Sender ID TLV has been received in the CCM.";
+      description
+        "This container provides the contents of the Sender ID TLV, 
+         if received in the CCM.";
+      reference
+        "IEEE 802.1ag clause 21.5.3.";
+
+      uses sender-id-tlv;
+    }
+  }
+
+  grouping continuity-check-config-parameters {
+    description
+      "Configuration parameters for the continuity check 
+       protocol of a MEP.";
+
+    leaf enabled {
+      type boolean;
+      default "false";
+      description
+        "If true, the MEP generates CCM messages.";
+      reference
+        "IEEE 802.1ag clause 12.14.7.1.3:g";
+    }
+  }
+
+  grouping continuity-check-status-parameters {
+    description
+      "Status parameters for the continuity check 
+       protocol of a MEP.";
+
+    container fault-notification {
+      if-feature "dot1ag-cc-fault-notification";
+      description
+        "Fault notification data nodes.";
+      uses fault-notification-status-parameters;
+    }
+
+    container remote-mep-database {
+      description
+        "The remote MEP database of the MEP containing 
+         state information for all remote MEPs configured 
+         in the MA.";
+      list remote-mep {
+        key "remote-mep-id";
+        description
+          "An entry in the remote MEP database of the MEP 
+           containing state information for the remote MEPs 
+           identified by mep-id.";
+
+        uses remote-mep-parameters;
+      }
+    }
+  }
+
+  grouping continuity-check-statistics-parameters {
+    description
+      "Statistics parameters for the continuity check 
+       protocol of a MEP.";
+
+    leaf out-ccm {
+      type yang:counter64;
+      description
+        "The total number of Continuity Check (CCM) messages 
+         transmitted by the MEP.";
+      reference
+        "IEEE 802.1ag 12.14.7.1.3:w and 20.10.2";
+    }
+    leaf in-ccm-out-of-sequence {
+      type yang:counter64;
+      description
+        "The total number of out-of-sequence Continuity Check (CCM) 
+         messages received by the MEP.";
+      reference
+        "IEEE 802.1ag 12.14.7.1.3:v and 20.16.12";
+    }
+  }
+}

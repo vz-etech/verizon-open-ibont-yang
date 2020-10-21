@@ -1,0 +1,56 @@
+submodule verizon-oam-ethernet-cfm-statistics-dm-body {
+  belongs-to verizon-oam-ethernet-cfm-statistics {
+    prefix vz-oam-ecfm-stats;
+  }
+  
+  import ietf-yang-types {
+    prefix yang;
+  }
+  
+  organization 
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>"; 
+  
+  description 
+    "This module contains a collection YANG data types and grouping 
+     definitions to support delay management statistics that are not 
+     defined as part of the standards ITU-T Y.1731 or MEF 7.2.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+  grouping delay-measurement-statistics-parameters {
+    description
+      "Defines statistics parameters for delay measurement.";
+
+    leaf out-dmm {
+      type yang:counter64;
+      description
+        "The total number of DMMs transmitted by the MEP.";
+    }
+    leaf in-dmm {
+      type yang:counter64;
+      description
+        "The total number of DMMs received by the MEP.";
+    }
+    leaf out-dmr {
+      type yang:counter64;
+      description
+        "The total number of DMRs transmitted by the MEP.";
+    }
+    leaf in-dmr {
+      type yang:counter64;
+      description
+        "The total number of DMRs received by the MEP.";
+    }
+  }
+  
+}

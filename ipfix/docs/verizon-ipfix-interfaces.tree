@@ -1,0 +1,5 @@
+
+module: verizon-ipfix-interfaces
+  augment /if:interfaces/if:interface:
+    +--rw ipfix
+       +--rw statistics-template*   -> /vz-ipfix:ipfix/vz-ipfix-bulkstats:statistics-template/name

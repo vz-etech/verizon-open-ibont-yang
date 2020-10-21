@@ -1,0 +1,32 @@
+
+module: verizon-loopbacks
+  augment /if:interfaces-state/if:interface:
+    +--ro loopback!
+       +--ro type?   union
+  augment /vz-tm:evcs-state/vz-tm:evc:
+    +--ro loopback
+       +--ro type?   union
+
+  rpcs:
+    +---x create-loopback
+    |  +---w input
+    |  |  +---w mac-swap      boolean
+    |  |  +---w type          loopback-type
+    |  |  +---w (which-scope)
+    |  |     +--:(port)
+    |  |     |  +---w port?   if:interface-ref
+    |  |     +--:(evc)
+    |  |        +---w evc?    evc-ref
+    |  +--ro output
+    |     +--ro error-tag?       identityref
+    |     +--ro error-message?   string
+    +---x clear-loopback
+       +---w input
+       |  +---w (which-scope)
+       |     +--:(port)
+       |     |  +---w port?   if:interface-ref
+       |     +--:(evc)
+       |        +---w evc?    evc-ref
+       +--ro output
+          +--ro error-tag?       identityref
+          +--ro error-message?   string

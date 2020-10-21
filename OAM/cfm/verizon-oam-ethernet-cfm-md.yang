@@ -1,0 +1,96 @@
+submodule verizon-oam-ethernet-cfm-md {
+  belongs-to verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  include verizon-oam-ethernet-cfm-base;
+  include verizon-oam-ethernet-cfm-md-body;
+  include verizon-oam-ethernet-cfm-types;
+
+  organization
+    "Verizon";
+
+  contact
+    "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description
+    "This module contains a collection of YANG definitions for the 
+     management of Ethernet Service Layer OAM Maintenance Domains 
+     (MD) as specified in IEEE 802.1ag.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+
+  augment "/vz-oam-ecfm:cfm" {
+    description
+      "Add config data nodes for maintenance domains 
+       to the top-level cfm configuration.";
+    container domains {
+      description
+        "Management objects related to configuration of maintenance
+         domains and their attributes.";
+      reference
+        "IEEE 802.1ag clauses 3.22 and 18.1";
+
+      list domain {
+        key "admin-name";
+        unique "md-name/which-md-name-format/domain-name/domain-name";
+        unique "md-name/which-md-name-format/mac-address-and-uint16/"
+             + "mac-address-and-uint16/mac-address md-name/"
+             + "which-md-name-format/mac-address-and-uint16/"
+             + "mac-address-and-uint16/uint16";
+        unique "md-name/which-md-name-format/character-string/"
+             + "character-string";
+        description
+          "A list of maintenance domains
+           Note that except 'no-name', a given 'md-name' may only 
+           appear once in the list, see unique statements.";
+        reference
+          "IEEE 802.1ag clauses 3.22, 12.14.1, 12.14.5 and 18.1";
+
+        leaf admin-name {
+          type admin-name;
+          description
+            "A unique administratively assigned name used to
+             identify this domain.";
+        }
+
+        uses maintenance-domain-config-parameters;
+      }
+    }
+  }
+
+  augment "/vz-oam-ecfm:cfm-state" {
+    description
+      "Add non-config data nodes for maintenance domains 
+       to the top-level cfm state information.";
+    container domains {
+      description
+        "Management objects related to the operation of maintenance
+         domains and their attributes.";
+      reference
+        "IEEE 802.1ag clauses 3.22 and 18.1";
+
+      list domain {
+        key "admin-name";
+        description
+          "A list of maintenance domains.";
+        reference
+          "IEEE 802.1ag clauses 3.22, 12.14.1, 12.14.5 and 18.1";
+
+        leaf admin-name {
+          type admin-name;
+          description
+            "A unique administratively assigned name used to
+             identify this domain.";
+        }
+      }
+    }
+  }
+}

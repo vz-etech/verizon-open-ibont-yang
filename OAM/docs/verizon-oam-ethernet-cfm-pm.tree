@@ -1,0 +1,671 @@
+
+module: verizon-oam-ethernet-cfm-pm
+  augment /vz-oam-ecfm:cfm:
+    +--rw profiles
+       +--rw loss-measurement
+       |  +--rw tca-profiles {tca-reporting}?
+       |     +--rw tca-profile* [name]
+       |        +--rw name             string
+       |        +--rw stateless-tca* [metric threshold] {stateless-tca-reporting}?
+       |        |  +--rw metric       loss-measurement-metric-with-tca
+       |        |  +--rw threshold    uint32
+       |        |  +--rw name?        string
+       |        +--rw stateful-tca* [metric set-threshold] {stateful-tca-reporting}?
+       |           +--rw metric             loss-measurement-metric-with-tca
+       |           +--rw set-threshold      uint32
+       |           +--rw clear-threshold?   uint32 {clear-threshold}?
+       |           +--rw name?              string
+       +--rw delay-measurement
+       |  +--rw tca-profiles {tca-reporting}?
+       |     +--rw tca-profile* [name]
+       |        +--rw name             string
+       |        +--rw stateless-tca* [metric threshold] {stateless-tca-reporting}?
+       |        |  +--rw metric       delay-measurement-metric
+       |        |  +--rw threshold    uint32
+       |        |  +--rw name?        string
+       |        +--rw stateful-tca* [metric set-threshold] {stateful-tca-reporting}?
+       |           +--rw metric             delay-measurement-metric
+       |           +--rw set-threshold      uint32
+       |           +--rw clear-threshold?   uint32 {clear-threshold}?
+       |           +--rw name?              string
+       +--rw delay-measurement-bins {delay-measurement-bins}?
+          +--rw tca-profiles {tca-reporting}?
+          |  +--rw tca-profile* [name]
+          |     +--rw name             string
+          |     +--rw stateless-tca* [metric bin-number threshold] {stateless-tca-reporting}?
+          |     |  +--rw metric        delay-measurement-bin-metric
+          |     |  +--rw bin-number    bin-number
+          |     |  +--rw threshold     uint32
+          |     |  +--rw name?         string
+          |     +--rw stateful-tca* [metric bin-number set-threshold] {stateful-tca-reporting}?
+          |        +--rw metric             delay-measurement-bin-metric
+          |        +--rw bin-number         bin-number
+          |        +--rw set-threshold      uint32
+          |        +--rw clear-threshold?   uint32 {clear-threshold}?
+          |        +--rw name?              string
+          +--rw bins-profiles {delay-measurement-bins}?
+             +--rw bins-profile* [name]
+                +--rw name                                string
+                +--rw frame-delay-bins
+                |  +--rw (which-bin-profile)?
+                |     +--:(no-bins)
+                |     |  +--rw no-bins?       empty
+                |     +--:(lower-bounds)
+                |        +--rw lower-bound*   uint32
+                +--rw inter-frame-delay-variation-bins
+                |  +--rw (which-bin-profile)?
+                |     +--:(no-bins)
+                |     |  +--rw no-bins?       empty
+                |     +--:(lower-bounds)
+                |        +--rw lower-bound*   uint32
+                +--rw frame-delay-range-bins
+                   +--rw (which-bin-profile)?
+                      +--:(no-bins)
+                      |  +--rw no-bins?       empty
+                      +--:(lower-bounds)
+                         +--rw lower-bound*   uint32
+  augment /vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep:
+    +--rw loss-measurement {eth-lm}?
+       +--rw lm-single-ended-responder-enabled?    boolean {lm-single-ended-responder-enable-disable}?
+       +--rw slm-single-ended-responder-enabled?   boolean {eth-slm,slm-single-ended-responder-enable-disable}?
+       +--rw sessions {proactive-sessions}?
+          +--rw session* [name]
+             +--rw name                              string
+             +--rw enabled?                          boolean
+             +--rw measurement-type?                 lm-measurement-type
+             +--rw measurement-interval?             uint32
+             +--rw enabled-measurement*              loss-measurement-metric {metric-selection}?
+             +--rw message-interval?                 uint32
+             +--rw measurement-interval-alignment
+             |  +--rw (which-measurement-interval-alignment)?
+             |     +--:(disabled)
+             |     |  +--rw disabled?   empty
+             |     +--:(enabled)
+             |        +--rw offset?     uint32
+             +--rw repetition-interval?              union {repetition-interval}?
+             +--rw number-of-historical-intervals?   uint32
+             +--rw pdu-version?                      pdu-version {pdu-versions}?
+             +--rw vlan
+             |  +--rw priority    vz-oam-ecfm:frame-priority
+             +--rw destination-address
+             |  +--rw (destination-address-type)
+             |     +--:(mep-id)
+             |     |  +--rw mep-id?        mep-id
+             |     +--:(mac-address)
+             |        +--rw mac-address?   string
+             +--rw availability-measurements
+             |  +--rw measurement-interval?                        uint32 {availability-measurement-interval}?
+             |  +--rw number-of-consecutive-pdus?                  uint32
+             |  +--rw availability-threshold?                      frame-loss-ratio
+             |  +--rw number-of-consecutive-intervals?             uint32
+             |  +--rw number-of-consecutive-high-loss-intervals?   uint32
+             +--rw pattern-tlv {eth-slm}?
+             |  +--rw frame-size?                  uint32
+             |  +--rw (tlv-option)?
+             |     +--:(no-tlv)
+             |     |  +--rw no-tlv?                empty
+             |     +--:(data-tlv) {data-tlv}?
+             |     |  +--rw data-tlv?              string
+             |     +--:(all-zeroes-data-tlv) {data-tlv}?
+             |     |  +--rw all-zeroes-data-tlv?   empty
+             |     +--:(all-ones-data-tlv) {data-tlv}?
+             |     |  +--rw all-ones-data-tlv?     empty
+             |     +--:(test-tlv) {test-tlv}?
+             |        +--rw test-tlv?              test-tlv-pattern
+             +--rw tca-profile?                      loss-measurement-tca-profile-ref {tca-reporting}?
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep:
+    +--ro loss-measurement {eth-lm}?
+       +--ro lm-single-ended-responder-enabled?    boolean {lm-single-ended-responder-enable-disable}?
+       +--ro slm-single-ended-responder-enabled?   boolean {eth-slm,slm-single-ended-responder-enable-disable}?
+       +--ro sessions
+          +--ro session* [name session-type]
+             +--ro name                              string
+             +--ro session-type                      session-type
+             +--ro session-status?                   session-status-type
+             +--ro measurement-type?                 lm-measurement-type
+             +--ro measurement-interval?             uint32
+             +--ro enabled-measurement*              loss-measurement-metric {metric-selection}?
+             +--ro message-interval?                 uint32
+             +--ro measurement-interval-alignment
+             |  +--ro (which-measurement-interval-alignment)?
+             |     +--:(disabled)
+             |     |  +--ro disabled?   empty
+             |     +--:(enabled)
+             |        +--ro offset?     uint32
+             +--ro repetition-interval?              union {repetition-interval}?
+             +--ro number-of-historical-intervals?   uint32
+             +--ro pdu-version?                      pdu-version {pdu-versions}?
+             +--ro vlan
+             |  +--ro priority    vz-oam-ecfm:frame-priority
+             +--ro destination-address
+             |  +--ro (destination-address-type)
+             |     +--:(mep-id)
+             |     |  +--ro mep-id?        mep-id
+             |     +--:(mac-address)
+             |        +--ro mac-address?   string
+             +--ro availability-measurements
+             |  +--ro measurement-interval?                        uint32 {availability-measurement-interval}?
+             |  +--ro number-of-consecutive-pdus?                  uint32
+             |  +--ro availability-threshold?                      frame-loss-ratio
+             |  +--ro number-of-consecutive-intervals?             uint32
+             |  +--ro number-of-consecutive-high-loss-intervals?   uint32
+             +--ro pattern-tlv {eth-slm}?
+             |  +--ro frame-size?                  uint32
+             |  +--ro (tlv-option)?
+             |     +--:(no-tlv)
+             |     |  +--ro no-tlv?                empty
+             |     +--:(data-tlv) {data-tlv}?
+             |     |  +--ro data-tlv?              string
+             |     +--:(all-zeroes-data-tlv) {data-tlv}?
+             |     |  +--ro all-zeroes-data-tlv?   empty
+             |     +--:(all-ones-data-tlv) {data-tlv}?
+             |     |  +--ro all-ones-data-tlv?     empty
+             |     +--:(test-tlv) {test-tlv}?
+             |        +--ro test-tlv?              test-tlv-pattern
+             +--ro measurement-statistics
+             |  +--ro forward-frame-loss-ratio?    frame-loss-ratio
+             |  +--ro backward-frame-loss-ratio?   frame-loss-ratio
+             |  +--ro current
+             |  |  +--ro interval-number?                 uint32
+             |  |  +--ro start-date-and-time?             yang:date-and-time
+             |  |  +--ro elapsed-time?                    uint32
+             |  |  +--ro is-suspect?                      boolean
+             |  |  +--ro forward-transmitted-frames?      yang:counter32
+             |  |  +--ro forward-received-frames?         yang:counter32
+             |  |  +--ro forward-min-frame-loss-ratio?    frame-loss-ratio
+             |  |  +--ro forward-max-frame-loss-ratio?    frame-loss-ratio
+             |  |  +--ro forward-avg-frame-loss-ratio?    frame-loss-ratio
+             |  |  +--ro backward-transmitted-frames?     yang:counter32
+             |  |  +--ro backward-received-frames?        yang:counter32
+             |  |  +--ro backward-min-frame-loss-ratio?   frame-loss-ratio
+             |  |  +--ro backward-max-frame-loss-ratio?   frame-loss-ratio
+             |  |  +--ro backward-avg-frame-loss-ratio?   frame-loss-ratio
+             |  |  +--ro out-oam-pdus?                    yang:counter32
+             |  |  +--ro in-oam-pdus?                     yang:counter32
+             |  +--ro history
+             |     +--ro history* [interval-number]
+             |        +--ro interval-number                  uint32
+             |        +--ro end-date-and-time?               yang:date-and-time
+             |        +--ro elapsed-time?                    uint32
+             |        +--ro is-suspect?                      boolean
+             |        +--ro forward-transmitted-frames?      yang:counter32
+             |        +--ro forward-received-frames?         yang:counter32
+             |        +--ro forward-min-frame-loss-ratio?    frame-loss-ratio
+             |        +--ro forward-max-frame-loss-ratio?    frame-loss-ratio
+             |        +--ro forward-avg-frame-loss-ratio?    frame-loss-ratio
+             |        +--ro backward-transmitted-frames?     yang:counter32
+             |        +--ro backward-received-frames?        yang:counter32
+             |        +--ro backward-min-frame-loss-ratio?   frame-loss-ratio
+             |        +--ro backward-max-frame-loss-ratio?   frame-loss-ratio
+             |        +--ro backward-avg-frame-loss-ratio?   frame-loss-ratio
+             |        +--ro out-oam-pdus?                    yang:counter32
+             |        +--ro in-oam-pdus?                     yang:counter32
+             +--ro availability-statistics
+             |  +--ro forward-status?                           availability-status
+             |  +--ro backward-status?                          availability-status
+             |  +--ro forward-last-transition-date-and-time?    yang:date-and-time
+             |  +--ro backward-last-transition-date-and-time?   yang:date-and-time
+             |  +--ro current
+             |  |  +--ro interval-number?                            uint32
+             |  |  +--ro start-date-and-time?                        yang:date-and-time
+             |  |  +--ro elapsed-time?                               uint32
+             |  |  +--ro is-suspect?                                 boolean
+             |  |  +--ro forward-high-loss-intervals?                yang:counter32
+             |  |  +--ro backward-high-loss-intervals?               yang:counter32
+             |  |  +--ro forward-consecutive-high-loss-intervals?    yang:counter32
+             |  |  +--ro backward-consecutive-high-loss-intervals?   yang:counter32
+             |  |  +--ro forward-available-indicators?               uint32
+             |  |  +--ro backward-available-indicators?              uint32
+             |  |  +--ro forward-unavailable-indicators?             uint32
+             |  |  +--ro backward-unavailable-indicators?            uint32
+             |  |  +--ro forward-min-frame-loss-ratio?               frame-loss-ratio
+             |  |  +--ro forward-max-frame-loss-ratio?               frame-loss-ratio
+             |  |  +--ro forward-avg-frame-loss-ratio?               frame-loss-ratio
+             |  |  +--ro backward-min-frame-loss-ratio?              frame-loss-ratio
+             |  |  +--ro backward-max-frame-loss-ratio?              frame-loss-ratio
+             |  |  +--ro backward-avg-frame-loss-ratio?              frame-loss-ratio
+             |  +--ro history
+             |     +--ro history* [interval-number]
+             |        +--ro interval-number                             uint32
+             |        +--ro end-date-and-time?                          yang:date-and-time
+             |        +--ro elapsed-time?                               uint32
+             |        +--ro is-suspect?                                 boolean
+             |        +--ro forward-high-loss-intervals?                yang:counter32
+             |        +--ro backward-high-loss-intervals?               yang:counter32
+             |        +--ro forward-consecutive-high-loss-intervals?    yang:counter32
+             |        +--ro backward-consecutive-high-loss-intervals?   yang:counter32
+             |        +--ro forward-available-indicators?               uint32
+             |        +--ro backward-available-indicators?              uint32
+             |        +--ro forward-unavailable-indicators?             uint32
+             |        +--ro backward-unavailable-indicators?            uint32
+             |        +--ro forward-min-frame-loss-ratio?               frame-loss-ratio
+             |        +--ro forward-max-frame-loss-ratio?               frame-loss-ratio
+             |        +--ro forward-avg-frame-loss-ratio?               frame-loss-ratio
+             |        +--ro backward-min-frame-loss-ratio?              frame-loss-ratio
+             |        +--ro backward-max-frame-loss-ratio?              frame-loss-ratio
+             |        +--ro backward-avg-frame-loss-ratio?              frame-loss-ratio
+             +--ro tca-profile?                      loss-measurement-tca-profile-ref {tca-reporting}?
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:statistics:
+    +--ro loss-measurement {eth-lm}?
+  augment /vz-oam-ecfm:cfm/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep:
+    +--rw delay-measurement {eth-dm}?
+       +--rw dm-single-ended-responder-enabled?   boolean {dm-single-ended-responder-enable-disable}?
+       +--rw sessions {proactive-sessions}?
+          +--rw session* [name]
+             +--rw name                                            string
+             +--rw enabled?                                        boolean
+             +--rw measurement-type?                               dm-measurement-type
+             +--rw measurement-interval?                           uint32
+             +--rw enabled-measurement*                            delay-measurement-metric {metric-selection}?
+             +--rw message-interval?                               uint32
+             +--rw measurement-interval-alignment
+             |  +--rw (which-measurement-interval-alignment)?
+             |     +--:(disabled)
+             |     |  +--rw disabled?   empty
+             |     +--:(enabled)
+             |        +--rw offset?     uint32
+             +--rw repetition-interval?                            union {repetition-interval}?
+             +--rw number-of-historical-intervals?                 uint32
+             +--rw pdu-version?                                    pdu-version {pdu-versions}?
+             +--rw vlan
+             |  +--rw priority    vz-oam-ecfm:frame-priority
+             +--rw destination-address
+             |  +--rw (destination-address-type)
+             |     +--:(mep-id)
+             |     |  +--rw mep-id?        mep-id
+             |     +--:(mac-address)
+             |     |  +--rw mac-address?   string
+             |     +--:(multicast)
+             |        +--rw multicast?     empty
+             +--rw pattern-tlv
+             |  +--rw frame-size?                  uint32
+             |  +--rw (tlv-option)?
+             |     +--:(no-tlv)
+             |     |  +--rw no-tlv?                empty
+             |     +--:(data-tlv) {data-tlv}?
+             |     |  +--rw data-tlv?              string
+             |     +--:(all-zeroes-data-tlv) {data-tlv}?
+             |     |  +--rw all-zeroes-data-tlv?   empty
+             |     +--:(all-ones-data-tlv) {data-tlv}?
+             |     |  +--rw all-ones-data-tlv?     empty
+             |     +--:(test-tlv) {test-tlv}?
+             |        +--rw test-tlv?              test-tlv-pattern
+             +--rw inter-frame-delay-variation-selection-offset?   uint8
+             +--rw bins-profile?                                   delay-measurement-bins-profile-ref {delay-measurement-bins}?
+             +--rw tca-profile?                                    delay-measurement-tca-profile-ref {tca-reporting}?
+             +--rw bins-tca-profile?                               delay-measurement-bins-tca-profile-ref {tca-reporting}?
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep:
+    +--ro delay-measurement {eth-dm}?
+       +--ro dm-single-ended-responder-enabled?   boolean {dm-single-ended-responder-enable-disable}?
+       +--ro sessions
+          +--ro session* [name session-type]
+             +--ro name                                            string
+             +--ro session-type                                    session-type
+             +--ro session-status?                                 session-status-type
+             +--ro measurement-type?                               dm-measurement-type
+             +--ro measurement-interval?                           uint32
+             +--ro enabled-measurement*                            delay-measurement-metric {metric-selection}?
+             +--ro message-interval?                               uint32
+             +--ro measurement-interval-alignment
+             |  +--ro (which-measurement-interval-alignment)?
+             |     +--:(disabled)
+             |     |  +--ro disabled?   empty
+             |     +--:(enabled)
+             |        +--ro offset?     uint32
+             +--ro repetition-interval?                            union {repetition-interval}?
+             +--ro number-of-historical-intervals?                 uint32
+             +--ro pdu-version?                                    pdu-version {pdu-versions}?
+             +--ro vlan
+             |  +--ro priority    vz-oam-ecfm:frame-priority
+             +--ro destination-address
+             |  +--ro (destination-address-type)
+             |     +--:(mep-id)
+             |     |  +--ro mep-id?        mep-id
+             |     +--:(mac-address)
+             |     |  +--ro mac-address?   string
+             |     +--:(multicast)
+             |        +--ro multicast?     empty
+             +--ro pattern-tlv
+             |  +--ro frame-size?                  uint32
+             |  +--ro (tlv-option)?
+             |     +--:(no-tlv)
+             |     |  +--ro no-tlv?                empty
+             |     +--:(data-tlv) {data-tlv}?
+             |     |  +--ro data-tlv?              string
+             |     +--:(all-zeroes-data-tlv) {data-tlv}?
+             |     |  +--ro all-zeroes-data-tlv?   empty
+             |     +--:(all-ones-data-tlv) {data-tlv}?
+             |     |  +--ro all-ones-data-tlv?     empty
+             |     +--:(test-tlv) {test-tlv}?
+             |        +--ro test-tlv?              test-tlv-pattern
+             +--ro inter-frame-delay-variation-selection-offset?   uint8
+             +--ro measurement-statistics
+             |  +--ro frame-delay-two-way?                    yang:gauge32
+             |  +--ro frame-delay-forward?                    yang:gauge32
+             |  +--ro frame-delay-backward?                   yang:gauge32
+             |  +--ro inter-frame-delay-variation-two-way?    yang:gauge32
+             |  +--ro inter-frame-delay-variation-forward?    yang:gauge32
+             |  +--ro inter-frame-delay-variation-backward?   yang:gauge32
+             |  +--ro current
+             |  |  +--ro interval-number?                            uint32
+             |  |  +--ro start-date-and-time?                        yang:date-and-time
+             |  |  +--ro elapsed-time?                               uint32
+             |  |  +--ro is-suspect?                                 boolean
+             |  |  +--ro frame-delay-two-way-min?                    uint32
+             |  |  +--ro frame-delay-two-way-max?                    uint32
+             |  |  +--ro frame-delay-two-way-avg?                    uint32
+             |  |  +--ro frame-delay-forward-min?                    uint32
+             |  |  +--ro frame-delay-forward-max?                    uint32
+             |  |  +--ro frame-delay-forward-avg?                    uint32
+             |  |  +--ro frame-delay-backward-min?                   uint32
+             |  |  +--ro frame-delay-backward-max?                   uint32
+             |  |  +--ro frame-delay-backward-avg?                   uint32
+             |  |  +--ro inter-frame-delay-variation-two-way-min?    uint32
+             |  |  +--ro inter-frame-delay-variation-two-way-max?    uint32
+             |  |  +--ro inter-frame-delay-variation-two-way-avg?    uint32
+             |  |  +--ro inter-frame-delay-variation-forward-min?    uint32
+             |  |  +--ro inter-frame-delay-variation-forward-max?    uint32
+             |  |  +--ro inter-frame-delay-variation-forward-avg?    uint32
+             |  |  +--ro inter-frame-delay-variation-backward-min?   uint32
+             |  |  +--ro inter-frame-delay-variation-backward-max?   uint32
+             |  |  +--ro inter-frame-delay-variation-backward-avg?   uint32
+             |  |  +--ro frame-delay-range-two-way-max?              uint32
+             |  |  +--ro frame-delay-range-two-way-avg?              uint32
+             |  |  +--ro frame-delay-range-forward-max?              uint32
+             |  |  +--ro frame-delay-range-forward-avg?              uint32
+             |  |  +--ro frame-delay-range-backward-max?             uint32
+             |  |  +--ro frame-delay-range-backward-avg?             uint32
+             |  |  +--ro out-oam-pdus?                               yang:counter32
+             |  |  +--ro in-oam-pdus?                                yang:counter32
+             |  |  +--ro bins
+             |  |     +--ro frame-delay
+             |  |     |  +--ro two-way* [bin-number]
+             |  |     |  |  +--ro bin-number     bin-number
+             |  |     |  |  +--ro lower-bound?   uint32
+             |  |     |  |  +--ro count?         uint32
+             |  |     |  +--ro forward* [bin-number]
+             |  |     |  |  +--ro bin-number     bin-number
+             |  |     |  |  +--ro lower-bound?   uint32
+             |  |     |  |  +--ro count?         uint32
+             |  |     |  +--ro backward* [bin-number]
+             |  |     |     +--ro bin-number     bin-number
+             |  |     |     +--ro lower-bound?   uint32
+             |  |     |     +--ro count?         uint32
+             |  |     +--ro inter-frame-delay-variation
+             |  |     |  +--ro two-way* [bin-number]
+             |  |     |  |  +--ro bin-number     bin-number
+             |  |     |  |  +--ro lower-bound?   uint32
+             |  |     |  |  +--ro count?         uint32
+             |  |     |  +--ro forward* [bin-number]
+             |  |     |  |  +--ro bin-number     bin-number
+             |  |     |  |  +--ro lower-bound?   uint32
+             |  |     |  |  +--ro count?         uint32
+             |  |     |  +--ro backward* [bin-number]
+             |  |     |     +--ro bin-number     bin-number
+             |  |     |     +--ro lower-bound?   uint32
+             |  |     |     +--ro count?         uint32
+             |  |     +--ro frame-delay-range
+             |  |        +--ro two-way* [bin-number]
+             |  |        |  +--ro bin-number     bin-number
+             |  |        |  +--ro lower-bound?   uint32
+             |  |        |  +--ro count?         uint32
+             |  |        +--ro forward* [bin-number]
+             |  |        |  +--ro bin-number     bin-number
+             |  |        |  +--ro lower-bound?   uint32
+             |  |        |  +--ro count?         uint32
+             |  |        +--ro backward* [bin-number]
+             |  |           +--ro bin-number     bin-number
+             |  |           +--ro lower-bound?   uint32
+             |  |           +--ro count?         uint32
+             |  +--ro history
+             |     +--ro history* [interval-number]
+             |        +--ro interval-number                             uint32
+             |        +--ro end-date-and-time?                          yang:date-and-time
+             |        +--ro elapsed-time?                               uint32
+             |        +--ro is-suspect?                                 boolean
+             |        +--ro frame-delay-two-way-min?                    uint32
+             |        +--ro frame-delay-two-way-max?                    uint32
+             |        +--ro frame-delay-two-way-avg?                    uint32
+             |        +--ro frame-delay-forward-min?                    uint32
+             |        +--ro frame-delay-forward-max?                    uint32
+             |        +--ro frame-delay-forward-avg?                    uint32
+             |        +--ro frame-delay-backward-min?                   uint32
+             |        +--ro frame-delay-backward-max?                   uint32
+             |        +--ro frame-delay-backward-avg?                   uint32
+             |        +--ro inter-frame-delay-variation-two-way-min?    uint32
+             |        +--ro inter-frame-delay-variation-two-way-max?    uint32
+             |        +--ro inter-frame-delay-variation-two-way-avg?    uint32
+             |        +--ro inter-frame-delay-variation-forward-min?    uint32
+             |        +--ro inter-frame-delay-variation-forward-max?    uint32
+             |        +--ro inter-frame-delay-variation-forward-avg?    uint32
+             |        +--ro inter-frame-delay-variation-backward-min?   uint32
+             |        +--ro inter-frame-delay-variation-backward-max?   uint32
+             |        +--ro inter-frame-delay-variation-backward-avg?   uint32
+             |        +--ro frame-delay-range-two-way-max?              uint32
+             |        +--ro frame-delay-range-two-way-avg?              uint32
+             |        +--ro frame-delay-range-forward-max?              uint32
+             |        +--ro frame-delay-range-forward-avg?              uint32
+             |        +--ro frame-delay-range-backward-max?             uint32
+             |        +--ro frame-delay-range-backward-avg?             uint32
+             |        +--ro out-oam-pdus?                               yang:counter32
+             |        +--ro in-oam-pdus?                                yang:counter32
+             |        +--ro bins
+             |           +--ro frame-delay
+             |           |  +--ro two-way* [bin-number]
+             |           |  |  +--ro bin-number     bin-number
+             |           |  |  +--ro lower-bound?   uint32
+             |           |  |  +--ro count?         uint32
+             |           |  +--ro forward* [bin-number]
+             |           |  |  +--ro bin-number     bin-number
+             |           |  |  +--ro lower-bound?   uint32
+             |           |  |  +--ro count?         uint32
+             |           |  +--ro backward* [bin-number]
+             |           |     +--ro bin-number     bin-number
+             |           |     +--ro lower-bound?   uint32
+             |           |     +--ro count?         uint32
+             |           +--ro inter-frame-delay-variation
+             |           |  +--ro two-way* [bin-number]
+             |           |  |  +--ro bin-number     bin-number
+             |           |  |  +--ro lower-bound?   uint32
+             |           |  |  +--ro count?         uint32
+             |           |  +--ro forward* [bin-number]
+             |           |  |  +--ro bin-number     bin-number
+             |           |  |  +--ro lower-bound?   uint32
+             |           |  |  +--ro count?         uint32
+             |           |  +--ro backward* [bin-number]
+             |           |     +--ro bin-number     bin-number
+             |           |     +--ro lower-bound?   uint32
+             |           |     +--ro count?         uint32
+             |           +--ro frame-delay-range
+             |              +--ro two-way* [bin-number]
+             |              |  +--ro bin-number     bin-number
+             |              |  +--ro lower-bound?   uint32
+             |              |  +--ro count?         uint32
+             |              +--ro forward* [bin-number]
+             |              |  +--ro bin-number     bin-number
+             |              |  +--ro lower-bound?   uint32
+             |              |  +--ro count?         uint32
+             |              +--ro backward* [bin-number]
+             |                 +--ro bin-number     bin-number
+             |                 +--ro lower-bound?   uint32
+             |                 +--ro count?         uint32
+             +--ro bins-profile?                                   delay-measurement-bins-profile-ref {delay-measurement-bins}?
+             +--ro tca-profile?                                    delay-measurement-tca-profile-ref {tca-reporting}?
+             +--ro bins-tca-profile?                               delay-measurement-bins-tca-profile-ref {tca-reporting}?
+  augment /vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains/vz-oam-ecfm:domain/vz-oam-ecfm:associations/vz-oam-ecfm:association/vz-oam-ecfm:meps/vz-oam-ecfm:mep/vz-oam-ecfm:statistics:
+    +--ro delay-measurement {eth-dm}?
+
+  rpcs:
+    +---x create-on-demand-loss-measurement {eth-lm,on-demand-sessions}?
+    |  +---w input
+    |  |  +---w domain-admin-name                 admin-name
+    |  |  +---w association-admin-name            admin-name
+    |  |  +---w mep-id                            mep-id
+    |  |  +---w session-name?                     string
+    |  |  +---w measurement-type?                 lm-measurement-type
+    |  |  +---w measurement-interval?             uint32
+    |  |  +---w enabled-measurement*              loss-measurement-metric {metric-selection}?
+    |  |  +---w message-interval?                 uint32
+    |  |  +---w measurement-interval-alignment
+    |  |  |  +---w (which-measurement-interval-alignment)?
+    |  |  |     +--:(disabled)
+    |  |  |     |  +---w disabled?   empty
+    |  |  |     +--:(enabled)
+    |  |  |        +---w offset?     uint32
+    |  |  +---w repetition-interval?              union {repetition-interval}?
+    |  |  +---w number-of-historical-intervals?   uint32
+    |  |  +---w pdu-version?                      pdu-version {pdu-versions}?
+    |  |  +---w vlan
+    |  |  |  +---w priority    vz-oam-ecfm:frame-priority
+    |  |  +---w destination-address
+    |  |  |  +---w (destination-address-type)
+    |  |  |     +--:(mep-id)
+    |  |  |     |  +---w mep-id?        mep-id
+    |  |  |     +--:(mac-address)
+    |  |  |        +---w mac-address?   string
+    |  |  +---w availability-measurements
+    |  |  |  +---w measurement-interval?                        uint32 {availability-measurement-interval}?
+    |  |  |  +---w number-of-consecutive-pdus?                  uint32
+    |  |  |  +---w availability-threshold?                      frame-loss-ratio
+    |  |  |  +---w number-of-consecutive-intervals?             uint32
+    |  |  |  +---w number-of-consecutive-high-loss-intervals?   uint32
+    |  |  +---w pattern-tlv {eth-slm}?
+    |  |  |  +---w frame-size?                  uint32
+    |  |  |  +---w (tlv-option)?
+    |  |  |     +--:(no-tlv)
+    |  |  |     |  +---w no-tlv?                empty
+    |  |  |     +--:(data-tlv) {data-tlv}?
+    |  |  |     |  +---w data-tlv?              string
+    |  |  |     +--:(all-zeroes-data-tlv) {data-tlv}?
+    |  |  |     |  +---w all-zeroes-data-tlv?   empty
+    |  |  |     +--:(all-ones-data-tlv) {data-tlv}?
+    |  |  |     |  +---w all-ones-data-tlv?     empty
+    |  |  |     +--:(test-tlv) {test-tlv}?
+    |  |  |        +---w test-tlv?              test-tlv-pattern
+    |  |  +---w tca-profile?                      loss-measurement-tca-profile-ref {tca-reporting}?
+    |  +--ro output
+    |     +--ro error-tag        identityref
+    |     +--ro error-message?   string
+    +---x start-on-demand-loss-measurement {eth-lm,on-demand-sessions}?
+    |  +---w input
+    |  |  +---w domain-admin-name         admin-name
+    |  |  +---w association-admin-name    admin-name
+    |  |  +---w mep-id                    mep-id
+    |  |  +---w session-name?             string
+    |  +--ro output
+    |     +--ro measurements-restarted    boolean
+    |     +--ro error-tag                 identityref
+    |     +--ro error-message?            string
+    +---x stop-on-demand-loss-measurement {eth-lm,on-demand-sessions}?
+    |  +---w input
+    |  |  +---w domain-admin-name         admin-name
+    |  |  +---w association-admin-name    admin-name
+    |  |  +---w mep-id                    mep-id
+    |  |  +---w session-name?             string
+    |  +--ro output
+    |     +--ro error-tag        identityref
+    |     +--ro error-message?   string
+    +---x delete-on-demand-loss-measurement {eth-lm,on-demand-sessions}?
+    |  +---w input
+    |  |  +---w domain-admin-name         admin-name
+    |  |  +---w association-admin-name    admin-name
+    |  |  +---w mep-id                    mep-id
+    |  |  +---w session-name?             string
+    |  +--ro output
+    |     +--ro error-tag        identityref
+    |     +--ro error-message?   string
+    +---x reset-loss-measurement-statistics {eth-lm,reset-loss-measurement-statistics}?
+    |  +---w input
+    |     +---w domain-admin-name         admin-name
+    |     +---w association-admin-name    admin-name
+    |     +---w mep-id                    mep-id
+    |     +---w session-name?             string
+    +---x reset-loss-measurement-availability-statistics {eth-lm,reset-loss-measurement-statistics}?
+    |  +---w input
+    |     +---w domain-admin-name         admin-name
+    |     +---w association-admin-name    admin-name
+    |     +---w mep-id                    mep-id
+    |     +---w session-name?             string
+    +---x create-on-demand-delay-measurement {eth-dm,on-demand-sessions}?
+    |  +---w input
+    |  |  +---w domain-admin-name                               admin-name
+    |  |  +---w association-admin-name                          admin-name
+    |  |  +---w mep-id                                          mep-id
+    |  |  +---w session-name?                                   string
+    |  |  +---w measurement-type?                               dm-measurement-type
+    |  |  +---w measurement-interval?                           uint32
+    |  |  +---w enabled-measurement*                            delay-measurement-metric {metric-selection}?
+    |  |  +---w message-interval?                               uint32
+    |  |  +---w measurement-interval-alignment
+    |  |  |  +---w (which-measurement-interval-alignment)?
+    |  |  |     +--:(disabled)
+    |  |  |     |  +---w disabled?   empty
+    |  |  |     +--:(enabled)
+    |  |  |        +---w offset?     uint32
+    |  |  +---w repetition-interval?                            union {repetition-interval}?
+    |  |  +---w number-of-historical-intervals?                 uint32
+    |  |  +---w pdu-version?                                    pdu-version {pdu-versions}?
+    |  |  +---w vlan
+    |  |  |  +---w priority    vz-oam-ecfm:frame-priority
+    |  |  +---w destination-address
+    |  |  |  +---w (destination-address-type)
+    |  |  |     +--:(mep-id)
+    |  |  |     |  +---w mep-id?        mep-id
+    |  |  |     +--:(mac-address)
+    |  |  |     |  +---w mac-address?   string
+    |  |  |     +--:(multicast)
+    |  |  |        +---w multicast?     empty
+    |  |  +---w pattern-tlv
+    |  |  |  +---w frame-size?                  uint32
+    |  |  |  +---w (tlv-option)?
+    |  |  |     +--:(no-tlv)
+    |  |  |     |  +---w no-tlv?                empty
+    |  |  |     +--:(data-tlv) {data-tlv}?
+    |  |  |     |  +---w data-tlv?              string
+    |  |  |     +--:(all-zeroes-data-tlv) {data-tlv}?
+    |  |  |     |  +---w all-zeroes-data-tlv?   empty
+    |  |  |     +--:(all-ones-data-tlv) {data-tlv}?
+    |  |  |     |  +---w all-ones-data-tlv?     empty
+    |  |  |     +--:(test-tlv) {test-tlv}?
+    |  |  |        +---w test-tlv?              test-tlv-pattern
+    |  |  +---w inter-frame-delay-variation-selection-offset?   uint8
+    |  |  +---w bins-profile?                                   delay-measurement-bins-profile-ref {delay-measurement-bins}?
+    |  |  +---w tca-profile?                                    delay-measurement-tca-profile-ref {tca-reporting}?
+    |  |  +---w bins-tca-profile?                               delay-measurement-bins-tca-profile-ref {tca-reporting}?
+    |  +--ro output
+    |     +--ro error-tag        identityref
+    |     +--ro error-message?   string
+    +---x start-on-demand-delay-measurement {eth-dm,on-demand-sessions}?
+    |  +---w input
+    |  |  +---w domain-admin-name         admin-name
+    |  |  +---w association-admin-name    admin-name
+    |  |  +---w mep-id                    mep-id
+    |  |  +---w session-name?             string
+    |  +--ro output
+    |     +--ro measurements-restarted    boolean
+    |     +--ro error-tag                 identityref
+    |     +--ro error-message?            string
+    +---x stop-on-demand-delay-measurement {eth-dm,on-demand-sessions}?
+    |  +---w input
+    |  |  +---w domain-admin-name         admin-name
+    |  |  +---w association-admin-name    admin-name
+    |  |  +---w mep-id                    mep-id
+    |  |  +---w session-name?             string
+    |  +--ro output
+    |     +--ro error-tag        identityref
+    |     +--ro error-message?   string
+    +---x delete-on-demand-delay-measurement {eth-dm,on-demand-sessions}?
+    |  +---w input
+    |  |  +---w domain-admin-name         admin-name
+    |  |  +---w association-admin-name    admin-name
+    |  |  +---w mep-id                    mep-id
+    |  |  +---w session-name?             string
+    |  +--ro output
+    |     +--ro error-tag        identityref
+    |     +--ro error-message?   string
+    +---x reset-delay-measurement-statistics {eth-dm,reset-delay-measurement-statistics}?
+       +---w input
+          +---w domain-admin-name         admin-name
+          +---w association-admin-name    admin-name
+          +---w mep-id                    mep-id
+          +---w session-name?             string

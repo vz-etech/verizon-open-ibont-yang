@@ -1,0 +1,74 @@
+submodule verizon-oam-ethernet-cfm-statistics-cc {
+  belongs-to verizon-oam-ethernet-cfm-statistics {
+    prefix vz-oam-ecfm-stats;
+  }
+  
+  import verizon-oam-ethernet-cfm {
+    prefix vz-oam-ecfm;
+  }
+  
+  include verizon-oam-ethernet-cfm-statistics-cc-body;
+
+  organization 
+    "Verizon";
+
+  contact
+     "Comments or questions about this Verizon YANG module should be
+     directed to <mailto:vz-open-netconf-yang@verizon.com>";
+
+  description 
+    "This module contains a collection of YANG definitions to support 
+     continuity check statistics that are not defined as part of the 
+     standards IEEE 802.1ag, ITU-T Y.1731 of MEF 7.2.
+
+     Copyright (c) 2019, Verizon and Calix.   All rights reserved.";
+
+  revision "2020-10-04" {
+    description
+      "Initial revision";
+    reference "None";
+  }
+
+
+  /* Augment MEP statistics with additional continuity check protocol 
+     statistics */
+  augment 
+    "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains" +
+    "/vz-oam-ecfm:domain/vz-oam-ecfm:associations" +
+    "/vz-oam-ecfm:association/vz-oam-ecfm:meps" +
+    "/vz-oam-ecfm:mep/vz-oam-ecfm:statistics" +
+    "/vz-oam-ecfm:continuity-check" {
+    description 
+      "Add additional statistics for the continuity check function.
+        
+           Editor's note: 
+           Currently the model supports two solutions for 
+           implementing statistics within the BBF SOAM draft model:
+           1 - collect all statistics for a MEP at the MEP level
+               (this solution); 
+           2 - collect statistics per CFM protocol.";
+       
+    uses continuity-check-statistics-parameters;
+
+  }
+
+  augment 
+    "/vz-oam-ecfm:cfm-state/vz-oam-ecfm:domains" +
+    "/vz-oam-ecfm:domain/vz-oam-ecfm:associations" +
+    "/vz-oam-ecfm:association/vz-oam-ecfm:meps" +
+    "/vz-oam-ecfm:mep/vz-oam-ecfm:continuity-check" +
+    "/vz-oam-ecfm:statistics" {
+    description 
+      "Add additional statistics for the continuity check function.
+          
+           Editor's note: 
+           Currently the BBF model supports two solutions for 
+           implementing statistics within the BBF SOAM draft model:
+           1 - collect all statistics for a MEP at the MEP level; 
+           2 - collect statistics per CFM protocol
+               (this solution).";
+       
+    uses continuity-check-statistics-parameters;
+  }
+  
+}
